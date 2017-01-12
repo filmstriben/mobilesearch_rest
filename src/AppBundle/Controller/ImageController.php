@@ -45,7 +45,7 @@ class ImageController extends Controller
         $dimensions = $this->getSizeFromParam($resize);
         // If resize parameter is received, try parse it and apply the style to
         // the image.
-        if (!empty($dimensions) && $this->checkThumbnailSubdir($resize, $agency)) {
+        if (!empty($dimensions) && implode($dimensions) != '00' && $this->checkThumbnailSubdir($resize, $agency)) {
             $resizedFilePath = $this->filesStorageDir . '/' . $agency . '/' . $resize . '/' . $filename;
 
             $fs = new Filesystem();
@@ -121,6 +121,14 @@ class ImageController extends Controller
         list ($targetWidth, $targetHeight) = array_values($targetSize);
         // Calculate the aspect ratios of original and target sizes.
         $originalAspect = round($originalWidth / $originalHeight, self::ASPECT_PRECISION);
+
+        if (!$targetHeight) {
+          $targetHeight = round($targetWidth / $originalAspect);
+        }
+        elseif (!$targetWidth) {
+          $targetWidth = round($targetHeight * $originalAspect);
+        }
+
         $targetAspect = round($targetWidth / $targetHeight, self::ASPECT_PRECISION);
 
         // Store default values which will be used by default.

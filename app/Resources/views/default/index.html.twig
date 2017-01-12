@@ -755,10 +755,15 @@ $key = sha1($agencyId . $agencyKey); // 952933c6ef9962f26e919f05637bb7e6061f064f
                             <pre>/files/{agency}/{resize}/{filename}</pre>
                             <p>Note: <em>resize</em> parameter can be either <em>original</em> or match the pattern: <em>WxH</em></p>
                             <p>Note: After resize the image aspect ratio is preserved. If requested size differs from original aspect ratio, the image is scaled and cropped from <strong>top</strong> edge.</p>
+                            <p>Note: It is possible to pass a zero value for either Height or Width. This way the image will be resized to the desired value keeping the aspect ratio by automatically calculating the missing side size.</p>
                         </div>
                         <div class="example">
                             <p class="title"><strong>Example:</strong></p>
                             <input type="text" readonly="readonly" value="/files/100000/1280x720/f623904c5b082f97ea2134bab94af6e2745e0ac3.jpeg" />
+                        </div>
+                        <div class="example">
+                            <p class="title"><strong>Example:</strong></p>
+                            <input type="text" readonly="readonly" value="/files/100000/1280x0/f623904c5b082f97ea2134bab94af6e2745e0ac3.jpeg" />
                         </div>
                         <div class="response">
                             <p class="title"><strong>Response:</strong></p>
