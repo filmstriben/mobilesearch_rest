@@ -3,10 +3,10 @@
 /**
  * @file
  */
+
 namespace AppBundle\Rest;
 
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
-use AppBundle\Rest\RestBaseRequest;
 
 class RestTaxonomyRequest extends RestBaseRequest
 {
@@ -17,19 +17,24 @@ class RestTaxonomyRequest extends RestBaseRequest
     }
 
     protected function get($id, $agency)
-    {}
+    {
+    }
 
     protected function exists($id, $agency)
-    {}
+    {
+    }
 
     protected function insert()
-    {}
+    {
+    }
 
     protected function update($id, $agency)
-    {}
+    {
+    }
 
     protected function delete($id, $agency)
-    {}
+    {
+    }
 
     public function fetchVocabularies($agency, $contentType)
     {

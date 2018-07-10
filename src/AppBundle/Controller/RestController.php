@@ -5,18 +5,18 @@
 
 namespace AppBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-
+use AppBundle\Document\Content;
 use AppBundle\Exception\RestException;
 use AppBundle\Rest\RestBaseRequest;
 use AppBundle\Rest\RestContentRequest;
 use AppBundle\Rest\RestListsRequest;
 use AppBundle\Rest\RestMenuRequest;
 use AppBundle\Rest\RestTaxonomyRequest;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final class RestController extends Controller
 {
@@ -29,7 +29,7 @@ final class RestController extends Controller
     public function __construct()
     {
         $this->lastMessage = '';
-        $this->lastStatus = FALSE;
+        $this->lastStatus = false;
         $this->lastItems = array();
     }
 
@@ -61,17 +61,17 @@ final class RestController extends Controller
             $fields = array(
                 'agency' => null,
                 'key' => null,
-                'amount' => null,
-                'sort' => null,
-                'order' => null,
                 'node' => null,
-                'property' => null,
+                'amount' => 10,
+                'skip' => 0,
+                'sort' => 'fields.created.value',
+                'order' => 'DESC',
                 'type' => null,
-                'skip' => null,
+                'status' => RestContentRequest::STATUS_PUBLISHED,
             );
 
             foreach (array_keys($fields) as $field) {
-                $fields[$field] = $request->query->get($field);
+                $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
             }
 
             $em = $this->get('doctrine_mongodb');
@@ -79,52 +79,26 @@ final class RestController extends Controller
 
             if (!$rcr->isSignatureValid($fields['agency'], $fields['key'])) {
                 $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-            }
-            elseif (!empty($fields['node']))
-            {
-                $nids = explode(',', $fields['node']);
+            } else {
+                unset($fields['key']);
+                $items = call_user_func_array([$rcr, 'fetchFiltered'], $fields);
 
-                $items = $rcr->fetchContent($nids, $fields['agency']);
                 if (!empty($items)) {
+                    /** @var Content $item */
                     foreach ($items as $item) {
                         $this->lastItems[] = array(
-                          'id' => $item->getId(),
-                          'nid' => $item->getNid(),
-                          'agency' => $item->getAgency(),
-                          'type' => $item->getType(),
-                          'fields' => $item->getFields(),
-                          'taxonomy' => $item->getTaxonomy(),
-                          'list' => $item->getList(),
+                            'id' => $item->getId(),
+                            'nid' => $item->getNid(),
+                            'agency' => $item->getAgency(),
+                            'type' => $item->getType(),
+                            'fields' => $item->getFields(),
+                            'taxonomy' => $item->getTaxonomy(),
+                            'list' => $item->getList(),
                         );
                     }
 
                     $this->lastStatus = true;
                 }
-                else {
-                    $this->lastMessage = "Entity with id {$fields['node']}, agency {$fields['agency']} does not exist.";
-                }
-            }
-            elseif (!empty($fields['amount']))
-            {
-                $items = $rcr->fetchXAmount($fields['agency'], $fields['amount'], $fields['sort'], $fields['order'], $fields['type'], $fields['skip']);
-                $this->lastItems = array();
-                foreach ($items as $item) {
-                    $this->lastItems[] = array(
-                        'id' => $item->getId(),
-                        'nid' => $item->getNid(),
-                        'agency' => $item->getAgency(),
-                        'type' => $item->getType(),
-                        'fields' => $item->getFields(),
-                        'taxonomy' => $item->getTaxonomy(),
-                        'list' => $item->getList(),
-                    );
-                }
-
-                $this->lastStatus = true;
-            }
-            else
-            {
-                $this->lastMessage = 'Failed validating request. No action specified.';
             }
         }
 
@@ -140,10 +114,10 @@ final class RestController extends Controller
 
         if ($this->lastMethod == 'GET') {
             $fields = array(
-              'agency' => null,
-              'key' => null,
-              'field' => null,
-              'query' => null,
+                'agency' => null,
+                'key' => null,
+                'field' => null,
+                'query' => null,
             );
 
             foreach (array_keys($fields) as $field) {
@@ -162,10 +136,10 @@ final class RestController extends Controller
                 foreach ($suggestions as $suggestion) {
                     $fields = $suggestion->getFields();
                     $this->lastItems[] = array(
-                      'id' => $suggestion->getId(),
-                      'nid' => $suggestion->getNid(),
-                      'title' => isset($fields['title']['value']) ? $fields['title']['value'] : '',
-                      'changed' => isset($fields['changed']['value']) ? $fields['changed']['value'] : '',
+                        'id' => $suggestion->getId(),
+                        'nid' => $suggestion->getNid(),
+                        'title' => isset($fields['title']['value']) ? $fields['title']['value'] : '',
+                        'changed' => isset($fields['changed']['value']) ? $fields['changed']['value'] : '',
                     );
                 }
 
@@ -174,9 +148,9 @@ final class RestController extends Controller
         }
 
         return $this->setResponse(
-          $this->lastStatus,
-          $this->lastMessage,
-          $this->lastItems
+            $this->lastStatus,
+            $this->lastMessage,
+            $this->lastItems
         );
     }
 
@@ -230,8 +204,7 @@ final class RestController extends Controller
 
         if (!$rtr->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        }
-        else {
+        } else {
             $vocabularies = $rtr->fetchVocabularies($fields['agency'], $contentType);
 
             $this->lastItems = $vocabularies;
@@ -267,8 +240,7 @@ final class RestController extends Controller
 
         if (!$rtr->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        }
-        else {
+        } else {
             $suggestions = $rtr->fetchTermSuggestions($fields['agency'], $vocabulary, $contentType, $query);
 
             $this->lastItems = $suggestions;
@@ -306,9 +278,9 @@ final class RestController extends Controller
 
         if (!$rtr->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        }
-        else {
-            $items = $rtr->fetchRelatedContent($fields['agency'], (array) $fields['vocabulary'], (array) $fields['terms']);
+        } else {
+            $items = $rtr->fetchRelatedContent($fields['agency'], (array)$fields['vocabulary'],
+                (array)$fields['terms']);
             $this->lastItems = array();
 
             if (!empty($items)) {
@@ -338,19 +310,14 @@ final class RestController extends Controller
 
     private function relay(RestBaseRequest $rbr)
     {
-        try
-        {
+        try {
             $rbr->setRequestBody($this->rawContent);
             $result = $rbr->handleRequest($this->lastMethod);
             $this->lastMessage = $result;
             $this->lastStatus = true;
-        }
-        catch (RestException $exc)
-        {
+        } catch (RestException $exc) {
             $this->lastMessage = 'Request fault: ' . $exc->getMessage();
-        }
-        catch (\Exception $exc)
-        {
+        } catch (\Exception $exc) {
             $this->lastMessage = 'Generic fault: ' . $exc->getMessage();
         }
 

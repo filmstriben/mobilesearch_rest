@@ -2,19 +2,19 @@
 
 namespace AppBundle\Controller;
 
-use Imagine\Exception\InvalidArgumentException as ImagineArgExc;
 use Imagine\Exception\Exception as ImagineExc;
+use Imagine\Exception\InvalidArgumentException as ImagineArgExc;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use Symfony\Component\Filesystem\Exception\IOException;
 
 class ImageController extends Controller
 {
@@ -88,12 +88,12 @@ class ImageController extends Controller
                 ->crop($imageManipulations['crop'], $imageManipulations['final_size'])
                 ->save($target, $this->imagineOptions);
         } catch (ImagineExc $e) {
-            return FALSE;
+            return false;
         } catch (ImagineArgExc $e) {
-            return FALSE;
+            return false;
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -123,10 +123,9 @@ class ImageController extends Controller
         $originalAspect = round($originalWidth / $originalHeight, self::ASPECT_PRECISION);
 
         if (!$targetHeight) {
-          $targetHeight = round($targetWidth / $originalAspect);
-        }
-        elseif (!$targetWidth) {
-          $targetWidth = round($targetHeight * $originalAspect);
+            $targetHeight = round($targetWidth / $originalAspect);
+        } elseif (!$targetWidth) {
+            $targetWidth = round($targetHeight * $originalAspect);
         }
 
         $targetAspect = round($targetWidth / $targetHeight, self::ASPECT_PRECISION);
@@ -146,8 +145,8 @@ class ImageController extends Controller
             $_y = $originalHeight / $targetHeight;
             $min = min($_x, $_y);
 
-            $box_width = (int) round($originalWidth / $min);
-            $box_height = (int) round($originalHeight / $min);
+            $box_width = (int)round($originalWidth / $min);
+            $box_height = (int)round($originalHeight / $min);
 
             $resizeBox = new Box($box_width, $box_height);
 
@@ -204,7 +203,7 @@ class ImageController extends Controller
      *
      * @return boolean TRUE if directory exists or created, FALSE otherwise.
      */
-    protected function checkThumbnailSubdir($name, $agency, $create = TRUE)
+    protected function checkThumbnailSubdir($name, $agency, $create = true)
     {
         $fs = new Filesystem();
         $path = $this->filesStorageDir . '/' . $agency . '/' . $name;
@@ -213,9 +212,9 @@ class ImageController extends Controller
         if (!$exists && $create) {
             try {
                 $fs->mkdir($path);
-                $exists = TRUE;
+                $exists = true;
             } catch (IOException $e) {
-                return FALSE;
+                return false;
             }
         }
 
@@ -238,8 +237,8 @@ class ImageController extends Controller
         $sizes = array();
         if (!empty($resizeParam) && preg_match('/^(\d+)x(\d+)$/', $resizeParam, $sizes)) {
             $dimensions = array(
-                'width' => (int) $sizes[1],
-                'height' => (int) $sizes[2]
+                'width' => (int)$sizes[1],
+                'height' => (int)$sizes[2]
             );
         }
 

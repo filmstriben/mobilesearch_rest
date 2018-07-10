@@ -1,0 +1,124 @@
+-
+    'nid': 1000
+    'agency': '999999'
+    'type': 'ding_news'
+    'list': []
+    'fields':
+        'title':
+            'name': 'Title'
+            'value': ~
+            'attr': []
+        'author':
+            'name': 'Author'
+            'value': ~
+            'attr': []
+        'created':
+            'name': 'Created'
+            'value': ~
+            'attr': []
+        'changed':
+            'name': 'Updated'
+            'value': ~
+            'attr': []
+        'status':
+            'name': 'Status'
+            'value': '1'
+            'attr': []
+        'og_group_ref':
+            'name': 'Library'
+            'value':
+                - Alpha
+                - Beta
+            'attr': []
+    'taxonomy':
+        'field_ding_news_category':
+            'name': 'News Category'
+            'terms':
+                'Alpha': []
+                'Beta': []
+                'Gamma':
+                    'Delta': []
+                'Epsion':
+                    'Zeta':
+                        'Eta':
+                            'Theta': []
+
+-
+    'nid': ~
+    'agency': '999999'
+    'type': 'ding_news'
+    'list': []
+    'fields':
+        'title':
+            'name': 'Title'
+            'value': ~
+            'attr': []
+        'author':
+            'name': 'Author'
+            'value': ~
+            'attr': []
+        'created':
+            'name': 'Created'
+            'value': ~
+            'attr': []
+        'changed':
+            'name': 'Updated'
+            'value': ~
+            'attr': []
+        'status':
+            'name': 'Status'
+            'value': '1'
+            'attr': []
+        'og_group_ref':
+            'name': 'Library'
+            'value':
+                - Alpha
+                - Beta
+                - Gamma
+                - Delta
+            'attr': []
+    'taxonomy':
+        'field_ding_news_category':
+            'name': 'News Category'
+            'terms':
+                'Alpha': []
+                'Beta': []
+                'Gamma':
+                    'Delta': []
+
+-
+    'nid': ~
+    'agency': '999999'
+    'type': 'ding_news'
+    'list': []
+    'fields':
+        'title':
+            'name': 'Title'
+            'value': ~
+            'attr': []
+        'author':
+            'name': 'Author'
+            'value': ~
+            'attr': []
+        'created':
+            'name': 'Created'
+            'value': ~
+            'attr': []
+        'changed':
+            'name': 'Updated'
+            'value': ~
+            'attr': []
+        'status':
+            'name': 'Status'
+            'value': '0'
+            'attr': []
+        'og_group_ref':
+            'name': 'Library'
+            'value':
+                - Theta
+            'attr': []
+    'taxonomy':
+        'field_ding_news_category':
+            'name': 'News Category'
+            'terms':
+                'Alpha': []

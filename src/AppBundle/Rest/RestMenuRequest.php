@@ -5,10 +5,8 @@
 
 namespace AppBundle\Rest;
 
-use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
-
-use AppBundle\Rest\RestBaseRequest;
 use AppBundle\Document\Menu as FSMenu;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
 class RestMenuRequest extends RestBaseRequest
 {
@@ -33,7 +31,7 @@ class RestMenuRequest extends RestBaseRequest
     protected function get($id, $agency)
     {
         $criteria = array(
-            $this->primaryIdentifier => (int) $id,
+            $this->primaryIdentifier => (int)$id,
             'agency' => $agency,
         );
 

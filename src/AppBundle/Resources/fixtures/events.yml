@@ -1,0 +1,182 @@
+-
+    'nid': ~
+    'agency': '999999'
+    'type': 'ding_event'
+    'list': []
+    'fields':
+        'title':
+            'name': 'Title'
+            'value': ~
+            'attr': []
+        'author':
+            'name': 'Author'
+            'value': ~
+            'attr': []
+        'created':
+            'name': 'Created'
+            'value': ~
+            'attr': []
+        'changed':
+            'name': 'Updated'
+            'value': ~
+            'attr': []
+        'status':
+            'name': 'Status'
+            'value': '1'
+            'attr': []
+        'field_ding_event_date':
+            'name': 'Event date'
+            'value':
+                'from': '2018-02-09T15:00:00+00:00'
+                'to': '2018-02-09T16:00:00+00:00'
+            'attr':
+                'all_day': false
+        'og_group_ref':
+            'name': 'Library'
+            'value':
+                - Theta
+            'attr': []
+    'taxonomy':
+        'field_ding_event_category':
+            'name': 'Event Category'
+            'terms':
+                'Alpha': []
+                'Beta': []
+                'Gamma':
+                    'Delta': []
+                'Epsilon':
+                    'Zeta':
+                        'Eta':
+                            'Theta': []
+
+-
+    'nid': ~
+    'agency': '999999'
+    'type': 'ding_event'
+    'list': []
+    'fields':
+        'title':
+            'name': 'Title'
+            'value': ~
+            'attr': []
+        'author':
+            'name': 'Author'
+            'value': ~
+            'attr': []
+        'created':
+            'name': 'Created'
+            'value': ~
+            'attr': []
+        'changed':
+            'name': 'Updated'
+            'value': ~
+            'attr': []
+        'status':
+            'name': 'Status'
+            'value': '1'
+            'attr': []
+        'field_ding_event_date':
+            'name': 'Event date'
+            'value':
+                'from': '2018-01-09T10:00:00+00:00'
+                'to': '2018-01-09T13:00:00+00:00'
+            'attr':
+                'all_day': false
+        'og_group_ref':
+            'name': 'Library'
+            'value':
+                - Theta
+            'attr': []
+    'taxonomy':
+        'field_ding_event_category':
+            'name': 'Event Category'
+            'terms':
+                'Alpha': []
+                'Beta': []
+                'Gamma':
+                    'Delta': []
+
+-
+    'nid': ~
+    'agency': '999999'
+    'type': 'ding_event'
+    'list': []
+    'fields':
+        'title':
+            'name': 'Title'
+            'value': ~
+            'attr': []
+        'author':
+            'name': 'Author'
+            'value': ~
+            'attr': []
+        'created':
+            'name': 'Created'
+            'value': ~
+            'attr': []
+        'changed':
+            'name': 'Updated'
+            'value': ~
+            'attr': []
+        'status':
+            'name': 'Status'
+            'value': '0'
+            'attr': []
+        'field_ding_event_date':
+            'name': 'Event date'
+            'value':
+                'from': '2050-01-01T12:00:00+00:00'
+                'to': '2050-01-01T16:00:00+00:00'
+            'attr':
+                'all_day': true
+        'og_group_ref':
+            'name': 'Library'
+            'value':
+                - Alpha
+                - Beta
+            'attr': []
+    'taxonomy':
+        'field_ding_event_category':
+            'name': 'Event Category'
+            'terms':
+                'Alpha': []
+
+-
+    'nid': ~
+    'agency': '999999'
+    'type': 'ding_event'
+    'list': []
+    'fields':
+        'title':
+            'name': 'Title'
+            'value': 'Broken event'
+            'attr': []
+        'author':
+            'name': 'Author'
+            'value': ~
+            'attr': []
+        'created':
+            'name': 'Created'
+            'value': ~
+            'attr': []
+        'changed':
+            'name': 'Updated'
+            'value': ~
+            'attr': []
+        'status':
+            'name': 'Status'
+            'value': '0'
+            'attr': []
+        'field_ding_event_date':
+            'name': 'Event date'
+            'value':
+                'from': '2018-01-01T12:00:00+00:00'
+                'to': '2018-01-01T16:00:00+00:00'
+            'attr':
+                'all_day': true
+        'og_group_ref':
+            'name': 'Library'
+            'value':
+                - Beta
+            'attr': []
+    'taxonomy': ~

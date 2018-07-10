@@ -5,10 +5,8 @@
 
 namespace AppBundle\Rest;
 
-use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
-
-use AppBundle\Rest\RestBaseRequest;
 use AppBundle\Document\Lists as FSList;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
 class RestListsRequest extends RestBaseRequest
 {
