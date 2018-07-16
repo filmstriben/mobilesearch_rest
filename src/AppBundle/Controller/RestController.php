@@ -12,6 +12,7 @@ use AppBundle\Rest\RestContentRequest;
 use AppBundle\Rest\RestListsRequest;
 use AppBundle\Rest\RestMenuRequest;
 use AppBundle\Rest\RestTaxonomyRequest;
+use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -34,9 +35,48 @@ final class RestController extends Controller
     }
 
     /**
+     * @ApiDoc(
+     *  description="Persists an entry of content.",
+     *  section="Content",
+     *  requirements={}
+     * )
      * @Route("/content")
+     * @Method({"PUT"})
      */
-    public function contentAction(Request $request)
+    public function contentCreateAction(Request $request)
+    {
+        return $this->contentDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *  description="Updates an existing entry of content.",
+     *  section="Content",
+     *  requirements={}
+     * )
+     * @Route("/content")
+     * @Method({"POST"})
+     */
+    public function contentUpdateAction(Request $request)
+    {
+        return $this->contentDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *  description="Deletes an entry of content.",
+     *  section="Content",
+     *  requirements={}
+     * )
+     * @Route("/content")
+     * @Method({"DELETE"})
+     */
+    public function contentDeleteAction(Request $request)
+    {
+        return $this->contentDispatcher($request);
+    }
+
+    public function contentDispatcher(Request $request)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
@@ -48,10 +88,13 @@ final class RestController extends Controller
     }
 
     /**
-     * @todo
-     * Re-factor.
-     *
+     * @ApiDoc(
+     *  description="Fetches content entries.",
+     *  section="Content",
+     *  requirements={}
+     * )
      * @Route("/content/fetch")
+     * @Method({"GET"})
      */
     public function contentFetchAction(Request $request)
     {
@@ -64,10 +107,10 @@ final class RestController extends Controller
                 'node' => null,
                 'amount' => 10,
                 'skip' => 0,
-                'sort' => 'fields.created.value',
-                'order' => 'DESC',
+                'sort' => 'fields.title.value',
+                'order' => 'ASC',
                 'type' => null,
-                'status' => RestContentRequest::STATUS_PUBLISHED,
+                'status' => RestContentRequest::STATUS_ALL,
             );
 
             foreach (array_keys($fields) as $field) {
@@ -106,7 +149,13 @@ final class RestController extends Controller
     }
 
     /**
+     * @ApiDoc(
+     *  description="Searches content entries by certain criteria(s).",
+     *  section="Content",
+     *  requirements={}
+     * )
      * @Route("/content/search")
+     * @Method({"GET"})
      */
     function searchAction(Request $request)
     {
@@ -155,9 +204,45 @@ final class RestController extends Controller
     }
 
     /**
+     * @ApiDoc(
+     *  description="Persists a menu entry.",
+     *  section="Menu",
+     *  requirements={}
+     * )
      * @Route("/menu")
+     * @Method({"PUT"})
      */
-    public function menuAction(Request $request)
+    public function menuCreateAction(Request $request) {
+        return $this->menuDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *  description="Updates a menu entry.",
+     *  section="Menu",
+     *  requirements={}
+     * )
+     * @Route("/menu")
+     * @Method({"POST"})
+     */
+    public function menuUpdateAction(Request $request) {
+        return $this->menuDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *  description="Deletes a menu entry.",
+     *  section="Menu",
+     *  requirements={}
+     * )
+     * @Route("/menu")
+     * @Method({"DELETE"})
+     */
+    public function menuDeleteAction(Request $request) {
+        return $this->menuDispatcher($request);
+    }
+
+    public function menuDispatcher(Request $request)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
@@ -169,9 +254,45 @@ final class RestController extends Controller
     }
 
     /**
+     * @ApiDoc(
+     *  description="Persists a list entry.",
+     *  section="List",
+     *  requirements={}
+     * )
      * @Route("/list")
+     * @Method({"PUT"})
      */
-    public function listsAction(Request $request)
+    public function listCreateAction(Request $request) {
+        return $this->listDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *  description="Updates a list entry.",
+     *  section="List",
+     *  requirements={}
+     * )
+     * @Route("/list")
+     * @Method({"POST"})
+     */
+    public function listUpdateAction(Request $request) {
+        return $this->listDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *  description="Deletes a list entry.",
+     *  section="List",
+     *  requirements={}
+     * )
+     * @Route("/list")
+     * @Method({"DELETE"})
+     */
+    public function listDeleteAction(Request $request) {
+        return $this->listDispatcher($request);
+    }
+
+    public function listDispatcher(Request $request)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
@@ -183,6 +304,11 @@ final class RestController extends Controller
     }
 
     /**
+     * @ApiDoc(
+     *  description="Fetches vocabularies for a certain content entry type.",
+     *  section="Taxonomy",
+     *  requirements={}
+     * )
      * @Route("/taxonomy/vocabularies/{contentType}")
      * @Method({"GET"})
      */
@@ -219,6 +345,11 @@ final class RestController extends Controller
     }
 
     /**
+     * @ApiDoc(
+     *  description="Fetches term suggestions matching the query.",
+     *  section="Taxonomy",
+     *  requirements={}
+     * )
      * @Route("/taxonomy/terms/{vocabulary}/{contentType}/{query}")
      * @Method({"GET"})
      */
@@ -255,6 +386,11 @@ final class RestController extends Controller
     }
 
     /**
+     * @ApiDoc(
+     *  description="Fetches content entries related to certain vocabulary terms.",
+     *  section="Content",
+     *  requirements={}
+     * )
      * @Route("/content/related")
      * @Method({"GET"})
      */
@@ -299,7 +435,6 @@ final class RestController extends Controller
 
             $this->lastStatus = true;
         }
-
 
         return $this->setResponse(
             $this->lastStatus,

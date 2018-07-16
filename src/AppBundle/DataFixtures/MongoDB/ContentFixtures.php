@@ -17,13 +17,12 @@ class ContentFixtures extends Fixture
     {
         /** @var FixtureLoader $fixtureLoader */
         $fixtureLoader = $this->container->get('fixture_loader');
-        $newsDefinitions = $fixtureLoader->load('news.yml');
-        $eventDefitions = $fixtureLoader->load('events.yml');
+        $osDefinitions = $fixtureLoader->load('os.yml');
 
         $faker = Factory::create();
         $now = time();
 
-        foreach (array_merge($newsDefinitions, $eventDefitions) as $fixture) {
+        foreach ($osDefinitions as $fixture) {
             $content = new Content();
 
             // Set some random fields which are defined as null.
@@ -37,16 +36,9 @@ class ContentFixtures extends Fixture
                         case 'title':
                             $value = $faker->sentence;
                             break;
-                        case 'author':
-                            $value = $faker->name;
-                            break;
-                        case 'created':
+                        case 'publish_date':
                             // Assume creation time couple of hours ago.
                             $value = gmdate('c', $now - mt_rand(1, 5) * 86400);
-                            break;
-                        case 'changed':
-                            // Assume update time couple of minutes ago.
-                            $value = gmdate('c', $now - mt_rand(1, 59) * 60);
                             break;
                         default:
                             $value = null;

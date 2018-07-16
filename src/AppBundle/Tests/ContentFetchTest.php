@@ -11,6 +11,11 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 {
     use AssertResponseStructureTrait;
 
+    const URI = '/content/fetch';
+
+    /**
+     * Fetch with wrong key.
+     */
     public function testFetchWithWrongKey()
     {
         $parameters = [
@@ -18,7 +23,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'key' => self::KEY.'-wrong',
         ];
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -30,14 +35,14 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     /**
      * Fetch with missing data.
      */
-    public function testFetchEmptyAgency()
+    public function testFetchWithEmptyAgency()
     {
         $parameters = [
             'agency' => '',
             'key' => self::KEY,
         ];
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -59,7 +64,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         ];
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -74,7 +79,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
      */
     public function testFetchByType()
     {
-        $type = 'ding_news';
+        $type = 'os';
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
@@ -82,7 +87,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         ];
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -101,17 +106,17 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     {
         $parameters = [
             'agency' => self::AGENCY,
-            'key' => self::KEY
+            'key' => self::KEY,
         ];
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
         $this->assertNotEmpty($result['items']);
         // 10 items are returned by default.
-        $this->assertLessThan(11, count($result['items']));
+        $this->assertCount(10, $result['items']);
 
         foreach ($result['items'] as $item) {
             $this->assertEquals(self::AGENCY, $item['agency']);
@@ -121,7 +126,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     /**
      * Limited fetch.
      */
-    public function testFetchSmallAmount()
+    public function testFetchWithSmallAmount()
     {
         $amount = 2;
         $parameters = [
@@ -130,7 +135,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'amount' => $amount,
         ];
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -141,7 +146,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     /**
      * Paged fetch.
      */
-    public function testPager()
+    public function testFetchWithPager()
     {
         $skip = 0;
         $amount = 2;
@@ -157,7 +162,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 
         while (true) {
             /** @var Response $response */
-            $response = $this->request('/content/fetch', $parameters, 'GET');
+            $response = $this->request(self::URI, $parameters, 'GET');
 
             $result = $this->assertResponse($response);
 
@@ -178,7 +183,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $parameters['skip'] = $skip;
         }
 
-        $this->assertCount(7, $node_ids);
+        $this->assertCount(11, $node_ids);
         // Expect zero, since we reached end of the list.
         $this->assertCount(0, $result['items']);
     }
@@ -186,7 +191,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     /**
      * Fetch sorted.
      */
-    public function testSorting()
+    public function testFetchWithSorting()
     {
         $sort = 'nid';
         $order = 'ASC';
@@ -199,7 +204,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 
         // Ascending sort.
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -213,7 +218,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $parameters['order'] = 'DESC';
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -227,7 +232,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     /**
      * Fetch sorted by complex field.
      */
-    public function testNestedFieldSorting()
+    public function testFetchWithNestedFieldSorting()
     {
         $sort = 'fields.title.value';
         $order = 'ASC';
@@ -240,7 +245,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 
         // Ascending order.
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -257,7 +262,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $parameters['order'] = 'DESC';
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -276,7 +281,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
      */
     public function testFetchComplex()
     {
-        $type = 'ding_news';
+        $type = 'os';
         $amount = 2;
         $skip = 1;
         $sort = 'fields.title.value';
@@ -293,7 +298,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         ];
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -317,7 +322,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     /**
      * Fetches default set of published content.
      */
-    public function testDefaultStatus()
+    public function testFetchByDefaultStatus()
     {
         $parameters = [
             'agency' => self::AGENCY,
@@ -325,7 +330,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         ];
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -333,7 +338,13 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 
         foreach ($result['items'] as $item) {
             $status = $item['fields']['status']['value'];
-            $this->assertEquals(RestContentRequest::STATUS_PUBLISHED, $status);
+            $this->assertContains(
+                $status,
+                [
+                    RestContentRequest::STATUS_PUBLISHED,
+                    RestContentRequest::STATUS_UNPUBLISHED,
+                ]
+            );
         }
     }
 
@@ -347,10 +358,12 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'status' => RestContentRequest::STATUS_PUBLISHED,
+            'amount' => 10,
+            'skip' => 0,
         ];
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -367,7 +380,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $parameters['status'] = RestContentRequest::STATUS_UNPUBLISHED;
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -382,9 +395,10 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 
         // Fetch all content.
         $parameters['status'] = RestContentRequest::STATUS_ALL;
+        $parameters['amount'] = 999;
 
         /** @var Response $response */
-        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 

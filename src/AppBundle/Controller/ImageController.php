@@ -7,7 +7,9 @@ use Imagine\Exception\InvalidArgumentException as ImagineArgExc;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
+use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -23,13 +25,19 @@ class ImageController extends Controller
     protected $response;
     protected $imagineOptions = array(
         'jpeg_quality' => 95,
-        'png_compression_level' => 2
+        'png_compression_level' => 2,
     );
 
     /**
-     * @Route("/files/{agency}/{resize}/{filename}", defaults={"resize":"original"}, requirements={
-     *      "resize":"original|\d{1,4}x\d{1,4}"
+     * @ApiDoc(
+     *  description="Fetches an, optionally re-sized, image.",
+     *  section="Images",
+     *  requirements={}
+     * )
+     * @Route("/files/{agency}/{resize}/{filename}", defaults={"resize":"0x0"}, requirements={
+     *      "resize":"\d{1,4}x\d{1,4}"
      * })
+     * @Method({"GET"})
      */
     function imageAction(Request $request, $agency, $resize, $filename)
     {
