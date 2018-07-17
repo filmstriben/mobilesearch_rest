@@ -79,7 +79,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
      */
     public function testFetchByType()
     {
-        $type = 'os';
+        $type = 'editorial';
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
@@ -133,6 +133,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'amount' => $amount,
+            'type' => 'os',
         ];
         /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
@@ -159,7 +160,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         ];
 
         $node_ids = [];
-
+        // Fetch items till empty result set.
         while (true) {
             /** @var Response $response */
             $response = $this->request(self::URI, $parameters, 'GET');
@@ -183,7 +184,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $parameters['skip'] = $skip;
         }
 
-        $this->assertCount(11, $node_ids);
+        $this->assertCount(22, $node_ids);
         // Expect zero, since we reached end of the list.
         $this->assertCount(0, $result['items']);
     }
@@ -194,12 +195,11 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     public function testFetchWithSorting()
     {
         $sort = 'nid';
-        $order = 'ASC';
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'sort' => $sort,
-            'order' => $order,
+            'order' => 'ASC',
         ];
 
         // Ascending sort.
@@ -234,13 +234,12 @@ class ContentFetchTest extends AbstractFixtureAwareTest
      */
     public function testFetchWithNestedFieldSorting()
     {
-        $sort = 'fields.title.value';
-        $order = 'ASC';
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
-            'sort' => $sort,
-            'order' => $order,
+            'sort' => 'fields.title.value',
+            'order' => 'ASC',
+            'type' => 'os',
         ];
 
         // Ascending order.
@@ -283,17 +282,14 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     {
         $type = 'os';
         $amount = 2;
-        $skip = 1;
-        $sort = 'fields.title.value';
-        $order = 'DESC';
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'type' => $type,
             'amount' => $amount,
-            'skip' => $skip,
-            'sort' => $sort,
-            'order' => $order,
+            'skip' => 1,
+            'sort' => 'fields.title.value',
+            'order' => 'DESC',
             'status' => RestContentRequest::STATUS_ALL,
         ];
 
@@ -327,6 +323,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
+            'type' => 'os',
         ];
 
         /** @var Response $response */
@@ -358,6 +355,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'status' => RestContentRequest::STATUS_PUBLISHED,
+            'type' => 'os',
             'amount' => 10,
             'skip' => 0,
         ];

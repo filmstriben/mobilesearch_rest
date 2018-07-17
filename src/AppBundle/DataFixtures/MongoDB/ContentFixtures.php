@@ -18,17 +18,18 @@ class ContentFixtures extends Fixture
         /** @var FixtureLoader $fixtureLoader */
         $fixtureLoader = $this->container->get('fixture_loader');
         $osDefinitions = $fixtureLoader->load('os.yml');
+        $editorialDefinitions = $fixtureLoader->load('editorial.yml');
 
         $faker = Factory::create();
         $now = time();
 
-        foreach ($osDefinitions as $fixture) {
+        foreach (array_merge($osDefinitions, $editorialDefinitions) as $fixture) {
             $content = new Content();
 
-            // Set some random fields which are defined as null.
+            // Set some random values for fields which are required and defined as null.
             $content->setNid(isset($fixture['nid']) ? $fixture['nid'] : mt_rand());
             $content->setAgency(isset($fixture['agency']) ? $fixture['agency'] : mt_rand(100000, 999999));
-            $content->setType(isset($fixture['type']) ? $fixture['type'] : 'ding_'.$faker->word);
+            $content->setType(isset($fixture['type']) ? $fixture['type'] : $faker->word);
 
             foreach ($fixture['fields'] as $field => &$values) {
                 if (is_null($values['value'])) {
