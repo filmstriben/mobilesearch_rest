@@ -6,6 +6,7 @@
 namespace AppBundle\Rest;
 
 use AppBundle\Document\Content;
+use AppBundle\Exception\RestException;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 use Symfony\Component\Filesystem\Filesystem as FSys;
 
@@ -105,14 +106,44 @@ class RestContentRequest extends RestBaseRequest
         return $qb->getQuery()->execute();
     }
 
-    public function fetchSuggestions($agency, $query, $field = 'fields.title.value')
+    public function fetchSuggestions($agency, array $query, array $field, $amount = 10, $skip = 0)
     {
-        $content = $this->em->getRepository('AppBundle:Content')->findBy(array(
-            $field => new \MongoRegex('/' . $query . '/i'),
-            'agency' => $agency
-        ));
+        if (count($query) != count($field)) {
+            throw new RestException('Query and fields parameters count mismatch.');
+        }
 
-        return $content;
+        reset($query);
+        reset($field);
+
+        /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
+        $qb = $this
+            ->em
+            ->getManager()
+            ->createQueryBuilder(Content::class);
+
+        $qb->field('agency')->equals($agency);
+
+        while ($currentQuery = current($query)) {
+            $currentField = current($field);
+
+            if (preg_match('/taxonomy\..*\.terms/', $currentField)) {
+                $qb
+                    ->field($currentField)
+                    ->in([$currentQuery]);
+            }
+            else {
+                $qb
+                    ->field($currentField)
+                    ->equals(new \MongoRegex('/' . $currentQuery . '/i'));
+            }
+
+            next($query);
+            next($field);
+        }
+
+        $qb->skip($skip)->limit($amount);
+
+        return $qb->getQuery()->execute();
     }
 
     protected function insert()
@@ -194,7 +225,7 @@ class RestContentRequest extends RestBaseRequest
         $content->setType($type);
 
         $fields = !empty($body['fields']) ? $body['fields'] : array();
-        $fields = $this->parseFields($fields);
+        $fields = $this->parseImageFields($fields);
         $content->setFields($fields);
 
         $taxonomy = !empty($body['taxonomy']) ? $body['taxonomy'] : array();
@@ -210,7 +241,7 @@ class RestContentRequest extends RestBaseRequest
      * @todo
      * Quick'n'dirty.
      */
-    private function parseFields(array $fields)
+    private function parseImageFields(array $fields)
     {
         $image_fields = array(
             'field_images',
@@ -231,8 +262,7 @@ class RestContentRequest extends RestBaseRequest
                 }
 
                 foreach ($field_value['value'] as $k => $value) {
-                    if (!empty($value) && isset($field_value['attr'][$k]) && preg_match('/^image\/(jpg|jpeg|gif|png)$/',
-                            $field_value['attr'][$k])) {
+                    if (!empty($value) && isset($field_value['attr'][$k]) && preg_match('/^image\/(jpg|jpeg|gif|png)$/', $field_value['attr'][$k])) {
                         $file_ext = explode('/', $field_value['attr'][$k]);
                         $extension = isset($file_ext[1]) ? $file_ext[1] : '';
                         $file_contents = $field_value['value'][$k];
