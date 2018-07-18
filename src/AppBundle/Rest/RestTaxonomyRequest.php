@@ -1,11 +1,8 @@
 <?php
 
-/**
- * @file
- */
-
 namespace AppBundle\Rest;
 
+use AppBundle\Exception\RestException;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
 class RestTaxonomyRequest extends RestBaseRequest
@@ -40,12 +37,14 @@ class RestTaxonomyRequest extends RestBaseRequest
     {
         $content = $this->em
             ->getRepository('AppBundle:Content')
-            ->findBy(array(
-                'agency' => $agency,
-                'type' => $contentType
-            ));
+            ->findBy(
+                [
+                    'agency' => $agency,
+                    'type' => $contentType,
+                ]
+            );
 
-        $vocabularies = array();
+        $vocabularies = [];
         foreach ($content as $node) {
             foreach ($node->getTaxonomy() as $vocabularyName => $vocabulary) {
                 if (!empty($vocabulary['terms']) && is_array($vocabulary['terms'])) {
@@ -64,21 +63,23 @@ class RestTaxonomyRequest extends RestBaseRequest
 
     public function fetchTermSuggestions($agency, $vocabulary, $contentType, $query)
     {
-        $field = 'taxonomy.' . $vocabulary . '.terms';
-        $pattern = '/' . $query . '/i';
+        $field = 'taxonomy.'.$vocabulary.'.terms';
+        $pattern = '/'.$query.'/i';
 
-        $result = $this->em->getRepository('AppBundle:Content')->findBy(array(
-            'agency' => $agency,
-            'type' => $contentType,
-            $field => array('$in' => array(new \MongoRegex($pattern)))
-        ));
+        $result = $this->em->getRepository('AppBundle:Content')->findBy(
+            [
+                'agency' => $agency,
+                'type' => $contentType,
+                $field => ['$in' => [new \MongoRegex($pattern)]],
+            ]
+        );
 
-        $terms = array();
+        $terms = [];
         foreach ($result as $content) {
             $taxonomy = $content->getTaxonomy();
             if (isset($taxonomy[$vocabulary]) && is_array($taxonomy[$vocabulary]['terms'])) {
                 foreach ($taxonomy[$vocabulary]['terms'] as $term) {
-                    $pattern = '/' . $query . '/i';
+                    $pattern = '/'.$query.'/i';
                     if (preg_match($pattern, $term)) {
                         $terms[] = $term;
                     }
@@ -94,16 +95,16 @@ class RestTaxonomyRequest extends RestBaseRequest
     public function fetchRelatedContent($agency, array $vocabulary, array $terms)
     {
         if (count($vocabulary) != count($terms)) {
-            throw new \Exception('Number of vocabulary and terms count mismatch.');
+            throw new RestException('Number of vocabulary and terms count mismatch.');
         }
 
-        $criteria = array(
+        $criteria = [
             'agency' => $agency,
-        );
+        ];
 
         foreach ($vocabulary as $k => $item) {
-            $field = 'taxonomy.' . $item . '.terms';
-            $criteria[$field] = array('$in' => explode(',', $terms[$k]));
+            $field = 'taxonomy.'.$item.'.terms';
+            $criteria[$field] = ['$in' => explode(',', $terms[$k])];
         }
 
         $content = $this->em->getRepository('AppBundle:Content')->findBy($criteria);

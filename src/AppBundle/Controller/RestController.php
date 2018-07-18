@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Controller;
 
@@ -72,8 +69,9 @@ final class RestController extends Controller
     /**
      * Dispatches content related requests.
      *
-     * @param Request $request
-     * @return Response
+     * @param Request $request Incoming Request object.
+     *
+     * @return Response        Outgoing Response object.
      */
     public function contentDispatcher(Request $request)
     {
@@ -99,7 +97,7 @@ final class RestController extends Controller
     {
         $this->lastMethod = $request->getMethod();
 
-        $fields = array(
+        $fields = [
             'agency' => null,
             'key' => null,
             'node' => null,
@@ -109,7 +107,7 @@ final class RestController extends Controller
             'order' => 'ASC',
             'type' => null,
             'status' => RestContentRequest::STATUS_ALL,
-        );
+        ];
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
@@ -127,7 +125,7 @@ final class RestController extends Controller
             if (!empty($items)) {
                 /** @var Content $item */
                 foreach ($items as $item) {
-                    $this->lastItems[] = array(
+                    $this->lastItems[] = [
                         'id' => $item->getId(),
                         'nid' => $item->getNid(),
                         'agency' => $item->getAgency(),
@@ -135,7 +133,7 @@ final class RestController extends Controller
                         'fields' => $item->getFields(),
                         'taxonomy' => $item->getTaxonomy(),
                         'list' => $item->getList(),
-                    );
+                    ];
                 }
 
                 $this->lastStatus = true;
@@ -154,19 +152,25 @@ final class RestController extends Controller
      * @Route("/content/search")
      * @Method({"GET"})
      */
-    function searchAction(Request $request)
+    public function searchAction(Request $request)
     {
         $this->lastMethod = $request->getMethod();
 
-        $fields = array(
+        $fields = [
             'agency' => null,
             'key' => null,
-            'field' => null,
             'query' => null,
-        );
+            'field' => null,
+            'amount' => 10,
+            'skip' => 0,
+        ];
 
         foreach (array_keys($fields) as $field) {
-            $fields[$field] = $request->query->get($field);
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+
+            if (in_array($field, ['query', 'field'])) {
+                $fields[$field] = (array)$fields[$field];
+            }
         }
 
         $em = $this->get('doctrine_mongodb');
@@ -175,28 +179,23 @@ final class RestController extends Controller
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } elseif (!empty($fields['query'])) {
-            $this->lastItems = array();
+            unset($fields['key']);
 
             try {
-                $suggestions = $restContentRequest->fetchSuggestions(
-                    $fields['agency'],
-                    (array)$fields['query'],
-                    (array)$fields['field']
-                );
+                $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
 
                 foreach ($suggestions as $suggestion) {
                     $fields = $suggestion->getFields();
-                    $this->lastItems[] = array(
+                    $this->lastItems[] = [
                         'id' => $suggestion->getId(),
                         'nid' => $suggestion->getNid(),
                         'title' => isset($fields['title']['value']) ? $fields['title']['value'] : '',
                         'changed' => isset($fields['changed']['value']) ? $fields['changed']['value'] : '',
-                    );
+                    ];
                 }
 
                 $this->lastStatus = true;
-            }
-            catch (RestException $e) {
+            } catch (RestException $e) {
                 $this->lastMessage = $e->getMessage();
             }
         }
@@ -217,7 +216,8 @@ final class RestController extends Controller
      * @Route("/menu")
      * @Method({"PUT"})
      */
-    public function menuCreateAction(Request $request) {
+    public function menuCreateAction(Request $request)
+    {
         return $this->menuDispatcher($request);
     }
 
@@ -230,7 +230,8 @@ final class RestController extends Controller
      * @Route("/menu")
      * @Method({"POST"})
      */
-    public function menuUpdateAction(Request $request) {
+    public function menuUpdateAction(Request $request)
+    {
         return $this->menuDispatcher($request);
     }
 
@@ -243,16 +244,17 @@ final class RestController extends Controller
      * @Route("/menu")
      * @Method({"DELETE"})
      */
-    public function menuDeleteAction(Request $request) {
+    public function menuDeleteAction(Request $request)
+    {
         return $this->menuDispatcher($request);
     }
 
     /**
      * Dispatcher menu related requests.
      *
-     * @param Request $request  Incoming Request object.
+     * @param Request $request Incoming Request object.
      *
-     * @return Response         Outgoing Response object.
+     * @return Response        Outgoing Response object.
      */
     public function menuDispatcher(Request $request)
     {
@@ -274,7 +276,8 @@ final class RestController extends Controller
      * @Route("/list")
      * @Method({"PUT"})
      */
-    public function listCreateAction(Request $request) {
+    public function listCreateAction(Request $request)
+    {
         return $this->listDispatcher($request);
     }
 
@@ -287,7 +290,8 @@ final class RestController extends Controller
      * @Route("/list")
      * @Method({"POST"})
      */
-    public function listUpdateAction(Request $request) {
+    public function listUpdateAction(Request $request)
+    {
         return $this->listDispatcher($request);
     }
 
@@ -300,16 +304,17 @@ final class RestController extends Controller
      * @Route("/list")
      * @Method({"DELETE"})
      */
-    public function listDeleteAction(Request $request) {
+    public function listDeleteAction(Request $request)
+    {
         return $this->listDispatcher($request);
     }
 
     /**
      * Dispatcher list related requests.
      *
-     * @param Request $request  Incoming Request object.
+     * @param Request $request Incoming Request object.
      *
-     * @return Response         Outgoing Response object.
+     * @return Response        Outgoing Response object.
      */
     public function listDispatcher(Request $request)
     {
@@ -335,10 +340,10 @@ final class RestController extends Controller
     {
         $this->lastMethod = $request->getMethod();
 
-        $fields = array(
+        $fields = [
             'agency' => null,
-            'key' => null
-        );
+            'key' => null,
+        ];
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = $request->query->get($field);
@@ -376,10 +381,10 @@ final class RestController extends Controller
     {
         $this->lastMethod = $request->getMethod();
 
-        $fields = array(
+        $fields = [
             'agency' => null,
-            'key' => null
-        );
+            'key' => null,
+        ];
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = $request->query->get($field);
@@ -417,12 +422,12 @@ final class RestController extends Controller
     {
         $this->lastMethod = $request->getMethod();
 
-        $fields = array(
+        $fields = [
             'agency' => null,
             'key' => null,
             'vocabulary' => null,
-            'terms' => null
-        );
+            'terms' => null,
+        ];
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = $request->query->get($field);
@@ -434,28 +439,33 @@ final class RestController extends Controller
         if (!$rtr->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } else {
-            $items = $rtr->fetchRelatedContent(
-                $fields['agency'],
-                (array)$fields['vocabulary'],
-                (array)$fields['terms']
-            );
-            $this->lastItems = array();
+            $this->lastItems = [];
 
-            if (!empty($items)) {
-                foreach ($items as $item) {
-                    $this->lastItems[] = array(
-                        'id' => $item->getId(),
-                        'nid' => $item->getNid(),
-                        'agency' => $item->getAgency(),
-                        'type' => $item->getType(),
-                        'fields' => $item->getFields(),
-                        'taxonomy' => $item->getTaxonomy(),
-                        'list' => $item->getList()
-                    );
+            try {
+                $items = $rtr->fetchRelatedContent(
+                    $fields['agency'],
+                    (array)$fields['vocabulary'],
+                    (array)$fields['terms']
+                );
+
+                if (!empty($items)) {
+                    foreach ($items as $item) {
+                        $this->lastItems[] = [
+                            'id' => $item->getId(),
+                            'nid' => $item->getNid(),
+                            'agency' => $item->getAgency(),
+                            'type' => $item->getType(),
+                            'fields' => $item->getFields(),
+                            'taxonomy' => $item->getTaxonomy(),
+                            'list' => $item->getList(),
+                        ];
+                    }
                 }
-            }
 
-            $this->lastStatus = true;
+                $this->lastStatus = true;
+            } catch (RestException $e) {
+                $this->lastMessage = $e->getMessage();
+            }
         }
 
         return $this->setResponse(
@@ -468,9 +478,9 @@ final class RestController extends Controller
     /**
      * Processes incoming requests, except for the ones sent with GET method.
      *
-     * @param RestBaseRequest $genericRequest   Generic request object wrapper.
+     * @param RestBaseRequest $genericRequest Generic request object wrapper.
      *
-     * @return Response                         Outgoing Response object.
+     * @return Response                       Outgoing Response object.
      */
     private function relay(RestBaseRequest $genericRequest)
     {
@@ -480,9 +490,9 @@ final class RestController extends Controller
             $this->lastMessage = $result;
             $this->lastStatus = true;
         } catch (RestException $exc) {
-            $this->lastMessage = 'Request fault: ' . $exc->getMessage();
+            $this->lastMessage = 'Request fault: '.$exc->getMessage();
         } catch (\Exception $exc) {
-            $this->lastMessage = 'Generic fault: ' . $exc->getMessage();
+            $this->lastMessage = 'Generic fault: '.$exc->getMessage();
         }
 
         $response = $this->setResponse($this->lastStatus, $this->lastMessage);
@@ -493,19 +503,19 @@ final class RestController extends Controller
     /**
      * Prepares an http response.
      *
-     * @param bool $status      Request processed status.
-     * @param string $message   Debug message, if any.
-     * @param array $items      Response items, if any.
+     * @param bool $status    Request processed status.
+     * @param string $message Debug message, if any.
+     * @param array $items    Response items, if any.
      *
-     * @return Response         Outgoing Response object.
+     * @return Response       Outgoing Response object.
      */
-    private function setResponse($status = true, $message = '', $items = array())
+    private function setResponse($status = true, $message = '', $items = [])
     {
-        $responseContent = array(
+        $responseContent = [
             'status' => $status,
             'message' => $message,
             'items' => $items,
-        );
+        ];
 
         $response = new Response(json_encode($responseContent));
         $response->headers->set('Content-Type', 'application/json');

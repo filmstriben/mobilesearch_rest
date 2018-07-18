@@ -23,10 +23,10 @@ class ImageController extends Controller
     const ASPECT_PRECISION = 3;
     protected $filesStorageDir = '../web/storage/images';
     protected $response;
-    protected $imagineOptions = array(
+    protected $imagineOptions = [
         'jpeg_quality' => 95,
         'png_compression_level' => 2,
-    );
+    ];
 
     /**
      * @ApiDoc(
@@ -39,7 +39,7 @@ class ImageController extends Controller
      * })
      * @Method({"GET"})
      */
-    function imageAction(Request $request, $agency, $resize, $filename)
+    public function imageAction(Request $request, $agency, $resize, $filename)
     {
         // For those weird instances that lack GD extension.
         if (!extension_loaded('gd')) {
@@ -48,13 +48,13 @@ class ImageController extends Controller
 
         $this->response = new Response();
 
-        $filePath = $this->filesStorageDir . '/' . $agency . '/' . $filename;
+        $filePath = $this->filesStorageDir.'/'.$agency.'/'.$filename;
 
         $dimensions = $this->getSizeFromParam($resize);
         // If resize parameter is received, try parse it and apply the style to
         // the image.
         if (!empty($dimensions) && implode($dimensions) != '00' && $this->checkThumbnailSubdir($resize, $agency)) {
-            $resizedFilePath = $this->filesStorageDir . '/' . $agency . '/' . $resize . '/' . $filename;
+            $resizedFilePath = $this->filesStorageDir.'/'.$agency.'/'.$resize.'/'.$filename;
 
             $fs = new Filesystem();
             // Both when image exits or it's smaller/bigger counterpart
@@ -87,10 +87,10 @@ class ImageController extends Controller
         try {
             $image = $imagine->open($source);
             $imageSize = $image->getSize();
-            $originalSize = array(
+            $originalSize = [
                 'width' => $imageSize->getWidth(),
-                'height' => $imageSize->getHeight()
-            );
+                'height' => $imageSize->getHeight(),
+            ];
             $imageManipulations = $this->getResizeDimensions($originalSize, $wantedDimensions);
             $image->resize($imageManipulations['resize'])
                 ->crop($imageManipulations['crop'], $imageManipulations['final_size'])
@@ -166,11 +166,11 @@ class ImageController extends Controller
             $cropPoint = new Point($crop_x, $crop_y);
         }
 
-        return array(
+        return [
             'resize' => $resizeBox,
             'crop' => $cropPoint,
-            'final_size' => $finalImageSize
-        );
+            'final_size' => $finalImageSize,
+        ];
     }
 
     /**
@@ -214,7 +214,7 @@ class ImageController extends Controller
     protected function checkThumbnailSubdir($name, $agency, $create = true)
     {
         $fs = new Filesystem();
-        $path = $this->filesStorageDir . '/' . $agency . '/' . $name;
+        $path = $this->filesStorageDir.'/'.$agency.'/'.$name;
         $exists = $fs->exists($path);
 
         if (!$exists && $create) {
@@ -241,13 +241,13 @@ class ImageController extends Controller
      */
     protected function getSizeFromParam($resizeParam)
     {
-        $dimensions = array();
-        $sizes = array();
+        $dimensions = [];
+        $sizes = [];
         if (!empty($resizeParam) && preg_match('/^(\d+)x(\d+)$/', $resizeParam, $sizes)) {
-            $dimensions = array(
+            $dimensions = [
                 'width' => (int)$sizes[1],
-                'height' => (int)$sizes[2]
-            );
+                'height' => (int)$sizes[2],
+            ];
         }
 
         return $dimensions;

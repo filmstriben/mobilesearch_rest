@@ -7,7 +7,7 @@ trait AssertResponseStructureTrait
     /**
      * Asserts data structure of a response.
      *
-     * @param array $response   Response array.
+     * @param array $response Response array.
      */
     public function assertResponseStructure(array $response)
     {

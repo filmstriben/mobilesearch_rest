@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Rest;
 
@@ -15,10 +12,10 @@ class RestMenuRequest extends RestBaseRequest
         parent::__construct($em);
 
         $this->primaryIdentifier = 'mlid';
-        $this->requiredFields = array(
+        $this->requiredFields = [
             $this->primaryIdentifier,
             'agency',
-        );
+        ];
     }
 
     protected function exists($id, $agency)
@@ -30,10 +27,10 @@ class RestMenuRequest extends RestBaseRequest
 
     protected function get($id, $agency)
     {
-        $criteria = array(
+        $criteria = [
             $this->primaryIdentifier => (int)$id,
             'agency' => $agency,
-        );
+        ];
 
         $entity = $this->em
             ->getRepository('AppBundle:Menu')

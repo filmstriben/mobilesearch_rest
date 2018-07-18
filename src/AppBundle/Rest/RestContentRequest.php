@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Rest;
 
@@ -18,17 +15,25 @@ class RestContentRequest extends RestBaseRequest
 
     const STATUS_UNPUBLISHED = '0';
 
+    /**
+     * RestContentRequest constructor.
+     *
+     * @param MongoEM $em Entity manager.
+     */
     public function __construct(MongoEM $em)
     {
         parent::__construct($em);
 
         $this->primaryIdentifier = 'nid';
-        $this->requiredFields = array(
+        $this->requiredFields = [
             $this->primaryIdentifier,
             'agency',
-        );
+        ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function exists($id, $agency)
     {
         $entity = $this->get($id, $agency);
@@ -36,12 +41,15 @@ class RestContentRequest extends RestBaseRequest
         return !is_null($entity);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function get($id, $agency)
     {
-        $criteria = array(
+        $criteria = [
             $this->primaryIdentifier => (int)$id,
             'agency' => $agency,
-        );
+        ];
 
         $content = $this->em
             ->getRepository('AppBundle:Content')
@@ -97,6 +105,7 @@ class RestContentRequest extends RestBaseRequest
             self::STATUS_PUBLISHED,
             self::STATUS_UNPUBLISHED,
         ];
+        // Set a status filter only if it differs from the default one.
         if (self::STATUS_ALL != $status && in_array($status, $possibleStatuses)) {
             $qb->field('fields.status.value')->equals($status);
         }
@@ -106,6 +115,20 @@ class RestContentRequest extends RestBaseRequest
         return $qb->getQuery()->execute();
     }
 
+    /**
+     * Searches content suggestions based on certain criteria.
+     *
+     * @param $agency
+     * @param array $query
+     * @param array $field
+     * @param int $amount
+     * @param int $skip
+     *
+     * @return mixed
+     *
+     * @throws RestException
+     * @throws \Doctrine\ODM\MongoDB\MongoDBException
+     */
     public function fetchSuggestions($agency, array $query, array $field, $amount = 10, $skip = 0)
     {
         if (count($query) != count($field)) {
@@ -130,11 +153,10 @@ class RestContentRequest extends RestBaseRequest
                 $qb
                     ->field($currentField)
                     ->in([$currentQuery]);
-            }
-            else {
+            } else {
                 $qb
                     ->field($currentField)
-                    ->equals(new \MongoRegex('/' . $currentQuery . '/i'));
+                    ->equals(new \MongoRegex('/'.$currentQuery.'/i'));
             }
 
             next($query);
@@ -146,6 +168,9 @@ class RestContentRequest extends RestBaseRequest
         return $qb->getQuery()->execute();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function insert()
     {
         $entity = $this->prepare(new Content());
@@ -157,6 +182,9 @@ class RestContentRequest extends RestBaseRequest
         return $entity;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function update($id, $agency)
     {
         $loadedEntity = $this->get($id, $agency);
@@ -168,6 +196,9 @@ class RestContentRequest extends RestBaseRequest
         return $updatedEntity;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function delete($id, $agency)
     {
         $entity = $this->get($id, $agency);
@@ -182,8 +213,8 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content by id.
      *
-     * @param array $ids
-     * @param string $agency
+     * @param array $ids     Content id's.
+     * @param string $agency Agency number.
      *
      * @return Content[]
      */
@@ -195,9 +226,12 @@ class RestContentRequest extends RestBaseRequest
 
         // Mongo has strict type check, and since 'nid' is stored as int
         // convert the value to int as well.
-        array_walk($ids, function (&$v) {
-            $v = (int)$v;
-        });
+        array_walk(
+            $ids,
+            function (&$v) {
+                $v = (int)$v;
+            }
+        );
 
         $criteria = [
             'agency' => $agency,
@@ -224,14 +258,14 @@ class RestContentRequest extends RestBaseRequest
         $type = !empty($body['type']) ? $body['type'] : 'undefined';
         $content->setType($type);
 
-        $fields = !empty($body['fields']) ? $body['fields'] : array();
+        $fields = !empty($body['fields']) ? $body['fields'] : [];
         $fields = $this->parseImageFields($fields);
         $content->setFields($fields);
 
-        $taxonomy = !empty($body['taxonomy']) ? $body['taxonomy'] : array();
+        $taxonomy = !empty($body['taxonomy']) ? $body['taxonomy'] : [];
         $content->setTaxonomy($taxonomy);
 
-        $list = !empty($body['list']) ? $body['list'] : array();
+        $list = !empty($body['list']) ? $body['list'] : [];
         $content->setList($list);
 
         return $content;
@@ -243,7 +277,7 @@ class RestContentRequest extends RestBaseRequest
      */
     private function parseImageFields(array $fields)
     {
-        $image_fields = array(
+        $image_fields = [
             'field_images',
             'field_background_image',
             'field_ding_event_title_image',
@@ -254,11 +288,11 @@ class RestContentRequest extends RestBaseRequest
             'field_ding_news_list_image',
             'field_ding_page_title_image',
             'field_ding_page_list_image',
-        );
+        ];
         foreach ($fields as $field_name => &$field_value) {
             if (in_array($field_name, $image_fields)) {
                 if (!is_array($field_value['value'])) {
-                    $field_value['value'] = array($field_value['value']);
+                    $field_value['value'] = [$field_value['value']];
                 }
 
                 foreach ($field_value['value'] as $k => $value) {
@@ -271,17 +305,17 @@ class RestContentRequest extends RestBaseRequest
                         if (!empty($extension)) {
                             $fs = new FSys();
 
-                            $dir = '../web/storage/images/' . $this->agencyId;
+                            $dir = '../web/storage/images/'.$this->agencyId;
                             if (!$fs->exists($dir)) {
                                 $fs->mkdir($dir);
                             }
 
-                            $filename = sha1($value . $this->agencyId) . '.' . $extension;
-                            $path = $dir . '/' . $filename;
+                            $filename = sha1($value.$this->agencyId).'.'.$extension;
+                            $path = $dir.'/'.$filename;
 
                             $fs->dumpFile($path, base64_decode($file_contents));
                             if ($fs->exists($path)) {
-                                $field_value['value'][$k] = 'files/' . $this->agencyId . '/' . $filename;
+                                $field_value['value'][$k] = 'files/'.$this->agencyId.'/'.$filename;
                             }
                         }
                     }

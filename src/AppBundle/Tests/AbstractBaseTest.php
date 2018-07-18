@@ -34,16 +34,16 @@ abstract class AbstractBaseTest extends WebTestCase
     /**
      * Asserts service response structure.
      *
-     * @param array $response   Decoded response.
+     * @param array $response Decoded response.
      */
     abstract public function assertResponseStructure(array $response);
 
     /**
      * Sends a request.
      *
-     * @param string $uri           URI target to send request.
-     * @param array $parameters     Request parameters.
-     * @param string $method        Request method.
+     * @param string $uri       URI target to send request.
+     * @param array $parameters Request parameters.
+     * @param string $method    Request method.
      *
      * @return Response
      */
@@ -61,7 +61,8 @@ abstract class AbstractBaseTest extends WebTestCase
     /**
      * Asserts and decodes service responses.
      *
-     * @param Response $response    Response object.
+     * @param Response $response Response object.
+     *
      * @return mixed                Response array, false on failure.
      */
     public function assertResponse(Response $response)
@@ -79,7 +80,7 @@ abstract class AbstractBaseTest extends WebTestCase
     /**
      * Asserts an ISO-8601 date string.
      *
-     * @param string $date  Input date.
+     * @param string $date Input date.
      */
     public function assertIsoDate($date)
     {

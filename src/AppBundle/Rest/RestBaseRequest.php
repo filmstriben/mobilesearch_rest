@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Rest;
 
@@ -13,7 +10,7 @@ abstract class RestBaseRequest
     protected $agencyId = null;
     protected $signature = null;
     protected $requestBody = null;
-    protected $requiredFields = array();
+    protected $requiredFields = [];
     protected $em = null;
     protected $primaryIdentifier = '';
 
@@ -47,7 +44,7 @@ abstract class RestBaseRequest
                     throw new RestException("Entity with id {$id}, agency {$agency} does not exist.");
                 } else {
                     $updatedContent = $this->update($id, $agency);
-                    $requestResult = 'Updated entity with id: ' . $updatedContent->getId();
+                    $requestResult = 'Updated entity with id: '.$updatedContent->getId();
                 }
                 break;
             case 'PUT':
@@ -55,7 +52,7 @@ abstract class RestBaseRequest
                     throw new RestException("Entity with id {$id}, agency {$agency} already exists.");
                 } else {
                     $insertedContent = $this->insert();
-                    $requestResult = 'Created entity with id: ' . $insertedContent->getId();
+                    $requestResult = 'Created entity with id: '.$insertedContent->getId();
                 }
                 break;
             case 'DELETE':
@@ -63,7 +60,7 @@ abstract class RestBaseRequest
                     throw new RestException("Entity with id {$id}, agency {$agency} does not exist.");
                 } else {
                     $deletedContent = $this->delete($id, $agency);
-                    $requestResult = 'Deleted entity with id: ' . $deletedContent->getId();
+                    $requestResult = 'Deleted entity with id: '.$deletedContent->getId();
                 }
                 break;
         }
@@ -76,7 +73,7 @@ abstract class RestBaseRequest
         $body = $this->getParsedBody();
         foreach ($this->requiredFields as $field) {
             if (empty($body[$field])) {
-                throw new RestException('Required field "' . $field . '" has no value.');
+                throw new RestException('Required field "'.$field.'" has no value.');
             } elseif ($field == 'agency' && !$this->isChildAgencyValid($body[$field])) {
                 throw new RestException("Tried to modify entity using agency {$body[$field]} which does not exist.");
             }
@@ -127,10 +124,10 @@ abstract class RestBaseRequest
     {
         $isValid = true;
 
-        $requiredFields = array(
+        $requiredFields = [
             'agencyId',
             'key',
-        );
+        ];
 
         $requestCredentials = $this->getParsedCredentials();
         foreach ($requiredFields as $field) {
@@ -138,8 +135,7 @@ abstract class RestBaseRequest
                 $isValid = false;
             } elseif ($field == 'agencyId' && !$this->isAgencyValid($requestCredentials[$field])) {
                 $isValid = false;
-            } elseif ($field == 'key' && !$this->isSignatureValid($requestCredentials['agencyId'],
-                    $requestCredentials['key'])) {
+            } elseif ($field == 'key' && !$this->isSignatureValid($requestCredentials['agencyId'], $requestCredentials['key'])) {
                 $isValid = false;
             }
         }
@@ -158,7 +154,7 @@ abstract class RestBaseRequest
     {
         $agency = $this->em
             ->getRepository('AppBundle:Agency')
-            ->findOneBy(array('agencyId' => $agencyId));
+            ->findOneBy(['agencyId' => $agencyId]);
 
         return $agency;
     }
@@ -169,7 +165,7 @@ abstract class RestBaseRequest
 
         if ($agency) {
             $key = $agency->getKey();
-            $targetSignature = sha1($agencyId . $key);
+            $targetSignature = sha1($agencyId.$key);
 
             if ($signature == $targetSignature) {
                 return true;

@@ -285,7 +285,7 @@ class ContentSearchTest extends AbstractFixtureAwareTest
     /**
      * Asserts item structure in the response.
      *
-     * @param array $item   One item from the result set.
+     * @param array $item One item from the result set.
      */
     private function assertItemStructure(array $item)
     {

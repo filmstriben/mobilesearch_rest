@@ -15,7 +15,8 @@ class FixtureLoader
     /**
      * Loads and parses yaml fixture config.
      *
-     * @param string $filename  Fixture file name.
+     * @param string $filename Fixture file name.
+     *
      * @return array            Parsed config.
      */
     public function load($filename)

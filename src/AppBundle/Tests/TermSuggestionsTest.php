@@ -23,15 +23,18 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'agency' => '',
             'vocabulary' => 'field_ding_event_category',
             'content_type' => 'ding_event',
-            'query' => 'Alpha'
+            'query' => 'Alpha',
         ];
 
-        $uri = implode('/', [
-            self::URI,
-            $parameters['vocabulary'],
-            $parameters['content_type'],
-            $parameters['query'],
-        ]);
+        $uri = implode(
+            '/',
+            [
+                self::URI,
+                $parameters['vocabulary'],
+                $parameters['content_type'],
+                $parameters['query'],
+            ]
+        );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
@@ -54,7 +57,7 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'vocabulary' => 'field_ding_event_category',
             'content_type' => 'ding_event',
-            'query' => 'Alpha'
+            'query' => 'Alpha',
         ];
 
         $this->assertTermExistence($parameters);
@@ -69,7 +72,7 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'vocabulary' => 'field_ding_event_category',
             'content_type' => 'ding_event',
-            'query' => 'Theta'
+            'query' => 'Theta',
         ];
 
         $this->assertTermExistence($parameters);
@@ -84,15 +87,18 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'vocabulary' => 'field_ding_event_category',
             'content_type' => 'ding_event',
-            'query' => 'a'
+            'query' => 'a',
         ];
 
-        $uri = implode('/', [
-            self::URI,
-            $parameters['vocabulary'],
-            $parameters['content_type'],
-            $parameters['query'],
-        ]);
+        $uri = implode(
+            '/',
+            [
+                self::URI,
+                $parameters['vocabulary'],
+                $parameters['content_type'],
+                $parameters['query'],
+            ]
+        );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
@@ -115,16 +121,19 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
     /**
      * Wrapper method to check suggested term existence.
      *
-     * @param array $parameters     Query parameters.
+     * @param array $parameters Query parameters.
      */
     private function assertTermExistence(array $parameters)
     {
-        $uri = implode('/', [
-            self::URI,
-            $parameters['vocabulary'],
-            $parameters['content_type'],
-            $parameters['query'],
-        ]);
+        $uri = implode(
+            '/',
+            [
+                self::URI,
+                $parameters['vocabulary'],
+                $parameters['content_type'],
+                $parameters['query'],
+            ]
+        );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');

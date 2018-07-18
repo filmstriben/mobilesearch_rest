@@ -24,10 +24,13 @@ class VocabulariesTest extends AbstractFixtureAwareTest
             'content_type' => 'ding_event',
         ];
 
-        $uri = implode('/', [
-            self::URI,
-            $parameters['content_type'],
-        ]);
+        $uri = implode(
+            '/',
+            [
+                self::URI,
+                $parameters['content_type'],
+            ]
+        );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
@@ -51,10 +54,13 @@ class VocabulariesTest extends AbstractFixtureAwareTest
             'content_type' => 'ding_event',
         ];
 
-        $uri = implode('/', [
-            self::URI,
-            $parameters['content_type'],
-        ]);
+        $uri = implode(
+            '/',
+            [
+                self::URI,
+                $parameters['content_type'],
+            ]
+        );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
@@ -79,10 +85,13 @@ class VocabulariesTest extends AbstractFixtureAwareTest
             'content_type' => 'ding_library',
         ];
 
-        $uri = implode('/', [
-            self::URI,
-            $parameters['content_type'],
-        ]);
+        $uri = implode(
+            '/',
+            [
+                self::URI,
+                $parameters['content_type'],
+            ]
+        );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
