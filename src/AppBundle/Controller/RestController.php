@@ -28,7 +28,22 @@ final class RestController extends Controller
      * @ApiDoc(
      *  description="Persists an entry of content.",
      *  section="Content",
-     *  requirements={}
+     *  parameters={
+     *      {
+     *          "name"="credentials",
+     *          "dataType"="textarea",
+     *          "description"="Request credentials.",
+     *          "required"=true,
+     *          "format"="json"
+     *      },
+     *      {
+     *          "name"="body",
+     *          "dataType"="textarea",
+     *          "description"="Request body.",
+     *          "required"=true,
+     *          "format"="json"
+     *      }
+     *  }
      * )
      * @Route("/content")
      * @Method({"PUT"})
@@ -42,7 +57,22 @@ final class RestController extends Controller
      * @ApiDoc(
      *  description="Updates an existing entry of content.",
      *  section="Content",
-     *  requirements={}
+     *  parameters={
+     *      {
+     *          "name"="credentials",
+     *          "dataType"="textarea",
+     *          "description"="Request credentials.",
+     *          "required"=true,
+     *          "format"="json"
+     *      },
+     *      {
+     *          "name"="body",
+     *          "dataType"="textarea",
+     *          "description"="Request body.",
+     *          "required"=true,
+     *          "format"="json"
+     *      }
+     *  }
      * )
      * @Route("/content")
      * @Method({"POST"})
@@ -56,7 +86,22 @@ final class RestController extends Controller
      * @ApiDoc(
      *  description="Deletes an entry of content.",
      *  section="Content",
-     *  requirements={}
+     *  parameters={
+     *      {
+     *          "name"="credentials",
+     *          "dataType"="textarea",
+     *          "description"="Request credentials.",
+     *          "required"=true,
+     *          "format"="json"
+     *      },
+     *      {
+     *          "name"="body",
+     *          "dataType"="textarea",
+     *          "description"="Request body.",
+     *          "required"=true,
+     *          "format"="json"
+     *      }
+     *  }
      * )
      * @Route("/content")
      * @Method({"DELETE"})

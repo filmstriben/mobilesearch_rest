@@ -92,12 +92,15 @@ doctrine_mongodb:
 
 # API doc.
 nelmio_api_doc:
-  name: "Filmstriben Mobilesearch API"
-  sandbox:
-    body_format:
-      formats:
-        - "json"
-      default_format: "json"
-    request_format:
-      formats:
-        json: "application/json"
+    name: "Filmstriben Mobilesearch API"
+    sandbox:
+        body_format:
+            formats:
+                - "json"
+            default_format: "json"
+        request_format:
+            method: "accept_header"
+            formats:
+                json: "application/json"
+    cache:
+        enabled: true
