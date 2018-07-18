@@ -2,7 +2,7 @@
 
 namespace AppBundle\Rest;
 
-use AppBundle\Document\Lists as FSList;
+use AppBundle\Document\Lists;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
 class RestListsRequest extends RestBaseRequest
@@ -42,7 +42,7 @@ class RestListsRequest extends RestBaseRequest
 
     protected function insert()
     {
-        $entity = $this->prepare(new FSList());
+        $entity = $this->prepare(new Lists());
 
         $dm = $this->em->getManager();
         $dm->persist($entity);
@@ -73,7 +73,7 @@ class RestListsRequest extends RestBaseRequest
         return $entity;
     }
 
-    public function prepare(FSList $list)
+    public function prepare(Lists $list)
     {
         $body = $this->getParsedBody();
 
@@ -102,5 +102,17 @@ class RestListsRequest extends RestBaseRequest
         $list->setWeight($weight);
 
         return $list;
+    }
+
+    public function fetchLists($agency, $amount = 10, $skip = 0)
+    {
+        $qb = $this->em
+            ->getManager()
+            ->createQueryBuilder(Lists::class);
+
+        $qb->field('agency')->equals($agency);
+        $qb->skip($skip)->limit($amount);
+
+        return $qb->getQuery()->execute();
     }
 }

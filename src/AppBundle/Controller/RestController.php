@@ -26,24 +26,27 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Persists an entry of content.",
-     *  section="Content",
-     *  parameters={
-     *      {
-     *          "name"="credentials",
-     *          "dataType"="textarea",
-     *          "description"="Request credentials.",
-     *          "required"=true,
-     *          "format"="json"
-     *      },
-     *      {
-     *          "name"="body",
-     *          "dataType"="textarea",
-     *          "description"="Request body.",
-     *          "required"=true,
-     *          "format"="json"
-     *      }
-     *  }
+     *     description="Persists an entry of content.",
+     *     section="Content",
+     *     parameters={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "required"=true,
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "required"=true,
+     *             "format"="json"
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ContentOutput"
+     *     }
      * )
      * @Route("/content")
      * @Method({"PUT"})
@@ -55,24 +58,27 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Updates an existing entry of content.",
-     *  section="Content",
-     *  parameters={
-     *      {
-     *          "name"="credentials",
-     *          "dataType"="textarea",
-     *          "description"="Request credentials.",
-     *          "required"=true,
-     *          "format"="json"
-     *      },
-     *      {
-     *          "name"="body",
-     *          "dataType"="textarea",
-     *          "description"="Request body.",
-     *          "required"=true,
-     *          "format"="json"
-     *      }
-     *  }
+     *     description="Updates an existing entry of content.",
+     *     section="Content",
+     *     parameters={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "required"=true,
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "required"=true,
+     *             "format"="json"
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ContentOutput"
+     *     }
      * )
      * @Route("/content")
      * @Method({"POST"})
@@ -84,24 +90,27 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Deletes an entry of content.",
-     *  section="Content",
-     *  parameters={
-     *      {
-     *          "name"="credentials",
-     *          "dataType"="textarea",
-     *          "description"="Request credentials.",
-     *          "required"=true,
-     *          "format"="json"
-     *      },
-     *      {
-     *          "name"="body",
-     *          "dataType"="textarea",
-     *          "description"="Request body.",
-     *          "required"=true,
-     *          "format"="json"
-     *      }
-     *  }
+     *     description="Deletes an entry of content.",
+     *     section="Content",
+     *     parameters={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "required"=true,
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "required"=true,
+     *             "format"="json"
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ContentOutput"
+     *     }
      * )
      * @Route("/content")
      * @Method({"DELETE"})
@@ -131,9 +140,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Fetches content entries.",
-     *  section="Content",
-     *  requirements={}
+     *     description="Fetches content entries.",
+     *     section="Content",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/content/fetch")
      * @Method({"GET"})
@@ -190,14 +202,17 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Searches content entries by certain criteria(s).",
-     *  section="Content",
-     *  requirements={}
+     *     description="Searches content entries by certain criteria(s).",
+     *     section="Content",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/content/search")
      * @Method({"GET"})
      */
-    public function searchAction(Request $request)
+    public function contentSearchAction(Request $request)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -254,9 +269,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Persists a menu entry.",
-     *  section="Menu",
-     *  requirements={}
+     *     description="Persists a menu entry.",
+     *     section="Menu",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/menu")
      * @Method({"PUT"})
@@ -268,9 +286,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Updates a menu entry.",
-     *  section="Menu",
-     *  requirements={}
+     *     description="Updates a menu entry.",
+     *     section="Menu",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/menu")
      * @Method({"POST"})
@@ -282,9 +303,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Deletes a menu entry.",
-     *  section="Menu",
-     *  requirements={}
+     *     description="Deletes a menu entry.",
+     *     section="Menu",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/menu")
      * @Method({"DELETE"})
@@ -314,9 +338,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Persists a list entry.",
-     *  section="List",
-     *  requirements={}
+     *     description="Persists a list entry.",
+     *     section="List",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/list")
      * @Method({"PUT"})
@@ -328,9 +355,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Updates a list entry.",
-     *  section="List",
-     *  requirements={}
+     *     description="Updates a list entry.",
+     *     section="List",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/list")
      * @Method({"POST"})
@@ -342,9 +372,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Deletes a list entry.",
-     *  section="List",
-     *  requirements={}
+     *     description="Deletes a list entry.",
+     *     section="List",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/list")
      * @Method({"DELETE"})
@@ -372,11 +405,51 @@ final class RestController extends Controller
         return $this->relay($rlr);
     }
 
+    public function listFetchAction(Request $request)
+    {
+        $this->lastMethod = $request->getMethod();
+
+        $fields = [
+            'agency' => null,
+            'key' => null,
+            'amount' => 10,
+            'skip' => 0,
+        ];
+
+        foreach (array_keys($fields) as $field) {
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        $em = $this->get('doctrine_mongodb');
+        $restListsRequest = new RestListsRequest($em);
+
+        if (!$restListsRequest->isSignatureValid($fields['agency'], $fields['key'])) {
+            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
+        } elseif (!empty($fields['query'])) {
+            unset($fields['key']);
+
+            $suggestions = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
+
+
+
+            $this->lastStatus = true;
+        }
+
+        return $this->setResponse(
+            $this->lastStatus,
+            $this->lastMessage,
+            $this->lastItems
+        );
+    }
+
     /**
      * @ApiDoc(
-     *  description="Fetches vocabularies for a certain content entry type.",
-     *  section="Taxonomy",
-     *  requirements={}
+     *     description="Fetches vocabularies for a certain content entry type.",
+     *     section="Taxonomy",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/taxonomy/vocabularies/{contentType}")
      * @Method({"GET"})
@@ -415,9 +488,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Fetches term suggestions matching the query.",
-     *  section="Taxonomy",
-     *  requirements={}
+     *     description="Fetches term suggestions matching the query.",
+     *     section="Taxonomy",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/taxonomy/terms/{vocabulary}/{contentType}/{query}")
      * @Method({"GET"})
@@ -456,9 +532,12 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Fetches content entries related to certain vocabulary terms.",
-     *  section="Content",
-     *  requirements={}
+     *     description="Fetches content entries related to certain vocabulary terms.",
+     *     section="Content",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
      * )
      * @Route("/content/related")
      * @Method({"GET"})
