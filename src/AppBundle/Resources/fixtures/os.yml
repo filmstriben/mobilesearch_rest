@@ -135,9 +135,7 @@
             name: Director
             terms:
                 - Lisa Aschan
-    list:
-        - e8b414f3362ab1243c3adb327f10d9d0
-        - 60890c2e29eb96bf2c0434fc84cac306
+    list: []
 -
     nid: 1001
     agency: '999999'
@@ -264,9 +262,7 @@
             terms:
                 - Martin Scorsese
                 - David Tedeschi
-    list:
-        - de80d7fa82d2015a2189b5cb9f6ac4d1
-        - 42c6b40c825c0a7d844f8df396e39df3
+    list: []
 -
     nid: 1002
     agency: '999999'
@@ -411,9 +407,7 @@
             name: Author of screenplay
             terms:
                 - Ronnie Sandahl
-    list:
-        - f20c03f35a74ee16c658b50a92df973b
-        - 060a416c672b31302b3060154ddff5f0
+    list: []
 -
     nid: 1003
     agency: '999999'
@@ -559,9 +553,7 @@
             name: Director
             terms:
                 - Sophie Barthes
-    list:
-        - e60b5e827c5b4b815a16c7e116b5d2c2
-        - d4a654bec11103917db5708d192de706
+    list: []
 -
     nid: 1004
     agency: '999999'
@@ -683,9 +675,7 @@
             name: Director
             terms:
                 - Shane Salerno
-    list:
-        - 9216ee059d1bca2c3c4079a363fb9143
-        - 30402bb9c3f9b2a311a57abe2ac48a92
+    list: []
 -
     nid: 1005
     agency: '999999'
@@ -830,9 +820,7 @@
             name: Director
             terms:
                 - Abderrahmane Sissako
-    list:
-        - 3e1c7b0995d1a89ea02d3ff5998a4883
-        - 9a8936d014f45a75ec830131fc62a4e8
+    list: []
 -
     nid: 1006
     agency: '999999'
@@ -974,9 +962,7 @@
             name: Director
             terms:
                 - Peter Bogdanovich
-    list:
-        - 039b8618d4ec01e5f3cfa5c5a66ccfe6
-        - b96449429d8ebf373839153121ad90ce
+    list: []
 -
     nid: 1007
     agency: '999999'
@@ -1119,9 +1105,7 @@
             name: Director
             terms:
                 - Matthew Warchus
-    list:
-        - f62ad3cbc284c8dffef05a8e67980df2
-        - fe4fadac560ecf5be5963a68bee84eac
+    list: []
 -
     nid: 1008
     agency: '999999'
@@ -1264,9 +1248,7 @@
             name: Author of screenplay
             terms:
                 - Claudia Myers
-    list:
-        - 860c0df9c3b6a73a62f422d067d74af0
-        - d69d342028c602c47b18a7b9721ecc6f
+    list: []
 -
     nid: 1009
     agency: '999999'
@@ -1411,9 +1393,7 @@
             name: Director
             terms:
                 - Heinrich Breloer
-    list:
-        - e4ec543ed9e62cd691a66c2eb055d8d9
-        - cc24418ffbddd2165170e7ac44c7397d
+    list: []
 -
     nid: 1010
     agency: '999999'
@@ -1539,6 +1519,4 @@
                 - Joyce Carpati
                 - Ari Cohen
                 - Lynn Dell
-    list:
-        - 85ce4ad29b369ff1e74ce9c8b6bac8b0
-        - dd125532e08022f370944812fadcb57e
+    list: []

@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Document\Content;
+use AppBundle\Document\Lists;
 use AppBundle\Exception\RestException;
 use AppBundle\Rest\RestBaseRequest;
 use AppBundle\Rest\RestContentRequest;
@@ -405,6 +406,18 @@ final class RestController extends Controller
         return $this->relay($rlr);
     }
 
+    /**
+     * @ApiDoc(
+     *     description="Fetches list entries.",
+     *     section="List",
+     *     requirements={},
+     *     output={
+     *         "class": "AppBundle\IO\ListOutput"
+     *     }
+     * )
+     * @Route("/list/fetch")
+     * @Method({"GET"})
+     */
     public function listFetchAction(Request $request)
     {
         $this->lastMethod = $request->getMethod();
@@ -425,12 +438,23 @@ final class RestController extends Controller
 
         if (!$restListsRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        } elseif (!empty($fields['query'])) {
+        } else {
             unset($fields['key']);
 
+            /** @var Lists[] $suggestions */
             $suggestions = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
 
-
+            foreach ($suggestions as $suggestion) {
+                $this->lastItems[] = [
+                    'agency' => $suggestion->getAgency(),
+                    'key' => $suggestion->getKey(),
+                    'name' => $suggestion->getName(),
+                    'nids' => $suggestion->getNids(),
+                    'type' => $suggestion->getType(),
+                    'promoted' => $suggestion->getPromoted(),
+                    'weight' => $suggestion->getWeight(),
+                ];
+            }
 
             $this->lastStatus = true;
         }

@@ -7,6 +7,11 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
 class RestListsRequest extends RestBaseRequest
 {
+    /**
+     * RestListsRequest constructor.
+     *
+     * @param MongoEM $em
+     */
     public function __construct(MongoEM $em)
     {
         parent::__construct($em);
@@ -19,6 +24,9 @@ class RestListsRequest extends RestBaseRequest
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function exists($id, $agency)
     {
         $entity = $this->get($id, $agency);
@@ -26,6 +34,9 @@ class RestListsRequest extends RestBaseRequest
         return !is_null($entity);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function get($id, $agency)
     {
         $criteria = [
@@ -40,6 +51,9 @@ class RestListsRequest extends RestBaseRequest
         return $entity;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function insert()
     {
         $entity = $this->prepare(new Lists());
@@ -51,6 +65,9 @@ class RestListsRequest extends RestBaseRequest
         return $entity;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function update($id, $agency)
     {
         $loadedEntity = $this->get($id, $agency);
@@ -62,6 +79,9 @@ class RestListsRequest extends RestBaseRequest
         return $updatedEntity;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function delete($id, $agency)
     {
         $entity = $this->get($id, $agency);
@@ -73,6 +93,11 @@ class RestListsRequest extends RestBaseRequest
         return $entity;
     }
 
+    /**
+     * @param Lists $list
+     *
+     * @return Lists
+     */
     public function prepare(Lists $list)
     {
         $body = $this->getParsedBody();
@@ -104,6 +129,13 @@ class RestListsRequest extends RestBaseRequest
         return $list;
     }
 
+    /**
+     * @param $agency
+     * @param int $amount
+     * @param int $skip
+     *
+     * @return Lists[]
+     */
     public function fetchLists($agency, $amount = 10, $skip = 0)
     {
         $qb = $this->em

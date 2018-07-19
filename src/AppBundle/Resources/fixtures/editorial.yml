@@ -47,25 +47,7 @@
         field_category:
             name: Category
             terms: []
-    list:
-        - c80b8b724ca21b106f772cf8dfb71e00
-        - 92bc950740e1f350308daf44f04141ea
-        - 8c7c63905a7c6a3de4fd3915ddc91d44
-        - b4407d0a0298ce5b2f9e15b190227619
-        - adb99be96aafd2ca66af128d93d9df4f
-        - f158b793ae02e35d1e25dd1e63525fa6
-        - e0db15ad82e46be1c594b55d7ddfa8c1
-        - e5b9a55d046e254a320b7ac7add88278
-        - e42af059304dc1b5d97865a4c666e072
-        - 764d187ae517fdf574c0d0df52a58743
-        - 74c14776e804ea7b412e3adc039ea0d8
-        - 361e38ed40cbd1d3f2eebcfa0ae9eb44
-        - 656f5a9bf0c07a280d217bee9fddc420
-        - 308dba2ea33a8db533292d6045f85393
-        - 281f570d113abda5d94b715e10984e2b
-        - 407667cb878d2badb867c6c54d7a2588
-        - 7d4433e74ca4467f5cc83c1ace100ec4
-        - 0ed23fbd2e097307f3f561d862251777
+    list: []
 -
     nid: 2001
     agency: '999999'
@@ -123,8 +105,7 @@
                 - mode
                 - modehuse
                 - haute couture
-    list:
-        - e7b0cfeef635a87bb0013fac223de05c
+    list: []
 -
     nid: 2002
     agency: '999999'
@@ -176,8 +157,7 @@
         field_category:
             name: Category
             terms: []
-    list:
-        - 53447354ff96d45cf56ed1c520f6d6fe
+    list: []
 -
     nid: 2003
     agency: '999999'
