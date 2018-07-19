@@ -230,7 +230,7 @@ final class RestController extends Controller
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
 
             if (in_array($field, ['query', 'field'])) {
-                $fields[$field] = (array)$fields[$field];
+                $fields[$field] = array_filter((array)$fields[$field]);
             }
         }
 
@@ -239,7 +239,7 @@ final class RestController extends Controller
 
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        } elseif (!empty($fields['query'])) {
+        } elseif (!empty($fields['query']) && !empty($fields['field'])) {
             unset($fields['key']);
 
             try {

@@ -78,18 +78,6 @@ abstract class AbstractBaseTest extends WebTestCase
     }
 
     /**
-     * Asserts an ISO-8601 date string.
-     *
-     * @param string $date Input date.
-     */
-    public function assertIsoDate($date)
-    {
-        $nodeChangedDateValue = strtotime($date);
-        $this->assertInternalType('int', $nodeChangedDateValue);
-        $this->assertEquals(gmdate('c', $nodeChangedDateValue), $date);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function setUp()

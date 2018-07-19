@@ -11,16 +11,34 @@ class ContentSearchTest extends AbstractFixtureAwareTest
 {
     use AssertResponseStructureTrait;
 
-    const AGENCY = '999999';
     const URI = '/content/search';
+
+    /**
+     * Fetch with wrong key.
+     */
+    public function testSearchWithWrongKey()
+    {
+        $parameters = [
+            'agency' => SELF::AGENCY,
+            'key' => SELF::KEY.'-wrong',
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+        $this->assertFalse($result['status']);
+        $this->assertEmpty($result['items']);
+        $this->assertEquals($result['message'], 'Failed validating request. Check your credentials (agency & key).');
+    }
 
     /**
      * Search without all parameters.
      */
-    public function testMissingParameters()
+    public function testSearchWithMissingParameters()
     {
         $parameters = [
             'agency' => self::AGENCY,
+            'key' => self::KEY,
             'field' => '',
             'query' => '',
         ];
@@ -39,10 +57,13 @@ class ContentSearchTest extends AbstractFixtureAwareTest
      */
     public function testTypeSearch()
     {
+        $type = 'os';
+        $field = 'type';
         $parameters = [
             'agency' => self::AGENCY,
-            'field' => 'type',
-            'query' => 'ding_news',
+            'key' => self::KEY,
+            'field' => [$field],
+            'query' => [$type],
         ];
 
         /** @var Response $response */
@@ -51,10 +72,23 @@ class ContentSearchTest extends AbstractFixtureAwareTest
         $result = $this->assertResponse($response);
 
         $this->assertTrue($result['status']);
+        $this->assertCount(10, $result['items']);
+
+        // Collect result node id's and check every item for type equality within one api request.
+        $ids = array_map(function ($v) {
+            return $v['nid'];
+        }, $result['items']);
+
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'node' => implode(',', $ids),
+        ];
+        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $result = $this->assertResponse($response);
 
         foreach ($result['items'] as $item) {
-            $this->assertItemStructure($item);
-            $this->assertEquals($parameters['query'], $item[$parameters['field']]);
+            $this->assertEquals($type, $item[$field]);
         }
     }
 
@@ -63,10 +97,13 @@ class ContentSearchTest extends AbstractFixtureAwareTest
      */
     public function testPartialSearch()
     {
+        $field = 'type';
+        $query = 'edito';   // Stands for 'editorial'.
         $parameters = [
             'agency' => self::AGENCY,
-            'field' => 'type',
-            'query' => 'ding_',
+            'key' => self::KEY,
+            'field' => [$field],
+            'query' => [$query],
         ];
 
         /** @var Response $response */
@@ -76,10 +113,24 @@ class ContentSearchTest extends AbstractFixtureAwareTest
 
         $this->assertTrue($result['status']);
 
-        foreach ($result['items'] as $item) {
-            $this->assertItemStructure($item);
+        // Collect result node id's and check every item for type value to contain
+        // 'edito' substring in their type string. This would match 'editorial' node types.
+        $ids = array_map(function ($v) {
+            return $v['nid'];
+        }, $result['items']);
 
-            $position = strpos($item['type'], $parameters['query']);
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'node' => implode(',', $ids),
+        ];
+        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $result = $this->assertResponse($response);
+
+        $this->assertCount(10, $result['items']);
+
+        foreach ($result['items'] as $item) {
+            $position = strpos($item['type'], $query);
             $this->assertGreaterThanOrEqual(0, $position);
             $this->assertNotFalse($position);
         }
@@ -92,8 +143,9 @@ class ContentSearchTest extends AbstractFixtureAwareTest
     {
         $parameters = [
             'agency' => self::AGENCY,
-            'field' => 'fields.title.value',
-            'query' => '^[a-z]',
+            'key' => self::KEY,
+            'field' => ['fields.title.value'],
+            'query' => ['^[a-z]'],
         ];
 
         /** @var Response $response */
@@ -105,7 +157,7 @@ class ContentSearchTest extends AbstractFixtureAwareTest
 
         foreach ($result['items'] as $item) {
             $this->assertItemStructure($item);
-            $this->assertEquals(1, preg_match('/'.$parameters['query'].'/i', $item['title']));
+            $this->assertEquals(1, preg_match('/'.$parameters['query'][0].'/i', $item['title']));
         }
     }
 
@@ -117,10 +169,10 @@ class ContentSearchTest extends AbstractFixtureAwareTest
         $amount = 3;
         $parameters = [
             'agency' => self::AGENCY,
-            'field' => 'type',
-            'query' => 'ding_',
+            'key' => self::KEY,
+            'field' => ['type'],
+            'query' => ['os'],
             'amount' => $amount,
-            'status' => RestContentRequest::STATUS_ALL,
         ];
 
         /** @var Response $response */
@@ -129,8 +181,11 @@ class ContentSearchTest extends AbstractFixtureAwareTest
         $result = $this->assertResponse($response);
 
         $this->assertResponseStructure($result);
-        $this->assertTrue($result['status']);
         $this->assertCount($amount, $result['items']);
+
+        foreach ($result['items'] as $item) {
+            $this->assertItemStructure($item);
+        }
     }
 
     /**
@@ -142,11 +197,11 @@ class ContentSearchTest extends AbstractFixtureAwareTest
         $skip = 0;
         $parameters = [
             'agency' => self::AGENCY,
-            'field' => 'type',
-            'query' => 'ding_',
+            'key' => self::KEY,
+            'field' => ['type'],
+            'query' => ['editorial|os'],    // This would query items of both 'editorial' and 'os' types.
             'amount' => $amount,
             'skip' => $skip,
-            'status' => RestContentRequest::STATUS_ALL,
         ];
 
         $results = [];
@@ -164,6 +219,7 @@ class ContentSearchTest extends AbstractFixtureAwareTest
             $this->assertLessThanOrEqual($amount, count($result['items']));
 
             foreach ($result['items'] as $item) {
+                $this->assertItemStructure($item);
                 // Node id's normally should not repeat for same agency.
                 $this->assertNotContains($item['nid'], $results);
                 $results[] = $item['nid'];
@@ -173,112 +229,44 @@ class ContentSearchTest extends AbstractFixtureAwareTest
             $parameters['skip'] = $skip;
         }
 
-        $this->assertCount(7, $results);
+        $this->assertCount(22, $results);
         // Expect zero, since we reached end of the list.
-        $this->assertEquals(0, count($result['items']));
+        $this->assertCount(0, $result['items']);
     }
 
     /**
-     * Fetches nodes filtered by status.
+     * Fetch search results filtered by taxonomy term.
      */
-    public function testStatusFilterSearch()
+    public function testTaxonomySearch()
     {
-        // Fetch published nodes.
+        $query = 'Spillefilm';
         $parameters = [
             'agency' => self::AGENCY,
-            'field' => 'type',
-            'query' => 'ding_',
-            'status' => RestContentRequest::STATUS_PUBLISHED,
+            'key' => self::KEY,
+            'query' => [$query],
+            'field' => ['taxonomy.field_category.terms'],
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
-        $this->assertNotEmpty($result['items']);
-        foreach ($result['items'] as $item) {
-            $this->assertEquals($parameters['status'], $item['status']);
-        }
-        $publishedCount = count($result['items']);
+        // Collect result node id's, fetch these within one call
+        // and check every item for term existence.
+        $ids = array_map(function ($v) {
+            return $v['nid'];
+        }, $result['items']);
 
-        // Fetch unpublished nodes.
-        $parameters['status'] = RestContentRequest::STATUS_UNPUBLISHED;
-
-        /** @var Response $response */
-        $response = $this->request(self::URI, $parameters, 'GET');
-
-        $result = $this->assertResponse($response);
-
-        $this->assertNotEmpty($result['items']);
-        foreach ($result['items'] as $item) {
-            $this->assertEquals($parameters['status'], $item['status']);
-        }
-        $unpublishedCount = count($result['items']);
-
-        // Fetch all nodes.
-        $parameters['status'] = RestContentRequest::STATUS_ALL;
-
-        /** @var Response $response */
-        $response = $this->request(self::URI, $parameters, 'GET');
-
-        $result = $this->assertResponse($response);
-
-        $this->assertNotEmpty($result['items']);
-        $allCount = count($result['items']);
-
-        // Assume that a sum of published and unpublished nodes is the correct
-        // number of nodes that exist.
-        $this->assertEquals($allCount, $unpublishedCount + $publishedCount);
-    }
-
-    /**
-     * Fetches upcoming events.
-     */
-    public function testUpcomingEventsSearch()
-    {
         $parameters = [
             'agency' => self::AGENCY,
-            'field' => 'type',
-            'query' => 'ding_event',
-            'upcoming' => 1,
-            'status' => RestContentRequest::STATUS_ALL,
+            'key' => self::KEY,
+            'node' => implode(',', $ids),
         ];
-
-        /** @var Response $response */
-        $response = $this->request(self::URI, $parameters, 'GET');
-
+        $response = $this->request('/content/fetch', $parameters, 'GET');
         $result = $this->assertResponse($response);
 
-        $this->assertNotEmpty($result['items']);
-
         foreach ($result['items'] as $item) {
-            $event_unixtime = strtotime($item['event_date']['from']);
-            $this->assertNotEquals(-1, $event_unixtime);
-            $this->assertGreaterThan(time(), $event_unixtime);
-        }
-    }
-
-    /**
-     * Fetches default set of published content.
-     */
-    public function testDefaultStatusSearch()
-    {
-        $parameters = [
-            'agency' => self::AGENCY,
-            'field' => 'type',
-            'query' => 'ding_news',
-        ];
-
-        /** @var Response $response */
-        $response = $this->request(self::URI, $parameters, 'GET');
-
-        $result = $this->assertResponse($response);
-
-        $this->assertNotEmpty($result['items']);
-
-        foreach ($result['items'] as $item) {
-            $this->assertEquals(RestContentRequest::STATUS_PUBLISHED, $item['status']);
+            $this->assertContains($query, $item['taxonomy']['field_category']['terms']);
         }
     }
 
@@ -293,20 +281,6 @@ class ContentSearchTest extends AbstractFixtureAwareTest
         $this->assertArrayHasKey('nid', $item);
         $this->assertArrayHasKey('title', $item);
         $this->assertArrayHasKey('changed', $item);
-        $this->assertArrayHasKey('type', $item);
-        // Attempt to parse a meaningful date format, also it has to be in ISO-8601 format.
-        $this->assertIsoDate($item['changed']);
-
-        // Events have date in response.
-        if ('ding_event' == $item['type']) {
-            $this->assertArrayHasKey('event_date', $item);
-            $this->assertArrayHasKey('from', $item['event_date']);
-            $this->assertIsoDate($item['event_date']['from']);
-            $this->assertArrayHasKey('to', $item['event_date']);
-            $this->assertIsoDate($item['event_date']['to']);
-            $this->assertArrayHasKey('all_day', $item['event_date']);
-            $this->assertInternalType('boolean', $item['event_date']['all_day']);
-        }
     }
 
     /**

@@ -17,8 +17,8 @@ class ListsFetchTest extends AbstractFixtureAwareTest
     public function testFetchWithWrongKey()
     {
         $parameters = [
-            'agency' => SELF::AGENCY,
-            'key' => SELF::KEY.'-wrong',
+            'agency' => self::AGENCY,
+            'key' => self::KEY.'-wrong',
         ];
 
         $response = $this->request(self::URI, $parameters, 'GET');
@@ -35,8 +35,8 @@ class ListsFetchTest extends AbstractFixtureAwareTest
     public function testFetchDefault()
     {
         $parameters = [
-            'agency' => SELF::AGENCY,
-            'key' => SELF::KEY,
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
         ];
 
         $response = $this->request(self::URI, $parameters, 'GET');
@@ -59,8 +59,8 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         $skip = 0;
         $amount = 2;
         $parameters = [
-            'agency' => SELF::AGENCY,
-            'key' => SELF::KEY,
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
             'amount' => $amount,
             'skip' => $skip,
         ];

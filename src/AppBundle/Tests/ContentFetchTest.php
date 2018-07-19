@@ -75,6 +75,34 @@ class ContentFetchTest extends AbstractFixtureAwareTest
     }
 
     /**
+     * Fetch by multiple nid's.
+     */
+    public function testFetchByMultipleNid()
+    {
+        $nids = array_merge(
+            range(mt_rand(1000, 1005), mt_rand(1006, 1010)),    // os nodes
+            range(mt_rand(2000, 2005), mt_rand(2006, 2010))     // editorial nodes
+        );
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'node' => implode(',', $nids),
+        ];
+
+        /** @var Response $response */
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        foreach ($result['items'] as $item) {
+            $this->assertContains($item['nid'], $nids);
+            $this->assertEquals(self::AGENCY, $item['agency']);
+        }
+
+    }
+
+    /**
      * Fetch by type.
      */
     public function testFetchByType()
