@@ -271,6 +271,48 @@ class ContentSearchTest extends AbstractFixtureAwareTest
     }
 
     /**
+     * Fetch search result matching complex criteria.
+     */
+    public function testComplexSearch()
+    {
+        $query = ['os', 'Hjemmefra'];
+        $field = ['type', 'taxonomy.field_realm.terms'];
+        $amount = 2;
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'query' => $query,
+            'field' => $field,
+            'amount' => $amount,
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+        $this->assertNotEmpty($result['items']);
+        $this->assertCount($amount, $result['items']);
+
+        // Collect result node id's, fetch these within one call
+        // and check every item for previous criteria search match.
+        $ids = array_map(function ($v) {
+            return $v['nid'];
+        }, $result['items']);
+
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'node' => implode(',', $ids),
+        ];
+        $response = $this->request('/content/fetch', $parameters, 'GET');
+        $result = $this->assertResponse($response);
+
+        foreach ($result['items'] as $item) {
+            $this->assertContains($query[0], $item[$field[0]]);
+            $this->assertContains($query[1], $item['taxonomy']['field_realm']['terms']);
+        }
+    }
+
+    /**
      * Asserts item structure in the response.
      *
      * @param array $item One item from the result set.
