@@ -10,18 +10,17 @@ class VocabulariesTest extends AbstractFixtureAwareTest
 {
     use AssertResponseStructureTrait;
 
-    const AGENCY = '999999';
-
     const URI = '/taxonomy/vocabularies';
 
     /**
      * Fetch term suggestions with missing agency.
      */
-    public function testMissingAgency()
+    public function testFetchWithMissingAgency()
     {
         $parameters = [
             'agency' => '',
-            'content_type' => 'ding_event',
+            'key' => self::KEY,
+            'content_type' => 'os',
         ];
 
         $uri = implode(
@@ -35,11 +34,7 @@ class VocabulariesTest extends AbstractFixtureAwareTest
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
 
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $result = json_decode($response->getContent(), true);
-
-        $this->assertResponseStructure($result);
+        $result = $this->assertResponse($response);
         $this->assertFalse($result['status']);
         $this->assertEmpty($result['items']);
     }
@@ -47,11 +42,12 @@ class VocabulariesTest extends AbstractFixtureAwareTest
     /**
      * Fetches vocabularies for a certain content type.
      */
-    public function testVocabularies()
+    public function testFetchVocabularies()
     {
         $parameters = [
             'agency' => self::AGENCY,
-            'content_type' => 'ding_event',
+            'key' => self::KEY,
+            'content_type' => 'os',
         ];
 
         $uri = implode(
@@ -65,43 +61,25 @@ class VocabulariesTest extends AbstractFixtureAwareTest
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
 
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $result = json_decode($response->getContent(), true);
-
-        $this->assertResponseStructure($result);
-        $this->assertCount(1, $result['items']);
-        $this->assertArrayHasKey('field_ding_event_category', $result['items']);
-        $this->assertNotEmpty($result['items']['field_ding_event_category']);
-    }
-
-    /**
-     * Fetches empty set of vocabularies.
-     */
-    public function testEmptyVocabularies()
-    {
-        $parameters = [
-            'agency' => self::AGENCY,
-            'content_type' => 'ding_library',
+        $result = $this->assertResponse($response);
+        $vocabularies = [
+            'field_category',
+            'field_realm',
+            'field_country',
+            'field_production',
+            'field_genre',
+            'field_language',
+            'field_subject',
+            'field_subtitles',
+            'act',
+            'aus',
+            'cng',
+            'drt',
+            'ant',
+            'cre',
         ];
-
-        $uri = implode(
-            '/',
-            [
-                self::URI,
-                $parameters['content_type'],
-            ]
-        );
-
-        /** @var Response $response */
-        $response = $this->request($uri, $parameters, 'GET');
-
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $result = json_decode($response->getContent(), true);
-
-        $this->assertResponseStructure($result);
-        $this->assertEmpty($result['items']);
+        $this->assertCount(count($vocabularies), $result['items']);
+        $this->assertArraySubset($vocabularies, array_keys($result['items']));
     }
 
     /**

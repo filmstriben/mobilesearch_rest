@@ -10,8 +10,6 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
 {
     use AssertResponseStructureTrait;
 
-    const AGENCY = '999999';
-
     const URI = '/taxonomy/terms';
 
     /**
@@ -21,9 +19,10 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
     {
         $parameters = [
             'agency' => '',
-            'vocabulary' => 'field_ding_event_category',
-            'content_type' => 'ding_event',
-            'query' => 'Alpha',
+            'key' => self::KEY,
+            'vocabulary' => 'field_realm',
+            'content_type' => 'os',
+            'query' => 'Hjemmefra',
         ];
 
         $uri = implode(
@@ -39,11 +38,8 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
 
-        $this->assertEquals(200, $response->getStatusCode());
+        $result = $this->assertResponse($response);
 
-        $result = json_decode($response->getContent(), true);
-
-        $this->assertResponseStructure($result);
         $this->assertFalse($result['status']);
         $this->assertEmpty($result['items']);
     }
@@ -55,24 +51,10 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
     {
         $parameters = [
             'agency' => self::AGENCY,
-            'vocabulary' => 'field_ding_event_category',
-            'content_type' => 'ding_event',
-            'query' => 'Alpha',
-        ];
-
-        $this->assertTermExistence($parameters);
-    }
-
-    /**
-     * Fetches deeply nested term suggestions.
-     */
-    public function testNestedTermExistence()
-    {
-        $parameters = [
-            'agency' => self::AGENCY,
-            'vocabulary' => 'field_ding_event_category',
-            'content_type' => 'ding_event',
-            'query' => 'Theta',
+            'key' => self::KEY,
+            'vocabulary' => 'field_genre',
+            'content_type' => 'os',
+            'query' => 'drama',
         ];
 
         $this->assertTermExistence($parameters);
@@ -85,9 +67,10 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
     {
         $parameters = [
             'agency' => self::AGENCY,
-            'vocabulary' => 'field_ding_event_category',
-            'content_type' => 'ding_event',
-            'query' => 'a',
+            'key' => self::KEY,
+            'vocabulary' => 'drt',
+            'content_type' => 'os',
+            'query' => 'Ronnie',
         ];
 
         $uri = implode(
@@ -103,14 +86,9 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
 
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $result = json_decode($response->getContent(), true);
-
-        $this->assertResponseStructure($result);
+        $result = $this->assertResponse($response);
 
         $terms = $result['items'];
-
         $this->assertNotEmpty($terms);
 
         foreach ($terms as $term) {
@@ -138,11 +116,7 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
 
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $result = json_decode($response->getContent(), true);
-
-        $this->assertResponseStructure($result);
+        $result = $this->assertResponse($response);
 
         $terms = $result['items'];
         $this->assertCount(1, $terms);
