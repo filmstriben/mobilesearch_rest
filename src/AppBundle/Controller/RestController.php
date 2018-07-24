@@ -132,14 +132,78 @@ final class RestController extends Controller
     }
 
     /**
+     * 'node' parameter, when specified, ignores any other parameters.<br />
+     * 'status' parameter legend: '-1' - all content, '0' - not published, '1' - published.<br />
+     * 'order' parameter legend: 'ASC' - ascending, 'DESC' - descending.
+     *
      * @ApiDoc(
      *     description="Fetches content entries.",
      *     section="Content",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="node",
+     *             "dataType"="integer",
+     *             "description"="Fetch content by id (nid). Comma separated list of id's are supported.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="amount",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to fetch. Defaults to 10.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="skip",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to skip. Defaults to 0.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="sort",
+     *             "dataType"="string",
+     *             "description"="Specifies by which field the result is sorted. Defaults to 'fields.title.value'.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="order",
+     *             "dataType"="string",
+     *             "description"="Specifies the sort order. Defaults to ascending.",
+     *             "required"=false,
+     *             "format"="ASC|DESC"
+     *         },
+     *         {
+     *             "name"="type",
+     *             "dataType"="string",
+     *             "description"="Filters the entities by the value stored in 'type' field.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="status",
+     *             "dataType"="integer",
+     *             "description"="Filters the entities by the value stored in 'fields.status.value' field. Defaults to -1.",
+     *             "required"=false,
+     *             "format"="-1|0|1"
+     *         }
+     *     },
      *     output={
-     *         "class": "AppBundle\IO\Output"
+     *         "class": "AppBundle\IO\ContentOutput"
      *     }
      * )
+     *
+     *
+     *
      * @Route("/content/fetch")
      * @Method({"GET"})
      */
@@ -194,12 +258,58 @@ final class RestController extends Controller
     }
 
     /**
+     * 'query' parameter can accept regular expressions, case insensitive, when searching within any content fields, unless
+     * the search is made within the 'taxonomy', where a direct match is performed.<br />
+     * 'query' and 'field' parameters must always match in count.<br />
+     * There might multiple pairs of 'query' and 'field' parameters. Multiple pairs of search conditions are
+     * treated as a logical AND.<br />
+     * To use multiple conditions, add square brackets after the parameter in the query string.<br />
+     * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra&field[]=taxonomy.field_realm.terms</pre>
+     * This would match content with having 'editorial' value as 'type' and 'taxonomy.field_realm.terms' containing 'Hjemmefra' term.
+     *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
      *     section="Content",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="query",
+     *             "dataType"="string",
+     *             "description"="Search query.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="field",
+     *             "dataType"="string",
+     *             "description"="Content entity field to search in.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="amount",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to fetch. Defaults to 10.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="skip",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to skip. Defaults to 0.",
+     *             "required"=false
+     *         },
+     *     },
      *     output={
-     *         "class": "AppBundle\IO\Output"
+     *         "class": "AppBundle\IO\ContentOutput"
      *     }
      * )
      * @Route("/content/search")
@@ -480,7 +590,32 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Fetches list entries.",
      *     section="List",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="amount",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to fetch. Defaults to 10.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="skip",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to skip. Defaults to 0.",
+     *             "required"=false
+     *         }
+     *     },
      *     output={
      *         "class": "AppBundle\IO\ListOutput"
      *     }
@@ -537,6 +672,8 @@ final class RestController extends Controller
     }
 
     /**
+     * Replaced by '/taxonomy/vocabularies' route.
+     *
      * @ApiDoc(
      *     description="Fetches vocabularies for a certain content type.",
      *     section="Taxonomy",
@@ -599,6 +736,8 @@ final class RestController extends Controller
     }
 
     /**
+     * 'contentType' - content entity type identifier, value in 'type' field of the content entity.<br />
+     *
      * @ApiDoc(
      *     description="Fetches term suggestions matching the query.",
      *     section="Taxonomy",
@@ -642,6 +781,8 @@ final class RestController extends Controller
     }
 
     /**
+     * Replaced by '/taxonomy/terms' route.
+     *
      * @ApiDoc(
      *     description="Fetches term suggestions matching the query.",
      *     section="Taxonomy",
@@ -716,6 +857,11 @@ final class RestController extends Controller
     }
 
     /**
+     * 'vocabulary' - name of the vocabulary under the 'taxonomy' key in content entity.
+     * To fetch all available vocabularies for a certain content entity type, see '/taxonomy/vocabularies' route.<br />
+     * 'contentType' - content entity type identifier, value in 'type' field of the content entity.<br />
+     * 'query' - search string, accepts regular expressions, case insensitive.
+     *
      * @ApiDoc(
      *     description="Fetches term suggestions matching the query.",
      *     section="Taxonomy",
@@ -773,13 +919,16 @@ final class RestController extends Controller
     }
 
     /**
+     * Replaced by '/content/search' route.
+     *
      * @ApiDoc(
      *     description="Fetches content entries containing certain vocabulary terms.",
      *     section="Content",
      *     requirements={},
      *     output={
-     *         "class": "AppBundle\IO\Output"
-     *     }
+     *         "class": "AppBundle\IO\ContentOutput"
+     *     },
+     *     deprecated=true
      * )
      * @Route("/content/related")
      * @Method({"GET"})

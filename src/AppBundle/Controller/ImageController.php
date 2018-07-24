@@ -29,6 +29,8 @@ class ImageController extends Controller
     ];
 
     /**
+     * Replaced by '/files/{agency}/{filename}' route.
+     *
      * @ApiDoc(
      *     description="Fetches an, optionally re-sized, image.",
      *     section="Images",
@@ -90,6 +92,8 @@ class ImageController extends Controller
     }
 
     /**
+     * resize parameter, when omitted, will default to original image size.
+     *
      * @ApiDoc(
      *     description="Fetches image and, optionally, re-sizes it.",
      *     section="Images",
