@@ -675,7 +675,7 @@ final class RestController extends Controller
      * Replaced by '/taxonomy/vocabularies' route.
      *
      * @ApiDoc(
-     *     description="Fetches vocabularies for a certain content type.",
+     *     description="Fetches vocabularies for a certain content entity type.",
      *     section="Taxonomy",
      *     requirements={
      *         {
@@ -739,7 +739,7 @@ final class RestController extends Controller
      * 'contentType' - content entity type identifier, value in 'type' field of the content entity.<br />
      *
      * @ApiDoc(
-     *     description="Fetches term suggestions matching the query.",
+     *     description="Fetches vocabularies for a certain content entity type.",
      *     section="Taxonomy",
      *     requirements={
      *         {
@@ -785,7 +785,7 @@ final class RestController extends Controller
      * Replaced by '/taxonomy/terms' route.
      *
      * @ApiDoc(
-     *     description="Fetches term suggestions matching the query.",
+     *     description="Fetches term suggestions matching a search string.",
      *     section="Taxonomy",
      *     requirements={
      *         {
@@ -864,7 +864,7 @@ final class RestController extends Controller
      * 'query' - search string, accepts regular expressions, case insensitive.
      *
      * @ApiDoc(
-     *     description="Fetches term suggestions matching the query.",
+     *     description="Fetches term suggestions matching a search string.",
      *     section="Taxonomy",
      *     requirements={
      *         {
