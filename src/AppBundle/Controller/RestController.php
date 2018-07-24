@@ -768,7 +768,8 @@ final class RestController extends Controller
      * @Route("/taxonomy/vocabularies")
      * @Method({"GET"})
      */
-    public function taxonomyNewAction(Request $request) {
+    public function taxonomyNewAction(Request $request)
+    {
         $response = $this->forward(
             'AppBundle:Rest:taxonomy',
             [
@@ -904,7 +905,8 @@ final class RestController extends Controller
      * @Route("/taxonomy/terms")
      * @Method({"GET"})
      */
-    public function taxonomySearchNewAction(Request $request) {
+    public function taxonomySearchNewAction(Request $request)
+    {
         $response = $this->forward(
             'AppBundle:Rest:taxonomySearch',
             [

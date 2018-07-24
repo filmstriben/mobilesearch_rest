@@ -99,7 +99,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $this->assertContains($item['nid'], $nids);
             $this->assertEquals(self::AGENCY, $item['agency']);
         }
-
     }
 
     /**
