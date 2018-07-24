@@ -29,24 +29,22 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Persists an entry of content.",
      *     section="Content",
-     *     parameters={
+     *     requirements={
      *         {
      *             "name"="credentials",
      *             "dataType"="string",
      *             "description"="Request credentials.",
-     *             "required"=true,
      *             "format"="json"
      *         },
      *         {
      *             "name"="body",
      *             "dataType"="string",
      *             "description"="Request body.",
-     *             "required"=true,
      *             "format"="json"
      *         }
      *     },
      *     output={
-     *         "class": "AppBundle\IO\ContentOutput"
+     *         "class": "AppBundle\IO\Output"
      *     }
      * )
      * @Route("/content")
@@ -61,24 +59,22 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Updates an existing entry of content.",
      *     section="Content",
-     *     parameters={
+     *     requirements={
      *         {
      *             "name"="credentials",
-     *             "dataType"="string",
+     *             "dataType"="json",
      *             "description"="Request credentials.",
-     *             "required"=true,
      *             "format"="json"
      *         },
      *         {
      *             "name"="body",
-     *             "dataType"="string",
+     *             "dataType"="json",
      *             "description"="Request body.",
-     *             "required"=true,
      *             "format"="json"
      *         }
      *     },
      *     output={
-     *         "class": "AppBundle\IO\ContentOutput"
+     *         "class": "AppBundle\IO\Output"
      *     }
      * )
      * @Route("/content")
@@ -93,24 +89,20 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Deletes an entry of content.",
      *     section="Content",
-     *     parameters={
+     *     requirements={
      *         {
      *             "name"="credentials",
-     *             "dataType"="string",
-     *             "description"="Request credentials.",
-     *             "required"=true,
-     *             "format"="json"
+     *             "dataType"="json",
+     *             "description"="Request credentials."
      *         },
      *         {
      *             "name"="body",
-     *             "dataType"="string",
-     *             "description"="Request body.",
-     *             "required"=true,
-     *             "format"="json"
+     *             "dataType"="json",
+     *             "description"="Request body."
      *         }
      *     },
      *     output={
-     *         "class": "AppBundle\IO\ContentOutput"
+     *         "class": "AppBundle\IO\Output"
      *     }
      * )
      * @Route("/content")
@@ -272,7 +264,20 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Persists a menu entry.",
      *     section="Menu",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "format"="json"
+     *         }
+     *     },
      *     output={
      *         "class": "AppBundle\IO\Output"
      *     }
@@ -289,7 +294,20 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Updates a menu entry.",
      *     section="Menu",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "format"="json"
+     *         }
+     *     },
      *     output={
      *         "class": "AppBundle\IO\Output"
      *     }
@@ -306,7 +324,20 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Deletes a menu entry.",
      *     section="Menu",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "format"="json"
+     *         }
+     *     },
      *     output={
      *         "class": "AppBundle\IO\Output"
      *     }
@@ -341,7 +372,20 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Persists a list entry.",
      *     section="List",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "format"="json"
+     *         }
+     *     },
      *     output={
      *         "class": "AppBundle\IO\Output"
      *     }
@@ -358,7 +402,20 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Updates a list entry.",
      *     section="List",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "format"="json"
+     *         }
+     *     },
      *     output={
      *         "class": "AppBundle\IO\Output"
      *     }
@@ -375,7 +432,20 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Deletes a list entry.",
      *     section="List",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="string",
+     *             "description"="Request credentials.",
+     *             "format"="json"
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="string",
+     *             "description"="Request body.",
+     *             "format"="json"
+     *         }
+     *     },
      *     output={
      *         "class": "AppBundle\IO\Output"
      *     }
@@ -468,12 +538,30 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *     description="Fetches vocabularies for a certain content entry type.",
+     *     description="Fetches vocabularies for a certain content type.",
      *     section="Taxonomy",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         },
+     *         {
+     *             "name"="contentType",
+     *             "dataType"="string",
+     *             "description"="Content type.",
+     *             "required"="true"
+     *         }
+     *     },
      *     output={
-     *         "class": "AppBundle\IO\Output"
-     *     }
+     *         "class": "AppBundle\IO\TaxonomyOutput"
+     *     },
+     *     deprecated="true",
      * )
      * @Route("/taxonomy/vocabularies/{contentType}")
      * @Method({"GET"})
@@ -514,9 +602,82 @@ final class RestController extends Controller
      * @ApiDoc(
      *     description="Fetches term suggestions matching the query.",
      *     section="Taxonomy",
-     *     requirements={},
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="contentType",
+     *             "dataType"="string",
+     *             "description"="Content type.",
+     *             "required"="true"
+     *         }
+     *     },
      *     output={
-     *         "class": "AppBundle\IO\Output"
+     *         "class": "AppBundle\IO\TaxonomyOutput"
+     *     }
+     * )
+     * @Route("/taxonomy/vocabularies")
+     * @Method({"GET"})
+     */
+    public function taxonomyNewAction(Request $request) {
+        $response = $this->forward(
+            'AppBundle:Rest:taxonomy',
+            [
+                'request' => $request,
+                'contentType' => $request->query->get('contentType'),
+            ]
+        );
+
+        return $response;
+    }
+
+    /**
+     * @ApiDoc(
+     *     description="Fetches term suggestions matching the query.",
+     *     section="Taxonomy",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         },
+     *         {
+     *             "name"="vocabulary",
+     *             "dataType"="string",
+     *             "description"="Vocabulary name.",
+     *             "required"="true"
+     *         },
+     *         {
+     *             "name"="contentType",
+     *             "dataType"="string",
+     *             "description"="Content type.",
+     *             "required"="true"
+     *         },
+     *         {
+     *             "name"="query",
+     *             "dataType"="string",
+     *             "description"="Search query.",
+     *             "required"="true"
+     *         },
+     *     },
+     *     deprecated="true",
+     *     output={
+     *         "class": "AppBundle\IO\TaxonomyTermOutput"
      *     }
      * )
      * @Route("/taxonomy/terms/{vocabulary}/{contentType}/{query}")
@@ -556,7 +717,64 @@ final class RestController extends Controller
 
     /**
      * @ApiDoc(
-     *     description="Fetches content entries related to certain vocabulary terms.",
+     *     description="Fetches term suggestions matching the query.",
+     *     section="Taxonomy",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="vocabulary",
+     *             "dataType"="string",
+     *             "description"="Vocabulary name.",
+     *             "required"="true"
+     *         },
+     *         {
+     *             "name"="contentType",
+     *             "dataType"="string",
+     *             "description"="Content type.",
+     *             "required"="true"
+     *         },
+     *         {
+     *             "name"="query",
+     *             "dataType"="string",
+     *             "description"="Search query.",
+     *             "required"="true"
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\TaxonomyTermOutput"
+     *     }
+     * )
+     * @Route("/taxonomy/terms")
+     * @Method({"GET"})
+     */
+    public function taxonomySearchNewAction(Request $request) {
+        $response = $this->forward(
+            'AppBundle:Rest:taxonomySearch',
+            [
+                'request' => $request,
+                'vocabulary' => $request->query->get('vocabulary'),
+                'contentType' => $request->query->get('contentType'),
+                'query' => $request->query->get('query'),
+            ]
+        );
+
+        return $response;
+    }
+
+    /**
+     * @ApiDoc(
+     *     description="Fetches content entries containing certain vocabulary terms.",
      *     section="Content",
      *     requirements={},
      *     output={

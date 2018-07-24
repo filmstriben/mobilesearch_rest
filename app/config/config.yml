@@ -94,6 +94,7 @@ doctrine_mongodb:
 nelmio_api_doc:
     name: "Filmstriben Mobilesearch API"
     sandbox:
+        enabled: false
         body_format:
             formats:
                 - "json"
@@ -104,3 +105,5 @@ nelmio_api_doc:
                 json: "application/json"
     cache:
         enabled: true
+    motd:
+        template: AppBundle::api/motd.html.twig

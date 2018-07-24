@@ -42,6 +42,16 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
 
         $this->assertFalse($result['status']);
         $this->assertEmpty($result['items']);
+
+        // Test new endpoint.
+        // TODO: Previous assertions to be removed after deprecated route is removed.
+        /** @var Response $response */
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertFalse($result['status']);
+        $this->assertEmpty($result['items']);
     }
 
     /**
@@ -53,7 +63,7 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'vocabulary' => 'field_genre',
-            'content_type' => 'os',
+            'contentType' => 'os',
             'query' => 'drama',
         ];
 
@@ -69,7 +79,7 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'vocabulary' => 'drt',
-            'content_type' => 'os',
+            'contentType' => 'os',
             'query' => 'Ronnie',
         ];
 
@@ -78,13 +88,27 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             [
                 self::URI,
                 $parameters['vocabulary'],
-                $parameters['content_type'],
+                $parameters['contentType'],
                 $parameters['query'],
             ]
         );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $terms = $result['items'];
+        $this->assertNotEmpty($terms);
+
+        foreach ($terms as $term) {
+            $this->assertContains($parameters['query'], $term, '', true);
+        }
+
+        // Test new endpoint.
+        // TODO: Previous assertions to be removed after deprecated route is removed.
+        /** @var Response $response */
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
@@ -108,13 +132,24 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             [
                 self::URI,
                 $parameters['vocabulary'],
-                $parameters['content_type'],
+                $parameters['contentType'],
                 $parameters['query'],
             ]
         );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $terms = $result['items'];
+        $this->assertCount(1, $terms);
+        $this->assertTrue($terms[0] === $parameters['query']);
+
+        // Test new endpoint.
+        // TODO: Previous assertions to be removed after deprecated route is removed.
+        /** @var Response $response */
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 

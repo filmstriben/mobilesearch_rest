@@ -30,9 +30,27 @@ class ImageController extends Controller
 
     /**
      * @ApiDoc(
-     *  description="Fetches an, optionally re-sized, image.",
-     *  section="Images",
-     *  requirements={}
+     *     description="Fetches an, optionally re-sized, image.",
+     *     section="Images",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="resize",
+     *             "dataType"="string",
+     *             "description"="Re-size image.",
+     *             "requirement"="{\d}+x{\d}+"
+     *         },
+     *         {
+     *             "name"="filename",
+     *             "dataType"="string",
+     *             "description"="File name."
+     *         }
+     *     },
+     *     deprecated="true"
      * )
      * @Route("/files/{agency}/{resize}/{filename}", defaults={"resize":"0x0"}, requirements={
      *      "resize":"\d{1,4}x\d{1,4}"
@@ -57,7 +75,7 @@ class ImageController extends Controller
             $resizedFilePath = $this->filesStorageDir.'/'.$agency.'/'.$resize.'/'.$filename;
 
             $fs = new Filesystem();
-            // Both when image exits or it's smaller/bigger counterpart
+            // Both when image exits or it's smaller/bigger counterpart1
             // was created - replace the filepath with the result image.
             if ($fs->exists($resizedFilePath)) {
                 $filePath = $resizedFilePath;
@@ -72,14 +90,54 @@ class ImageController extends Controller
     }
 
     /**
+     * @ApiDoc(
+     *     description="Fetches image and, optionally, re-sizes it.",
+     *     section="Images",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="filename",
+     *             "dataType"="string",
+     *             "description"="File name."
+     *         },
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="resize",
+     *             "dataType"="string",
+     *             "description"="Agency number.",
+     *             "required"=false,
+     *             "format"="{\d}+x{\d}+"
+     *         },
+     *     }
+     * )
+     * @Route("/files/{agency}/{filename}")
+     * @Method({"GET"})
+     */
+    public function imageNewAction(Request $request, $agency, $filename)
+    {
+        $response = $this->forward('AppBundle:Image:image', [
+            'request' => $request,
+            'agency' => $agency,
+            'filename' => $filename,
+            'resize' => $request->query->get('resize'),
+        ]);
+
+        return $response;
+    }
+
+    /**
      * Resizes and saves images.
      *
-     * @param string $source
-     *        Original image path.
-     * @param unknown $target
-     *        Target path for resized images.
-     * @param array $wantedDimensions
-     *        Desired width and height.
+     * @param string $source          Original image path.
+     * @param string $target          Target path for re-sized images.
+     * @param array $wantedDimensions Desired width and height.
+     *
+     * @return boolean
      */
     protected function resizeImage($source, $target, array $wantedDimensions)
     {
@@ -113,15 +171,13 @@ class ImageController extends Controller
      * If target ratio is different, the image is scaled to fit the smallest
      * side and cropped from the center of the image.
      *
-     * @param array $originalSize
-     *        Original image size (width and height).
-     * @param array $targetSize
-     *        Desired target size (width and height).
+     * @param array $originalSize Original image size (width and height).
+     * @param array $targetSize   Desired target size (width and height).
      *
-     * @return array A set of instructions needed to be applied to original image.
-     *         - resize: size of the image to crop from (Box object).
-     *         - crop: coordinates where to crop the image (Point object).
-     *         - final_size: Requested image size dimensions.
+     * @return array              A set of instructions needed to be applied to original image.
+     *                            - resize: size of the image to crop from (Box object).
+     *                            - crop: coordinates where to crop the image (Point object).
+     *                            - final_size: Requested image size dimensions.
      */
     protected function getResizeDimensions(array $originalSize, array $targetSize)
     {
@@ -179,8 +235,7 @@ class ImageController extends Controller
      * This serves status code 200 if OK, or 404 if the image is not found.
      * Adequate headers are passed as well.
      *
-     * @param string $path
-     *        Image path.
+     * @param string $path Image path.
      */
     protected function serveImage($path)
     {
@@ -202,14 +257,11 @@ class ImageController extends Controller
      * Check and optionally prepare the directory where resized images
      * are stored.
      *
-     * @param string $name
-     *        File name.
-     * @param string $agency
-     *        Agency id.
-     * @param boolean $create
-     *        Whether to create the directories.
+     * @param string $name    File name.
+     * @param string $agency  Agency id.
+     * @param boolean $create Whether to create the directories.
      *
-     * @return boolean TRUE if directory exists or created, FALSE otherwise.
+     * @return boolean
      */
     protected function checkThumbnailSubdir($name, $agency, $create = true)
     {
@@ -234,10 +286,9 @@ class ImageController extends Controller
      *
      * The parameter must be in form WIDTHxHEIGHT.
      *
-     * @param string $resizeParam
-     *        Query string resize parameter.
+     * @param string $resizeParam Query string resize parameter.
      *
-     * @return array Required width and height of the image.
+     * @return array              Required width and height of the image.
      */
     protected function getSizeFromParam($resizeParam)
     {

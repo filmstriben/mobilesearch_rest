@@ -4,7 +4,7 @@ namespace AppBundle\IO;
 
 use JMS\Serializer\Annotation as JMS;
 
-class Output
+class TaxonomyTermOutput
 {
     /**
      * Response status.
@@ -23,10 +23,10 @@ class Output
     private $message;
 
     /**
-     * NOT USED.
+     * A set of response items, if any.
      *
      * @var array
-     * @JMS\Type("array")
+     * @JMS\Type("array<string>")
      */
     private $items;
 }

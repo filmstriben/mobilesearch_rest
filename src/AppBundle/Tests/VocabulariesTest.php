@@ -20,19 +20,28 @@ class VocabulariesTest extends AbstractFixtureAwareTest
         $parameters = [
             'agency' => '',
             'key' => self::KEY,
-            'content_type' => 'os',
+            'contentType' => 'os',
         ];
 
         $uri = implode(
             '/',
             [
                 self::URI,
-                $parameters['content_type'],
+                $parameters['contentType'],
             ]
         );
 
         /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+        $this->assertFalse($result['status']);
+        $this->assertEmpty($result['items']);
+
+        // Test new endpoint.
+        // TODO: Previous assertions to be removed after deprecated route is removed.
+        /** @var Response $response */
+        $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
         $this->assertFalse($result['status']);
@@ -47,21 +56,17 @@ class VocabulariesTest extends AbstractFixtureAwareTest
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
-            'content_type' => 'os',
+            'contentType' => 'os',
         ];
 
         $uri = implode(
             '/',
             [
                 self::URI,
-                $parameters['content_type'],
+                $parameters['contentType'],
             ]
         );
 
-        /** @var Response $response */
-        $response = $this->request($uri, $parameters, 'GET');
-
-        $result = $this->assertResponse($response);
         $vocabularies = [
             'field_category',
             'field_realm',
@@ -78,6 +83,22 @@ class VocabulariesTest extends AbstractFixtureAwareTest
             'ant',
             'cre',
         ];
+
+        /** @var Response $response */
+        $response = $this->request($uri, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertCount(count($vocabularies), $result['items']);
+        $this->assertArraySubset($vocabularies, array_keys($result['items']));
+
+        // Test new endpoint.
+        // TODO: Previous assertions to be removed after deprecated route is removed.
+        /** @var Response $response */
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
         $this->assertCount(count($vocabularies), $result['items']);
         $this->assertArraySubset($vocabularies, array_keys($result['items']));
     }
