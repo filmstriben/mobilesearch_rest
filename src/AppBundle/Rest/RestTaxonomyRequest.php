@@ -5,6 +5,16 @@ namespace AppBundle\Rest;
 use AppBundle\Exception\RestException;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
+/**
+ * @deprecated
+ * Taxonomy is a part of Content entity fields.
+ * This class does not represent any entity, since there's no taxonomy entity. No CRUD logic
+ * is intended for it.
+ * All methods from here should be moved to Content entity repository, since whole logic
+ * is coupled with that entity.
+ *
+ * Class RestTaxonomyRequest
+ */
 class RestTaxonomyRequest extends RestBaseRequest
 {
 

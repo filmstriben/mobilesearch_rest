@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Document\Content;
 use AppBundle\Document\Lists;
+use AppBundle\Document\Menu;
 use AppBundle\Exception\RestException;
 use AppBundle\Rest\RestBaseRequest;
 use AppBundle\Rest\RestContentRequest;
@@ -476,6 +477,92 @@ final class RestController extends Controller
         $rmr = new RestMenuRequest($em);
 
         return $this->relay($rmr);
+    }
+
+    /**
+     * @ApiDoc(
+     *     description="Fetches menu entries.",
+     *     section="Menu",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="amount",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to fetch. Defaults to 10.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="skip",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to skip. Defaults to 0.",
+     *             "required"=false
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\MenuOutput"
+     *     }
+     * )
+     * @Route("/menu/fetch")
+     * @Method({"GET"})
+     */
+    public function menuFetchAction(Request $request)
+    {
+        $this->lastMethod = $request->getMethod();
+
+        $fields = [
+            'agency' => null,
+            'key' => null,
+            'amount' => 10,
+            'skip' => 0,
+        ];
+
+        foreach (array_keys($fields) as $field) {
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        $em = $this->get('doctrine_mongodb');
+        $restMenuRequest = new RestMenuRequest($em);
+
+        if (!$restMenuRequest->isSignatureValid($fields['agency'], $fields['key'])) {
+            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
+        } else {
+            unset($fields['key']);
+
+            /** @var Menu[] $suggestions */
+            $menuEntities = call_user_func_array([$restMenuRequest, 'fetchMenus'], $fields);
+
+            /** @var Menu $menuEntity */
+            foreach ($menuEntities as $menuEntity) {
+                $this->lastItems[] = [
+                    'mlid' => $menuEntity->getMlid(),
+                    'agency' => $menuEntity->getAgency(),
+                    'type' => $menuEntity->getType(),
+                    'name' => $menuEntity->getName(),
+                    'url' => $menuEntity->getUrl(),
+                    'weight' => $menuEntity->getOrder(),
+                    'enabled' => $menuEntity->getEnabled(),
+                ];
+            }
+
+            $this->lastStatus = true;
+        }
+
+        return $this->setResponse(
+            $this->lastStatus,
+            $this->lastMessage,
+            $this->lastItems
+        );
     }
 
     /**
