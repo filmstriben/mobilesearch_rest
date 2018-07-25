@@ -7,7 +7,7 @@ use AppBundle\DataFixtures\MongoDB\ContentFixtures;
 use AppBundle\Rest\RestContentRequest;
 use Symfony\Component\HttpFoundation\Response;
 
-class ContentSearchTest extends AbstractFixtureAwareTest
+class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemStructureInterface
 {
     use AssertResponseStructureTrait;
 
@@ -313,11 +313,9 @@ class ContentSearchTest extends AbstractFixtureAwareTest
     }
 
     /**
-     * Asserts item structure in the response.
-     *
-     * @param array $item One item from the result set.
+     * {@inheritdoc}
      */
-    private function assertItemStructure(array $item)
+    public function assertItemStructure(array $item)
     {
         $this->assertArrayHasKey('id', $item);
         $this->assertArrayHasKey('nid', $item);
