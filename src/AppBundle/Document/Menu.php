@@ -45,6 +45,11 @@ class Menu
     protected $order;
 
     /**
+     * @MongoDB\boolean
+     */
+    protected $enabled;
+
+    /**
      * Get id
      *
      * @return id $id
@@ -196,5 +201,29 @@ class Menu
     public function getOrder()
     {
         return $this->order;
+    }
+
+    /**
+     * Set enabled
+     *
+     * @param boolean $enabled
+     *
+     * @return self
+     */
+    public function setEnabled($enabled)
+    {
+        $this->enabled = $enabled;
+
+        return $this;
+    }
+
+    /**
+     * Get enabled
+     *
+     * @return boolean
+     */
+    public function getEnabled()
+    {
+        return $this->enabled;
     }
 }

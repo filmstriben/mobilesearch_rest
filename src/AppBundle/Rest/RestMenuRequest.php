@@ -2,7 +2,7 @@
 
 namespace AppBundle\Rest;
 
-use AppBundle\Document\Menu as FSMenu;
+use AppBundle\Document\Menu;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
 class RestMenuRequest extends RestBaseRequest
@@ -41,7 +41,7 @@ class RestMenuRequest extends RestBaseRequest
 
     protected function insert()
     {
-        $entity = $this->prepare(new FSMenu());
+        $entity = $this->prepare(new Menu());
 
         $dm = $this->em->getManager();
         $dm->persist($entity);
@@ -72,7 +72,7 @@ class RestMenuRequest extends RestBaseRequest
         return $entity;
     }
 
-    public function prepare(FSMenu $menu)
+    public function prepare(Menu $menu)
     {
         $body = $this->getParsedBody();
 
@@ -94,6 +94,28 @@ class RestMenuRequest extends RestBaseRequest
         $order = !empty($body['order']) ? $body['order'] : 0;
         $menu->setOrder($order);
 
+        $enabled = !empty($body['enabled']) ? (bool)$body['enabled'] : false;
+        $menu->setEnabled($enabled);
+
         return $menu;
+    }
+
+    /**
+     * @param $agency
+     * @param int $amount
+     * @param int $skip
+     *
+     * @return Menu[]
+     */
+    public function fetchMenus($agency, $amount = 10, $skip = 0)
+    {
+        $qb = $this->em
+            ->getManager()
+            ->createQueryBuilder(Menu::class);
+
+        $qb->field('agency')->equals($agency);
+        $qb->skip($skip)->limit($amount);
+
+        return $qb->getQuery()->execute();
     }
 }
