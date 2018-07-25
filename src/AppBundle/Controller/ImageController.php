@@ -113,7 +113,7 @@ class ImageController extends Controller
      *         {
      *             "name"="resize",
      *             "dataType"="string",
-     *             "description"="Agency number.",
+     *             "description"="Image size (WIDTHxHEIGHT).",
      *             "required"=false,
      *             "format"="{\d}+x{\d}+"
      *         },

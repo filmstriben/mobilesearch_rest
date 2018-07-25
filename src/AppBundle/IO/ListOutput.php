@@ -4,6 +4,11 @@ namespace AppBundle\IO;
 
 use JMS\Serializer\Annotation as JMS;
 
+/**
+ * Class ListOutput
+ *
+ * Stub of ListItem collection output structure.
+ */
 class ListOutput
 {
     /**

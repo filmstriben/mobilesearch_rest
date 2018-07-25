@@ -9,8 +9,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
  * Class AppExtension
- *
- * @package AppBundle\DependencyInjection
  */
 class AppExtension extends Extension
 {

@@ -5,6 +5,11 @@ namespace AppBundle\Rest;
 use AppBundle\Document\Lists;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
+/**
+ * Class RestListsRequest
+ *
+ * Handle list specific requests.
+ */
 class RestListsRequest extends RestBaseRequest
 {
     /**
@@ -94,6 +99,8 @@ class RestListsRequest extends RestBaseRequest
     }
 
     /**
+     * Prepares the list entry structure.
+     *
      * @param Lists $list
      *
      * @return Lists
@@ -130,9 +137,11 @@ class RestListsRequest extends RestBaseRequest
     }
 
     /**
-     * @param $agency
-     * @param int $amount
-     * @param int $skip
+     * Fetches list content.
+     *
+     * @param string $agency Agency identifier.
+     * @param int $amount    Number of entries to fetch.
+     * @param int $skip      Number of entries to skip.
      *
      * @return Lists[]
      */

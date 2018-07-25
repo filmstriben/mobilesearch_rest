@@ -4,9 +4,13 @@ namespace AppBundle\Tests;
 
 use AppBundle\DataFixtures\MongoDB\AgencyFixtures;
 use AppBundle\DataFixtures\MongoDB\ContentFixtures;
-use AppBundle\Rest\RestContentRequest;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class ContentSearchTest
+ *
+ * Functional tests for searching content related entries.
+ */
 class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemStructureInterface
 {
     use AssertResponseStructureTrait;

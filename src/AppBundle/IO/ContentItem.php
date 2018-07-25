@@ -2,6 +2,11 @@
 
 namespace AppBundle\IO;
 
+/**
+ * Class ContentItem
+ *
+ * Stub of content entity structure.
+ */
 class ContentItem
 {
     private $nid;

@@ -5,6 +5,11 @@ namespace AppBundle\Tests;
 use AppBundle\DataFixtures\MongoDB\AgencyFixtures;
 use AppBundle\DataFixtures\MongoDB\ListsFixtures;
 
+/**
+ * Class ListsFetchTest
+ *
+ * Functional test for fetching list related entries.
+ */
 class ListsFetchTest extends AbstractFixtureAwareTest
 {
     use AssertResponseStructureTrait;

@@ -2,6 +2,11 @@
 
 namespace AppBundle\Tests;
 
+/**
+ * Interface AssertItemStructureInterface
+ *
+ * Allows to assert item structure.
+ */
 interface AssertItemStructureInterface
 {
     /**

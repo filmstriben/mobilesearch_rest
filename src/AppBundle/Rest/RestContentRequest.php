@@ -7,6 +7,11 @@ use AppBundle\Exception\RestException;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 use Symfony\Component\Filesystem\Filesystem as FSys;
 
+/**
+ * Class RestContentRequest
+ *
+ * Handle content specific requests.
+ */
 class RestContentRequest extends RestBaseRequest
 {
     const STATUS_ALL = '-1';

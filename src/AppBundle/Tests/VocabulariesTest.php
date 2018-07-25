@@ -6,6 +6,11 @@ use AppBundle\DataFixtures\MongoDB\AgencyFixtures;
 use AppBundle\DataFixtures\MongoDB\ContentFixtures;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class VocabulariesTest
+ *
+ * Functional tests for fetching taxonomy related vocabularies.
+ */
 class VocabulariesTest extends AbstractFixtureAwareTest
 {
     use AssertResponseStructureTrait;

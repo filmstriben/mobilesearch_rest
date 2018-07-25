@@ -4,6 +4,11 @@ namespace AppBundle\IO;
 
 use JMS\Serializer\Annotation as JMS;
 
+/**
+ * Class MenuOutput
+ *
+ * Stub of MenuItem collection structure.
+ */
 class MenuOutput
 {
     /**

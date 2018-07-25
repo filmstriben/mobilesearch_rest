@@ -4,6 +4,11 @@ namespace AppBundle\IO;
 
 use JMS\Serializer\Annotation as JMS;
 
+/**
+ * Class ContentOutput
+ *
+ * Stub of ContentItem collection structure.
+ */
 class ContentOutput
 {
     /**

@@ -4,6 +4,11 @@ namespace AppBundle\IO;
 
 use JMS\Serializer\Annotation as JMS;
 
+/**
+ * Class TaxonomyTermOutput
+ *
+ * Stub of taxonomy terms collection structure.
+ */
 class TaxonomyTermOutput
 {
     /**

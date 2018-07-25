@@ -8,6 +8,11 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
 
+/**
+ * Class MenuFixtures
+ *
+ * Prepares menu entries.
+ */
 class MenuFixtures extends Fixture
 {
     /**

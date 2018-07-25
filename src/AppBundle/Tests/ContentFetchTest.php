@@ -7,6 +7,11 @@ use AppBundle\DataFixtures\MongoDB\ContentFixtures;
 use AppBundle\Rest\RestContentRequest;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class ContentFetchTest
+ *
+ * Functional tests for fetching content related entries.
+ */
 class ContentFetchTest extends AbstractFixtureAwareTest
 {
     use AssertResponseStructureTrait;
