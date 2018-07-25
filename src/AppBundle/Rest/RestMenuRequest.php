@@ -1,14 +1,9 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Rest;
 
-use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
-
-use AppBundle\Rest\RestBaseRequest;
 use AppBundle\Document\Menu as FSMenu;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 
 class RestMenuRequest extends RestBaseRequest
 {
@@ -17,10 +12,10 @@ class RestMenuRequest extends RestBaseRequest
         parent::__construct($em);
 
         $this->primaryIdentifier = 'mlid';
-        $this->requiredFields = array(
+        $this->requiredFields = [
             $this->primaryIdentifier,
             'agency',
-        );
+        ];
     }
 
     protected function exists($id, $agency)
@@ -32,10 +27,10 @@ class RestMenuRequest extends RestBaseRequest
 
     protected function get($id, $agency)
     {
-        $criteria = array(
-            $this->primaryIdentifier => (int) $id,
+        $criteria = [
+            $this->primaryIdentifier => (int)$id,
             'agency' => $agency,
-        );
+        ];
 
         $entity = $this->em
             ->getRepository('AppBundle:Menu')

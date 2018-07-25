@@ -89,3 +89,21 @@ doctrine_mongodb:
     document_managers:
         default:
             auto_mapping: true
+
+# API doc.
+nelmio_api_doc:
+    name: "Filmstriben Mobilesearch API"
+    sandbox:
+        enabled: false
+        body_format:
+            formats:
+                - "json"
+            default_format: "json"
+        request_format:
+            method: "accept_header"
+            formats:
+                json: "application/json"
+    cache:
+        enabled: true
+    motd:
+        template: AppBundle::api/motd.html.twig

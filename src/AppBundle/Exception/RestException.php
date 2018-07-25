@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Exception;
 

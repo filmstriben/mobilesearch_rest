@@ -1,29 +1,32 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Rest;
 
+use AppBundle\Document\Lists;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
-
-use AppBundle\Rest\RestBaseRequest;
-use AppBundle\Document\Lists as FSList;
 
 class RestListsRequest extends RestBaseRequest
 {
+    /**
+     * RestListsRequest constructor.
+     *
+     * @param MongoEM $em
+     */
     public function __construct(MongoEM $em)
     {
         parent::__construct($em);
 
         $this->primaryIdentifier = 'key';
-        $this->requiredFields = array(
+        $this->requiredFields = [
             $this->primaryIdentifier,
             'agency',
             'nid',
-        );
+        ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function exists($id, $agency)
     {
         $entity = $this->get($id, $agency);
@@ -31,12 +34,15 @@ class RestListsRequest extends RestBaseRequest
         return !is_null($entity);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function get($id, $agency)
     {
-        $criteria = array(
+        $criteria = [
             $this->primaryIdentifier => $id,
             'agency' => $agency,
-        );
+        ];
 
         $entity = $this->em
             ->getRepository('AppBundle:Lists')
@@ -45,9 +51,12 @@ class RestListsRequest extends RestBaseRequest
         return $entity;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function insert()
     {
-        $entity = $this->prepare(new FSList());
+        $entity = $this->prepare(new Lists());
 
         $dm = $this->em->getManager();
         $dm->persist($entity);
@@ -56,6 +65,9 @@ class RestListsRequest extends RestBaseRequest
         return $entity;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function update($id, $agency)
     {
         $loadedEntity = $this->get($id, $agency);
@@ -67,6 +79,9 @@ class RestListsRequest extends RestBaseRequest
         return $updatedEntity;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function delete($id, $agency)
     {
         $entity = $this->get($id, $agency);
@@ -78,7 +93,12 @@ class RestListsRequest extends RestBaseRequest
         return $entity;
     }
 
-    public function prepare(FSList $list)
+    /**
+     * @param Lists $list
+     *
+     * @return Lists
+     */
+    public function prepare(Lists $list)
     {
         $body = $this->getParsedBody();
 
@@ -94,18 +114,37 @@ class RestListsRequest extends RestBaseRequest
         $name = !empty($body['name']) ? $body['name'] : 'Undefined';
         $list->setName($name);
 
-        $nids = !empty($body['nids']) ? $body['nids'] : array();
+        $nids = !empty($body['nids']) ? $body['nids'] : [];
         $list->setNids($nids);
 
-        $type = !empty($body['type']) ? $body['type'] : array();
+        $type = !empty($body['type']) ? $body['type'] : [];
         $list->setType($type);
 
-        $promoted = !empty($body['promoted']) ? $body['promoted'] : array();
+        $promoted = !empty($body['promoted']) ? $body['promoted'] : [];
         $list->setPromoted($promoted);
 
         $weight = !empty($body['weight']) ? $body['weight'] : 0;
         $list->setWeight($weight);
 
         return $list;
+    }
+
+    /**
+     * @param $agency
+     * @param int $amount
+     * @param int $skip
+     *
+     * @return Lists[]
+     */
+    public function fetchLists($agency, $amount = 10, $skip = 0)
+    {
+        $qb = $this->em
+            ->getManager()
+            ->createQueryBuilder(Lists::class);
+
+        $qb->field('agency')->equals($agency);
+        $qb->skip($skip)->limit($amount);
+
+        return $qb->getQuery()->execute();
     }
 }
