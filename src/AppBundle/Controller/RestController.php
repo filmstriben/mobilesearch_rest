@@ -265,8 +265,11 @@ final class RestController extends Controller
      * There might multiple pairs of 'query' and 'field' parameters. Multiple pairs of search conditions are
      * treated as a logical AND.<br />
      * To use multiple conditions, add square brackets after the parameter in the query string.<br />
-     * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra&field[]=taxonomy.field_realm.terms</pre>
-     * This would match content with having 'editorial' value as 'type' and 'taxonomy.field_realm.terms' containing 'Hjemmefra' term.
+     * 'query' parameter can receive multiple values, separated by comma. This would result for content that is
+     * searched, to contain at least one term from the comma separated list.
+     * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms</pre>
+     * This would match content with having 'editorial' value as 'type' and 'taxonomy.field_realm.terms' either
+     * containing 'Hjemmefra', or 'At home' term.
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
