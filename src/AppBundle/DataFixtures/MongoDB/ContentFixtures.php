@@ -8,6 +8,11 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
 
+/**
+ * Class ContentFixtures
+ *
+ * Prepares content entries.
+ */
 class ContentFixtures extends Fixture
 {
     /**

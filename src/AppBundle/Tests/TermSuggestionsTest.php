@@ -6,6 +6,11 @@ use AppBundle\DataFixtures\MongoDB\AgencyFixtures;
 use AppBundle\DataFixtures\MongoDB\ContentFixtures;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class TermSuggestionsTest
+ *
+ * Functional test for fetching taxonomy term suggestions.
+ */
 class TermSuggestionsTest extends AbstractFixtureAwareTest
 {
     use AssertResponseStructureTrait;

@@ -4,9 +4,13 @@ namespace AppBundle\Tests;
 
 use AppBundle\DataFixtures\MongoDB\AgencyFixtures;
 use AppBundle\DataFixtures\MongoDB\ContentFixtures;
-use AppBundle\Rest\RestContentRequest;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class ContentSearchTest
+ *
+ * Functional tests for searching content related entries.
+ */
 class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemStructureInterface
 {
     use AssertResponseStructureTrait;
@@ -235,11 +239,11 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
     }
 
     /**
-     * Fetch search results filtered by taxonomy term.
+     * Fetch search results filtered by taxonomy terms.
      */
     public function testTaxonomySearch()
     {
-        $query = 'Spillefilm';
+        $query = 'Spillefilm,Dokumentar';
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
@@ -252,7 +256,7 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
         $result = $this->assertResponse($response);
 
         // Collect result node id's, fetch these within one call
-        // and check every item for term existence.
+        // and check every item for term(s) existence.
         $ids = array_map(function ($v) {
             return $v['nid'];
         }, $result['items']);
@@ -266,7 +270,13 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
         $result = $this->assertResponse($response);
 
         foreach ($result['items'] as $item) {
-            $this->assertContains($query, $item['taxonomy']['field_category']['terms']);
+            // No idea why assertArraySubset() fails here.
+            $this->assertNotEmpty(
+                array_intersect(
+                    $item['taxonomy']['field_category']['terms'],
+                    explode(',', $query)
+                )
+            );
         }
     }
 

@@ -5,6 +5,11 @@ namespace AppBundle\Tests;
 use AppBundle\DataFixtures\MongoDB\AgencyFixtures;
 use AppBundle\DataFixtures\MongoDB\MenuFixtures;
 
+/**
+ * Class MenuFetchTest
+ *
+ * Functional tests for fetching menu related entries.
+ */
 class MenuFetchTest extends AbstractFixtureAwareTest implements AssertItemStructureInterface
 {
     use AssertResponseStructureTrait;

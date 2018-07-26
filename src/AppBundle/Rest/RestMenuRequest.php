@@ -72,6 +72,13 @@ class RestMenuRequest extends RestBaseRequest
         return $entity;
     }
 
+    /**
+     * Prepares the menu entity structure.
+     *
+     * @param Menu $menu
+     *
+     * @return Menu
+     */
     public function prepare(Menu $menu)
     {
         $body = $this->getParsedBody();
@@ -101,9 +108,11 @@ class RestMenuRequest extends RestBaseRequest
     }
 
     /**
-     * @param $agency
-     * @param int $amount
-     * @param int $skip
+     * Fetched menu entries.
+     *
+     * @param string $agency Agency identifier.
+     * @param int $amount    Number of entries to fetch.
+     * @param int $skip      Number of entries to skip.
      *
      * @return Menu[]
      */

@@ -8,6 +8,11 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
 
+/**
+ * Class ListsFixtures
+ *
+ * Prepares list entries.
+ */
 class ListsFixtures extends Fixture
 {
     /**

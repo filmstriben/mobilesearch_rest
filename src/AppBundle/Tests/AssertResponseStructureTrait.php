@@ -2,6 +2,11 @@
 
 namespace AppBundle\Tests;
 
+/**
+ * Trait AssertResponseStructureTrait
+ *
+ * Wraps the API response structure assertions.
+ */
 trait AssertResponseStructureTrait
 {
     /**

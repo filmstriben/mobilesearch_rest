@@ -5,6 +5,11 @@ namespace AppBundle\Tests;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class AbstractBaseTest
+ *
+ * Base class for functional tests.
+ */
 abstract class AbstractBaseTest extends WebTestCase
 {
     private $client;

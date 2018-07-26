@@ -4,6 +4,11 @@ namespace AppBundle\IO;
 
 use JMS\Serializer\Annotation as JMS;
 
+/**
+ * Class Output
+ *
+ * Stub of generic item collection structure.
+ */
 class Output
 {
     /**

@@ -2,6 +2,11 @@
 
 namespace AppBundle\IO;
 
+/**
+ * Class MenuItem
+ *
+ * Stub of menu item structure.
+ */
 class MenuItem
 {
     private $mlid;

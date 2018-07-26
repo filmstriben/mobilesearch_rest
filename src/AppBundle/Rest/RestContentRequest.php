@@ -7,6 +7,11 @@ use AppBundle\Exception\RestException;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 use Symfony\Component\Filesystem\Filesystem as FSys;
 
+/**
+ * Class RestContentRequest
+ *
+ * Handle content specific requests.
+ */
 class RestContentRequest extends RestBaseRequest
 {
     const STATUS_ALL = '-1';
@@ -118,7 +123,7 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Searches content suggestions based on certain criteria.
      *
-     * @param $agency
+     * @param string $agency
      * @param array $query
      * @param array $field
      * @param int $amount
@@ -152,7 +157,7 @@ class RestContentRequest extends RestBaseRequest
             if (preg_match('/taxonomy\..*\.terms/', $currentField)) {
                 $qb
                     ->field($currentField)
-                    ->in([$currentQuery]);
+                    ->in(explode(',', $currentQuery));
             } else {
                 $qb
                     ->field($currentField)
@@ -245,6 +250,13 @@ class RestContentRequest extends RestBaseRequest
         return $entities;
     }
 
+    /**
+     * Prepares the content entry structure.
+     *
+     * @param Content $content
+     *
+     * @return Content
+     */
     public function prepare(Content $content)
     {
         $body = $this->getParsedBody();

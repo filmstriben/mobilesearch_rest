@@ -8,6 +8,11 @@ use Doctrine\Common\DataFixtures\Loader;
 use Doctrine\Common\DataFixtures\Purger\MongoDBPurger;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
+/**
+ * Class AbstractFixtureAwareTest
+ *
+ * Base class for functional tests that rely on fixtures.
+ */
 abstract class AbstractFixtureAwareTest extends AbstractBaseTest
 {
     const AGENCY = '999999';

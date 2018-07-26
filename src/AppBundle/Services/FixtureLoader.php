@@ -8,7 +8,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * Class FixtureLoader
  *
- * Reads and parses yaml fixture configs.
+ * Reads and parses fixture configs stored as yaml files.
  */
 class FixtureLoader
 {
@@ -17,7 +17,7 @@ class FixtureLoader
      *
      * @param string $filename Fixture file name.
      *
-     * @return array            Parsed config.
+     * @return array           Parsed config.
      */
     public function load($filename)
     {
