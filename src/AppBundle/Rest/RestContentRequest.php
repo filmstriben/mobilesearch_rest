@@ -326,12 +326,27 @@ class RestContentRequest extends RestBaseRequest
                             $path = $dir.'/'.$filename;
 
                             $fs->dumpFile($path, base64_decode($file_contents));
+
                             if ($fs->exists($path)) {
-                                $field_value['value'][$k] = 'files/'.$this->agencyId.'/'.$filename;
+                                // Simple check whether resulting file is an image.
+                                // If not, remove the upload immediately.
+                                if (function_exists('getimagesize') && getimagesize($path)) {
+                                    $field_value['value'][$k] = 'files/'.$this->agencyId.'/'.$filename;
+                                }
+                                else {
+                                    unset(
+                                        $field_value['value'][$k],
+                                        $field_value['attr'][$k]
+                                    );
+                                    $fs->remove($path);
+                                }
                             }
                         }
                     }
                 }
+
+                $fields[$field_name]['value'] = array_values($fields[$field_name]['value']);
+                $fields[$field_name]['attr'] = array_values($fields[$field_name]['attr']);
             }
         }
 
