@@ -18,10 +18,10 @@
         <p>These values are passed within the payload in the <em>credentials</em> key.</p>
         <p>When using GET method requests - these reside in URI, as <em>agency</em> and <em>key</em> query parameters.</p>
         <p>To generate a <em>key</em>, calculate a SHA1 checksum of the agency value and the secret key of a certain agency.</p>
-        <pre>php > $secret = '3fa';
+        <pre>php > $secret = 'm3u';
 php > $agency = '999999';
 php > echo sha1($agency.$secret);
-d952bdbc614ae7ef7fbcee661e55f1a462657f53</pre>
+96b3df17091e8633aa1c03dd28f40b5f965ad45c</pre>
         <h2>Images</h2>
         <p>Best way to push an image within a field value of a content entity is to encode image contents in base64 enconding and pass the encoded value.</p>
         <p>The image is decoded server-wise into a physical file based on the mime type which should reside in the <em>attr</em> key.</p>

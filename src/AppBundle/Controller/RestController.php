@@ -27,6 +27,40 @@ final class RestController extends Controller
     private $rawContent;
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "nid": 4962,
+     *     "agency": "999999",
+     *     "type": "os",
+     *     "list": [],
+     *     "fields": {
+     *       "title": {
+     *         "name": "Title",
+     *         "value": "Min smukke nabo",
+     *         "attr": []
+     *       }
+     *     },
+     *     "taxonomy": {
+     *       "field_category": {
+     *         "name": "Category",
+     *         "terms": []
+     *       },
+     *       "field_realm": {
+     *         "name": "Realm",
+     *         "terms": [
+     *           "At library"
+     *         ]
+     *       }
+     *     }
+     *   }
+     * }
+     * </pre>
      * @ApiDoc(
      *     description="Persists an entry of content.",
      *     section="Content",
@@ -57,6 +91,40 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "nid": 4962,
+     *     "agency": "999999",
+     *     "type": "os",
+     *     "list": [],
+     *     "fields": {
+     *       "title": {
+     *         "name": "Title",
+     *         "value": "Min smukke nabo",
+     *         "attr": []
+     *       }
+     *     },
+     *     "taxonomy": {
+     *       "field_category": {
+     *         "name": "Category",
+     *         "terms": []
+     *       },
+     *       "field_realm": {
+     *         "name": "Realm",
+     *         "terms": [
+     *           "At library"
+     *         ]
+     *       }
+     *     }
+     *   }
+     * }
+     * </pre>
      * @ApiDoc(
      *     description="Updates an existing entry of content.",
      *     section="Content",
@@ -87,6 +155,19 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "nid": 4962,
+     *     "agency": "999999"
+     *   }
+     * }
+     * </pre>
      * @ApiDoc(
      *     description="Deletes an entry of content.",
      *     section="Content",
@@ -268,8 +349,8 @@ final class RestController extends Controller
      * 'query' parameter can receive multiple values, separated by comma. This would result for content that is
      * searched, to contain at least one term from the comma separated list.
      * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms</pre>
-     * This would match content with having 'editorial' value as 'type' and 'taxonomy.field_realm.terms' either
-     * containing 'Hjemmefra', or 'At home' term.
+     * This query string would fetch content with having 'editorial' value as 'type' and 'taxonomy.field_realm.terms'
+     * containing either 'Hjemmefra', or 'At home' terms.
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
@@ -375,6 +456,25 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "mlid": 461,
+     *     "agency": "999999",
+     *     "type": "left_menu",
+     *     "name": "Home",
+     *     "url": "\/",
+     *     "order": -18,
+     *     "enabled": true
+     *    }
+     * }
+     * </pre>
+     *
      * @ApiDoc(
      *     description="Persists a menu entry.",
      *     section="Menu",
@@ -405,6 +505,25 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "mlid": 461,
+     *     "agency": "999999",
+     *     "type": "left_menu",
+     *     "name": "Home",
+     *     "url": "\/",
+     *     "order": -18,
+     *     "enabled": true
+     *    }
+     * }
+     * </pre>
+     *
      * @ApiDoc(
      *     description="Updates a menu entry.",
      *     section="Menu",
@@ -435,6 +554,20 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "mlid": 461,
+     *     "agency": "999999"
+     *    }
+     * }
+     * </pre>
+     *
      * @ApiDoc(
      *     description="Deletes a menu entry.",
      *     section="Menu",
@@ -569,6 +702,26 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "nid": 999999,
+     *     "key": "784ad029a05c3e710b9283b2882e417b",
+     *     "agency": "999999",
+     *     "type": "dynamic",
+     *     "name": "Some list",
+     *     "promoted": 1,
+     *     "weight": null,
+     *     "nids": []
+     *   }
+     * }
+     * </pre>
+     *
      * @ApiDoc(
      *     description="Persists a list entry.",
      *     section="List",
@@ -599,6 +752,25 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "nid": 999999,
+     *     "key": "784ad029a05c3e710b9283b2882e417b",
+     *     "agency": "999999",
+     *     "type": "dynamic",
+     *     "name": "Some list",
+     *     "promoted": 1,
+     *     "weight": null,
+     *     "nids": []
+     *   }
+     * }
+     * </pre>
      * @ApiDoc(
      *     description="Updates a list entry.",
      *     section="List",
@@ -629,6 +801,20 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "agencyId": "999999",
+     *     "key": "933b0de149ae93e8b954b9c1513582e1f4f1d0d9"
+     *   },
+     *   "body": {
+     *     "nid": 999999,
+     *     "key": "784ad029a05c3e710b9283b2882e417b",
+     *     "agency": "999999",
+     *   }
+     * }
+     * </pre>
      * @ApiDoc(
      *     description="Deletes a list entry.",
      *     section="List",
