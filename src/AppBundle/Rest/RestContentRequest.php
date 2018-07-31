@@ -302,52 +302,59 @@ class RestContentRequest extends RestBaseRequest
             'field_ding_page_list_image',
         ];
         foreach ($fields as $field_name => &$field_value) {
-            if (in_array($field_name, $image_fields)) {
-                if (!is_array($field_value['value'])) {
-                    $field_value['value'] = [$field_value['value']];
+            if (!in_array($field_name, $image_fields)) {
+                continue;
+            }
+
+            if (!is_array($field_value['value'])) {
+                $field_value['value'] = [$field_value['value']];
+            }
+
+            foreach ($field_value['value'] as $k => $value) {
+                if (empty($value) || empty($field_value['attr'][$k]) || !preg_match('/^image\/(jpg|jpeg|gif|png)$/', $field_value['attr'][$k])) {
+                    continue;
                 }
 
-                foreach ($field_value['value'] as $k => $value) {
-                    if (!empty($value) && isset($field_value['attr'][$k]) && preg_match('/^image\/(jpg|jpeg|gif|png)$/', $field_value['attr'][$k])) {
-                        $file_ext = explode('/', $field_value['attr'][$k]);
-                        $extension = isset($file_ext[1]) ? $file_ext[1] : '';
-                        $file_contents = $field_value['value'][$k];
-                        $fields[$field_name]['value'][$k] = null;
+                $file_ext = explode('/', $field_value['attr'][$k]);
+                $extension = isset($file_ext[1]) ? $file_ext[1] : '';
+                $file_contents = $field_value['value'][$k];
+                $fields[$field_name]['value'][$k] = null;
 
-                        if (!empty($extension)) {
-                            $fs = new FSys();
+                if (!empty($extension)) {
+                    $fs = new FSys();
 
-                            $dir = '../web/storage/images/'.$this->agencyId;
-                            if (!$fs->exists($dir)) {
-                                $fs->mkdir($dir);
-                            }
+                    $dir = '../web/storage/images/'.$this->agencyId;
+                    if (!$fs->exists($dir) && is_writable($dir)) {
+                        $fs->mkdir($dir);
+                    }
 
-                            $filename = sha1($value.$this->agencyId).'.'.$extension;
-                            $path = $dir.'/'.$filename;
+                    $filename = sha1($value.$this->agencyId).'.'.$extension;
+                    $path = $dir.'/'.$filename;
 
-                            $fs->dumpFile($path, base64_decode($file_contents));
+                    if (is_writable($path)) {
+                        // TODO: Log something.
+                        $fs->dumpFile($path, base64_decode($file_contents));
+                    }
 
-                            if ($fs->exists($path)) {
-                                // Simple check whether resulting file is an image.
-                                // If not, remove the upload immediately.
-                                if (function_exists('getimagesize') && getimagesize($path)) {
-                                    $field_value['value'][$k] = 'files/'.$this->agencyId.'/'.$filename;
-                                }
-                                else {
-                                    unset(
-                                        $field_value['value'][$k],
-                                        $field_value['attr'][$k]
-                                    );
-                                    $fs->remove($path);
-                                }
-                            }
+                    if ($fs->exists($path)) {
+                        // Simple check whether resulting file is an image.
+                        // If not, remove the upload immediately.
+                        if (function_exists('getimagesize') && getimagesize($path)) {
+                            $field_value['value'][$k] = 'files/'.$this->agencyId.'/'.$filename;
+                        }
+                        else {
+                            unset(
+                                $field_value['value'][$k],
+                                $field_value['attr'][$k]
+                            );
+                            $fs->remove($path);
                         }
                     }
                 }
-
-                $fields[$field_name]['value'] = array_values($fields[$field_name]['value']);
-                $fields[$field_name]['attr'] = array_values($fields[$field_name]['attr']);
             }
+
+            $fields[$field_name]['value'] = array_values($fields[$field_name]['value']);
+            $fields[$field_name]['attr'] = array_values($fields[$field_name]['attr']);
         }
 
         return $fields;
