@@ -20,6 +20,8 @@ class RestContentRequest extends RestBaseRequest
 
     const STATUS_UNPUBLISHED = '0';
 
+    const IMAGE_UPLOADS_PATH = '../web/storage/images/';
+
     /**
      * RestContentRequest constructor.
      *
@@ -284,12 +286,17 @@ class RestContentRequest extends RestBaseRequest
     }
 
     /**
-     * @todo
-     * Quick'n'dirty.
+     * Takes base64 image data from content fields and creates a physical file.
+     *
+     * TODO: This method does a lot, which can be split or a service implemented instead.
+     *
+     * @param array $fields Content entity fields.
+     *
+     * @return array        Same fields set, yet with images as paths to physical files.
      */
     private function parseImageFields(array $fields)
     {
-        $image_fields = [
+        $imageFields = [
             'field_images',
             'field_background_image',
             'field_ding_event_title_image',
@@ -301,60 +308,63 @@ class RestContentRequest extends RestBaseRequest
             'field_ding_page_title_image',
             'field_ding_page_list_image',
         ];
-        foreach ($fields as $field_name => &$field_value) {
-            if (!in_array($field_name, $image_fields)) {
-                continue;
+
+        $fieldsToProcess = array_intersect_key(array_flip($imageFields), $fields);
+
+        foreach (array_flip($fieldsToProcess) as $fieldName) {
+            // Note that values are passed by reference for convenience.
+            $fieldToProcess = &$fields[$fieldName];
+
+            if (!is_array($fieldToProcess['value'])) {
+                $fieldToProcess['value'] = [$fieldToProcess['value']];
             }
 
-            if (!is_array($field_value['value'])) {
-                $field_value['value'] = [$field_value['value']];
-            }
-
-            foreach ($field_value['value'] as $k => $value) {
-                if (empty($value) || empty($field_value['attr'][$k]) || !preg_match('/^image\/(jpg|jpeg|gif|png)$/', $field_value['attr'][$k])) {
+            foreach ($fieldToProcess['value'] as $k => $imageBase64Contents) {
+                if (empty($imageBase64Contents) || empty($fieldToProcess['attr'][$k]) || !preg_match('/^image\/(jpg|jpeg|gif|png)$/', $fieldToProcess['attr'][$k])) {
                     continue;
                 }
 
-                $file_ext = explode('/', $field_value['attr'][$k]);
-                $extension = isset($file_ext[1]) ? $file_ext[1] : '';
-                $file_contents = $field_value['value'][$k];
-                $fields[$field_name]['value'][$k] = null;
+                // Do not store base64 contents in any case.
+                $fieldToProcess['value'][$k] = null;
 
-                if (!empty($extension)) {
-                    $fs = new FSys();
+                $imageFileExtension = explode('/', $fieldToProcess['attr'][$k]);
+                if (empty($imageFileExtension[1])) {
+                    continue;
+                }
 
-                    $dir = '../web/storage/images/'.$this->agencyId;
-                    if (!$fs->exists($dir) && is_writable($dir)) {
-                        $fs->mkdir($dir);
+                $extension = $imageFileExtension[1];
+
+                $fileSystem = new FSys();
+
+                if (!is_writable(self::IMAGE_UPLOADS_PATH)) {
+                    // TODO: Maybe log something in that case.
+                    continue;
+                }
+
+                $finalImageDirectory = self::IMAGE_UPLOADS_PATH.$this->agencyId;
+                if (!$fileSystem->exists($finalImageDirectory)) {
+                    $fileSystem->mkdir($finalImageDirectory);
+                }
+
+                $fileName = sha1($imageBase64Contents.$this->agencyId).'.'.$extension;
+                $finalImagePath = $finalImageDirectory.'/'.$fileName;
+                $fileSystem->dumpFile($finalImagePath, base64_decode($imageBase64Contents));
+
+                if ($fileSystem->exists($finalImagePath)) {
+                    // Simple check whether resulting file is an image.
+                    // If not, remove the upload immediately.
+                    if (function_exists('getimagesize') && getimagesize($finalImagePath)) {
+                        $fieldToProcess['value'][$k] = 'files/'.$this->agencyId.'/'.$fileName;
                     }
-
-                    $filename = sha1($value.$this->agencyId).'.'.$extension;
-                    $path = $dir.'/'.$filename;
-
-                    if (is_writable($path)) {
-                        // TODO: Log something.
-                        $fs->dumpFile($path, base64_decode($file_contents));
-                    }
-
-                    if ($fs->exists($path)) {
-                        // Simple check whether resulting file is an image.
-                        // If not, remove the upload immediately.
-                        if (function_exists('getimagesize') && getimagesize($path)) {
-                            $field_value['value'][$k] = 'files/'.$this->agencyId.'/'.$filename;
-                        }
-                        else {
-                            unset(
-                                $field_value['value'][$k],
-                                $field_value['attr'][$k]
-                            );
-                            $fs->remove($path);
-                        }
+                    else {
+                        $fileSystem->remove($finalImagePath);
                     }
                 }
             }
 
-            $fields[$field_name]['value'] = array_values($fields[$field_name]['value']);
-            $fields[$field_name]['attr'] = array_values($fields[$field_name]['attr']);
+            // Reset indexes.
+            $fieldToProcess['value'] = array_values($fieldToProcess['value']);
+            $fieldToProcess['attr'] = array_values($fieldToProcess['attr']);
         }
 
         return $fields;
