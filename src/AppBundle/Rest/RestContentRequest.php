@@ -80,7 +80,6 @@ class RestContentRequest extends RestBaseRequest
      * @return Content[]
      */
     public function fetchFiltered(
-        $agency,
         $node = null,
         $amount = 10,
         $skip = 0,
@@ -90,14 +89,12 @@ class RestContentRequest extends RestBaseRequest
         $status = self::STATUS_PUBLISHED
     ) {
         if (!empty($node)) {
-            return $this->fetchContent(explode(',', $node), $agency);
+            return $this->fetchContent(explode(',', $node));
         }
 
         $qb = $this->em
             ->getManager()
             ->createQueryBuilder(Content::class);
-
-        $qb->field('agency')->equals($agency);
 
         if ($type) {
             $qb->field('type')->equals($type);
@@ -136,7 +133,7 @@ class RestContentRequest extends RestBaseRequest
      * @throws RestException
      * @throws \Doctrine\ODM\MongoDB\MongoDBException
      */
-    public function fetchSuggestions($agency, array $query, array $field, $amount = 10, $skip = 0)
+    public function fetchSuggestions(array $query, array $field, $amount = 10, $skip = 0)
     {
         if (count($query) != count($field)) {
             throw new RestException('Query and fields parameters count mismatch.');
@@ -150,8 +147,6 @@ class RestContentRequest extends RestBaseRequest
             ->em
             ->getManager()
             ->createQueryBuilder(Content::class);
-
-        $qb->field('agency')->equals($agency);
 
         while ($currentQuery = current($query)) {
             $currentField = current($field);
@@ -225,7 +220,7 @@ class RestContentRequest extends RestBaseRequest
      *
      * @return Content[]
      */
-    public function fetchContent(array $ids, $agency)
+    public function fetchContent(array $ids)
     {
         if (empty($ids)) {
             return [];
@@ -241,7 +236,6 @@ class RestContentRequest extends RestBaseRequest
         );
 
         $criteria = [
-            'agency' => $agency,
             'nid' => ['$in' => $ids],
         ];
 

@@ -315,7 +315,7 @@ final class RestController extends Controller
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } else {
-            unset($fields['key']);
+            unset($fields['agency'], $fields['key']);
             $items = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
 
             if (!empty($items)) {
@@ -427,7 +427,7 @@ final class RestController extends Controller
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } elseif (!empty($fields['query']) && !empty($fields['field'])) {
-            unset($fields['key']);
+            unset($fields['agency'], $fields['key']);
 
             try {
                 $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
