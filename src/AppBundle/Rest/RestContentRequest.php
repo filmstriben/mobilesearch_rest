@@ -68,7 +68,8 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content that fulfills certain criteria.
      *
-     * @param string $node   Fetch these specific entries (single id or a list, separated by comma).
+     * @param string $id     Fetch these specific entries (_id field match, multiple values separated by comma).
+     * @param string $node   Fetch these specific entries (nid field match, multiple values separated by comma).
      * @param int $amount    Fetch this amount of entries.
      * @param int $skip      Skip this amount of entries.
      * @param string $sort   Sort field.
@@ -79,6 +80,7 @@ class RestContentRequest extends RestBaseRequest
      * @return Content[]     A set of entities.
      */
     public function fetchFiltered(
+        $id = null,
         $node = null,
         $amount = 10,
         $skip = 0,
@@ -87,8 +89,11 @@ class RestContentRequest extends RestBaseRequest
         $type = null,
         $status = self::STATUS_PUBLISHED
     ) {
-        if (!empty($node)) {
-            return $this->fetchContent(explode(',', $node));
+        if (!empty($id)) {
+            return $this->fetchContent(explode(',', $id), '_id');
+        }
+        elseif (!empty($node)) {
+            return $this->fetchContent(explode(',', $node), 'nid');
         }
 
         $qb = $this->em
@@ -213,11 +218,12 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content by id.
      *
-     * @param array $ids Content id's.
+     * @param array $ids    Content id's.
+     * @param string $field Field where to seek the id's.
      *
-     * @return Content[] A set of entities.
+     * @return Content[]    A set of entities.
      */
-    public function fetchContent(array $ids)
+    public function fetchContent(array $ids, $field = 'nid')
     {
         if (empty($ids)) {
             return [];
@@ -227,13 +233,20 @@ class RestContentRequest extends RestBaseRequest
         // convert the value to int as well.
         array_walk(
             $ids,
-            function (&$v) {
-                $v = (int)$v;
+            function (&$v) use ($field) {
+                switch ($field) {
+                    case 'nid':
+                        $v = (int)$v;
+                        break;
+                    case 'id':
+                        $v = new \MongoId($v);
+                        break;
+                }
             }
         );
 
         $criteria = [
-            'nid' => ['$in' => $ids],
+            $field => ['$in' => $ids],
         ];
 
         $entities = $this->em
