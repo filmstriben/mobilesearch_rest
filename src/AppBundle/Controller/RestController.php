@@ -214,7 +214,11 @@ final class RestController extends Controller
     }
 
     /**
-     * 'node' parameter, when specified, ignores any other parameters.<br />
+     * 'id' parameter, when specified, ignores any other parameters.<br />
+     * 'node' parameter, like above, ignores any other parameters. The difference between 'id' and 'nid', is that 'id'
+     * is a unique identifier for every piece content stored. Alternatively, 'nid' can repeat, since it might be the
+     * same content pushed to various portals. Please note that this might produce duplicates
+     * due to the fact that content might exists in various portals. To fetch an exact entry(ies) use 'id'.<br />
      * 'status' parameter legend: '-1' - all content, '0' - not published, '1' - published.<br />
      * 'order' parameter legend: 'ASC' - ascending, 'DESC' - descending.
      *
@@ -235,8 +239,14 @@ final class RestController extends Controller
      *     },
      *     parameters={
      *         {
+     *             "name"="id",
+     *             "dataType"="string",
+     *             "description"="Fetch content by internal id. Comma separated list of id's are supported.",
+     *             "required"=false
+     *         },
+     *         {
      *             "name"="node",
-     *             "dataType"="integer",
+     *             "dataType"="string",
      *             "description"="Fetch content by id (nid). Comma separated list of id's are supported.",
      *             "required"=false
      *         },
@@ -296,6 +306,7 @@ final class RestController extends Controller
         $fields = [
             'agency' => null,
             'key' => null,
+            'id' => null,
             'node' => null,
             'amount' => 10,
             'skip' => 0,
@@ -315,7 +326,7 @@ final class RestController extends Controller
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } else {
-            unset($fields['key']);
+            unset($fields['agency'], $fields['key']);
             $items = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
 
             if (!empty($items)) {
@@ -427,16 +438,18 @@ final class RestController extends Controller
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } elseif (!empty($fields['query']) && !empty($fields['field'])) {
-            unset($fields['key']);
+            unset($fields['agency'], $fields['key']);
 
             try {
                 $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
 
+                /** @var Content $suggestion */
                 foreach ($suggestions as $suggestion) {
                     $fields = $suggestion->getFields();
                     $this->lastItems[] = [
                         'id' => $suggestion->getId(),
                         'nid' => $suggestion->getNid(),
+                        'agency' => $suggestion->getAgency(),
                         'title' => isset($fields['title']['value']) ? $fields['title']['value'] : '',
                         'changed' => isset($fields['changed']['value']) ? $fields['changed']['value'] : '',
                     ];

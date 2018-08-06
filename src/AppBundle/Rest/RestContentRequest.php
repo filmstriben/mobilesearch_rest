@@ -68,19 +68,19 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content that fulfills certain criteria.
      *
-     * @param string $agency
-     * @param int $node
-     * @param int $amount
-     * @param int $skip
-     * @param string $sort
-     * @param string $dir
-     * @param string $type
-     * @param string $status
+     * @param string $id     Fetch these specific entries (_id field match, multiple values separated by comma).
+     * @param string $node   Fetch these specific entries (nid field match, multiple values separated by comma).
+     * @param int $amount    Fetch this amount of entries.
+     * @param int $skip      Skip this amount of entries.
+     * @param string $sort   Sort field.
+     * @param string $dir    Sort direction. Either ASC or DESC.
+     * @param string $type   Entry type (type field).
+     * @param string $status Entry status (fields.status.value field).
      *
-     * @return Content[]
+     * @return Content[]     A set of entities.
      */
     public function fetchFiltered(
-        $agency,
+        $id = null,
         $node = null,
         $amount = 10,
         $skip = 0,
@@ -89,15 +89,16 @@ class RestContentRequest extends RestBaseRequest
         $type = null,
         $status = self::STATUS_PUBLISHED
     ) {
-        if (!empty($node)) {
-            return $this->fetchContent(explode(',', $node), $agency);
+        if (!empty($id)) {
+            return $this->fetchContent(explode(',', $id), '_id');
+        }
+        elseif (!empty($node)) {
+            return $this->fetchContent(explode(',', $node), 'nid');
         }
 
         $qb = $this->em
             ->getManager()
             ->createQueryBuilder(Content::class);
-
-        $qb->field('agency')->equals($agency);
 
         if ($type) {
             $qb->field('type')->equals($type);
@@ -125,18 +126,17 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Searches content suggestions based on certain criteria.
      *
-     * @param string $agency
-     * @param array $query
-     * @param array $field
-     * @param int $amount
-     * @param int $skip
+     * @param array $query Search query.
+     * @param array $field Field to search in.
+     * @param int $amount  Fetch this amount of suggestions.
+     * @param int $skip    Skip this amount of suggestions.
      *
-     * @return mixed
+     * @return Content[]   A set of suggested entities.
      *
      * @throws RestException
      * @throws \Doctrine\ODM\MongoDB\MongoDBException
      */
-    public function fetchSuggestions($agency, array $query, array $field, $amount = 10, $skip = 0)
+    public function fetchSuggestions(array $query, array $field, $amount = 10, $skip = 0)
     {
         if (count($query) != count($field)) {
             throw new RestException('Query and fields parameters count mismatch.');
@@ -150,8 +150,6 @@ class RestContentRequest extends RestBaseRequest
             ->em
             ->getManager()
             ->createQueryBuilder(Content::class);
-
-        $qb->field('agency')->equals($agency);
 
         while ($currentQuery = current($query)) {
             $currentField = current($field);
@@ -220,12 +218,12 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content by id.
      *
-     * @param array $ids     Content id's.
-     * @param string $agency Agency number.
+     * @param array $ids    Content id's.
+     * @param string $field Field where to seek the id's.
      *
-     * @return Content[]
+     * @return Content[]    A set of entities.
      */
-    public function fetchContent(array $ids, $agency)
+    public function fetchContent(array $ids, $field = 'nid')
     {
         if (empty($ids)) {
             return [];
@@ -235,14 +233,20 @@ class RestContentRequest extends RestBaseRequest
         // convert the value to int as well.
         array_walk(
             $ids,
-            function (&$v) {
-                $v = (int)$v;
+            function (&$v) use ($field) {
+                switch ($field) {
+                    case 'nid':
+                        $v = (int)$v;
+                        break;
+                    case 'id':
+                        $v = new \MongoId($v);
+                        break;
+                }
             }
         );
 
         $criteria = [
-            'agency' => $agency,
-            'nid' => ['$in' => $ids],
+            $field => ['$in' => $ids],
         ];
 
         $entities = $this->em

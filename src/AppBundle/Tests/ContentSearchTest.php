@@ -329,6 +329,7 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
     {
         $this->assertArrayHasKey('id', $item);
         $this->assertArrayHasKey('nid', $item);
+        $this->assertArrayHasKey('agency', $item);
         $this->assertArrayHasKey('title', $item);
         $this->assertArrayHasKey('changed', $item);
     }

@@ -81,6 +81,8 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 
     /**
      * Fetch by multiple nid's.
+     *
+     * TODO: Implement also test fetch by id.
      */
     public function testFetchByMultipleNid()
     {
