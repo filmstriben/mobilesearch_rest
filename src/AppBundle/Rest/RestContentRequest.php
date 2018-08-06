@@ -68,16 +68,15 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content that fulfills certain criteria.
      *
-     * @param string $agency
-     * @param int $node
-     * @param int $amount
-     * @param int $skip
-     * @param string $sort
-     * @param string $dir
-     * @param string $type
-     * @param string $status
+     * @param string $node   Fetch these specific entries (single id or a list, separated by comma).
+     * @param int $amount    Fetch this amount of entries.
+     * @param int $skip      Skip this amount of entries.
+     * @param string $sort   Sort field.
+     * @param string $dir    Sort direction. Either ASC or DESC.
+     * @param string $type   Entry type (type field).
+     * @param string $status Entry status (fields.status.value field).
      *
-     * @return Content[]
+     * @return Content[]     A set of entities.
      */
     public function fetchFiltered(
         $node = null,
@@ -122,13 +121,12 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Searches content suggestions based on certain criteria.
      *
-     * @param string $agency
-     * @param array $query
-     * @param array $field
-     * @param int $amount
-     * @param int $skip
+     * @param array $query Search query.
+     * @param array $field Field to search in.
+     * @param int $amount  Fetch this amount of suggestions.
+     * @param int $skip    Skip this amount of suggestions.
      *
-     * @return mixed
+     * @return Content[]   A set of suggested entities.
      *
      * @throws RestException
      * @throws \Doctrine\ODM\MongoDB\MongoDBException
@@ -215,10 +213,9 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content by id.
      *
-     * @param array $ids     Content id's.
-     * @param string $agency Agency number.
+     * @param array $ids Content id's.
      *
-     * @return Content[]
+     * @return Content[] A set of entities.
      */
     public function fetchContent(array $ids)
     {
