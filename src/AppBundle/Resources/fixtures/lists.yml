@@ -100,6 +100,6 @@
     name: Top 10 mest sete børnefilm i juni 2018
     nids: []
     type: manual
-    promoted: false
+    promoted: true
     weight: 2
 
