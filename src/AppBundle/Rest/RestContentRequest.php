@@ -91,8 +91,7 @@ class RestContentRequest extends RestBaseRequest
     ) {
         if (!empty($id)) {
             return $this->fetchContent(explode(',', $id), '_id');
-        }
-        elseif (!empty($node)) {
+        } elseif (!empty($node)) {
             return $this->fetchContent(explode(',', $node), 'nid');
         }
 
@@ -359,8 +358,7 @@ class RestContentRequest extends RestBaseRequest
                     // If not, remove the upload immediately.
                     if (function_exists('getimagesize') && getimagesize($finalImagePath)) {
                         $fieldToProcess['value'][$k] = 'files/'.$this->agencyId.'/'.$fileName;
-                    }
-                    else {
+                    } else {
                         $fileSystem->remove($finalImagePath);
                     }
                 }
