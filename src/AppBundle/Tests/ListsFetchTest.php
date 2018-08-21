@@ -49,10 +49,10 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         $result = $this->assertResponse($response);
 
         $this->assertNotEmpty($result['items']);
-        $this->assertCount(10, $result['items']);
 
         foreach ($result['items'] as $item) {
             $this->assertEquals(self::AGENCY, $item['agency']);
+            $this->assertTrue($item['promoted']);
         }
     }
 
@@ -105,6 +105,56 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         $totalListCount = count($result['items']);
 
         $this->assertCount($totalListCount, $list_ids);
+    }
+
+    /**
+     * Promoted value filter fetch.
+     */
+    public function testFetchPromoted()
+    {
+        // Fetch promoted only.
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'promoted' => 1,
+            'amount' => 99,
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $promotedCount = count($result['items']);
+
+        foreach ($result['items'] as $item) {
+            $this->assertTrue($item['promoted']);
+        }
+
+        // Fetch not promoted only.
+        $parameters['promoted'] = 0;
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $notPromotedCount = count($result['items']);
+
+        foreach ($result['items'] as $item) {
+            $this->assertFalse($item['promoted']);
+        }
+
+        // Fetch all.
+        $parameters['promoted'] = -1;
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $allCount = count($result['items']);
+
+        // Expect promoted count and not promoted count to match total count.
+        $this->assertEquals($allCount, $promotedCount + $notPromotedCount);
     }
 
     /**

@@ -294,8 +294,6 @@ final class RestController extends Controller
      *     }
      * )
      *
-     *
-     *
      * @Route("/content/fetch")
      * @Method({"GET"})
      */
@@ -876,6 +874,7 @@ final class RestController extends Controller
     }
 
     /**
+     * 'promoted' parameter legend: '-1' - all lists, '0' - not promoted, '1' - promoted.<br />
      * @ApiDoc(
      *     description="Fetches list entries.",
      *     section="List",
@@ -903,6 +902,12 @@ final class RestController extends Controller
      *             "dataType"="integer",
      *             "description"="Specifies how many results to skip. Defaults to 0.",
      *             "required"=false
+     *         },
+     *         {
+     *             "name"="promoted",
+     *             "dataType"="integer",
+     *             "description"="Filter items by promoted value. Defaults to 1 - promoted only.",
+     *             "required"=false
      *         }
      *     },
      *     output={
@@ -921,6 +926,7 @@ final class RestController extends Controller
             'key' => null,
             'amount' => 10,
             'skip' => 0,
+            'promoted' => 1,
         ];
 
         foreach (array_keys($fields) as $field) {

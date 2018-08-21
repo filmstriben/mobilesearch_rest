@@ -139,19 +139,25 @@ class RestListsRequest extends RestBaseRequest
     /**
      * Fetches list content.
      *
-     * @param string $agency Agency identifier.
-     * @param int $amount    Number of entries to fetch.
-     * @param int $skip      Number of entries to skip.
+     * @param string $agency    Agency identifier.
+     * @param int $amount       Number of entries to fetch.
+     * @param int $skip         Number of entries to skip.
+     * @param int $promoted Filter items by promoted value.
      *
      * @return Lists[]
      */
-    public function fetchLists($agency, $amount = 10, $skip = 0)
+    public function fetchLists($agency, $amount = 10, $skip = 0, $promoted = 1)
     {
         $qb = $this->em
             ->getManager()
             ->createQueryBuilder(Lists::class);
 
         $qb->field('agency')->equals($agency);
+
+        if (-1 !== (int)$promoted) {
+            $qb->field('promoted')->equals((boolean)$promoted);
+        }
+
         $qb->skip($skip)->limit($amount);
 
         return $qb->getQuery()->execute();
