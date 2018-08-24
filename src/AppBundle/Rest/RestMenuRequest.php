@@ -1,14 +1,9 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Rest;
 
+use AppBundle\Document\Menu;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
-
-use AppBundle\Rest\RestBaseRequest;
-use AppBundle\Document\Menu as FSMenu;
 
 class RestMenuRequest extends RestBaseRequest
 {
@@ -17,10 +12,10 @@ class RestMenuRequest extends RestBaseRequest
         parent::__construct($em);
 
         $this->primaryIdentifier = 'mlid';
-        $this->requiredFields = array(
+        $this->requiredFields = [
             $this->primaryIdentifier,
             'agency',
-        );
+        ];
     }
 
     protected function exists($id, $agency)
@@ -32,10 +27,10 @@ class RestMenuRequest extends RestBaseRequest
 
     protected function get($id, $agency)
     {
-        $criteria = array(
-            $this->primaryIdentifier => (int) $id,
+        $criteria = [
+            $this->primaryIdentifier => (int)$id,
             'agency' => $agency,
-        );
+        ];
 
         $entity = $this->em
             ->getRepository('AppBundle:Menu')
@@ -46,7 +41,7 @@ class RestMenuRequest extends RestBaseRequest
 
     protected function insert()
     {
-        $entity = $this->prepare(new FSMenu());
+        $entity = $this->prepare(new Menu());
 
         $dm = $this->em->getManager();
         $dm->persist($entity);
@@ -77,7 +72,14 @@ class RestMenuRequest extends RestBaseRequest
         return $entity;
     }
 
-    public function prepare(FSMenu $menu)
+    /**
+     * Prepares the menu entity structure.
+     *
+     * @param Menu $menu
+     *
+     * @return Menu
+     */
+    public function prepare(Menu $menu)
     {
         $body = $this->getParsedBody();
 
@@ -99,6 +101,30 @@ class RestMenuRequest extends RestBaseRequest
         $order = !empty($body['order']) ? $body['order'] : 0;
         $menu->setOrder($order);
 
+        $enabled = !empty($body['enabled']) ? (bool)$body['enabled'] : false;
+        $menu->setEnabled($enabled);
+
         return $menu;
+    }
+
+    /**
+     * Fetched menu entries.
+     *
+     * @param string $agency Agency identifier.
+     * @param int $amount    Number of entries to fetch.
+     * @param int $skip      Number of entries to skip.
+     *
+     * @return Menu[]
+     */
+    public function fetchMenus($agency, $amount = 10, $skip = 0)
+    {
+        $qb = $this->em
+            ->getManager()
+            ->createQueryBuilder(Menu::class);
+
+        $qb->field('agency')->equals($agency);
+        $qb->skip($skip)->limit($amount);
+
+        return $qb->getQuery()->execute();
     }
 }

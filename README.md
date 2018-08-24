@@ -12,40 +12,39 @@ Documentation
 
 Requirements
 ------------
+1. Apache/nginx web-server;
 1. PHP 5.4+
+2. php5-mongo extension
 2. composer
-3. php5-mongo extension
-4. mongodb storage
+4. mongo database
 
 Installation
 ------------
-
 1. Clone the repository.
 2. ``cd PATH_TO_CLONED_REPO``;
 2. Run ``composer install``.
 3. Run ``php app/console cache:clear --env=prod``.
-4. Setup a vhost to point to repository root;
+4. Setup a virtual host to point to repository root;
 5. Service available @ `http://SERVICE_URL/web/` (this URL should be used as communication endpoint).
 
 Configuration
 ------------
-1. Create and make writebale directory `./web/storage`;
+1. Create and make sure `./web/storage` path is write-able by web-server;
 2. Adjust mongodb settings in `app/config.yml`.
 
 First time run
 ------------
-Using a mongodb admin tool (e.g. Rockmongo) or any else create the required database (as in `config.yml`, by default it's `fs`).
-Create `Agency` collection and fill it with required agency crendentials, e.g.:
+Using a mongodb admin tool (e.g. Rockmongo) or mongo cmd, create the required database (as in `config.yml`, by default it's `fs`).
+Create `Agency` collection and fill it with required agency credentials, e.g.:
 ```
 {
    "agencyId": "100000",
    "key": "3fa",
    "name": "Dummy",
    "children": []
-}	
+}
 ```
 
 License
 -------
-
 This bundle is under the GNU GPL license.

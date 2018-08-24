@@ -1,0 +1,612 @@
+-
+    nid: 2000
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Tema
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p>Vi har samlet forskellige temalister som inspiration til at finde gode film på Filmstriben.</p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: '373331'
+            attr: []
+        url:
+            name: Url
+            value: "/node/3386"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/279fc64dc09d34ce1c3c577eab3a54f04831a6d6.jpeg
+            attr:
+                - image/jpeg
+        field_teaser:
+            name: Teaser
+            value: Se udvalgte temaer her. Der kommer løbende nye til
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Tema
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
+-
+    nid: 2001
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Fashion på film
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p>I dag begynder Copenhagen Fashion week og København fyldes med mere mode end sædvanlig. På Filmstriben kan du opleve modeskabere på tæt hold i dokumentarfilm om Karl Lagerfeld, Yves Saint Laurent og Raf Simons Diors chefdesigner. Nyd også dokumentaren ’Advanced style’, der ser på ældre skønne unikke newyorkeres liv og personlige stil.</p>
+                <p> </p>
+                <p> </p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: '403433'
+            attr: []
+        url:
+            name: Url
+            value: "/node/3434"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/ee3aa9b6532ce0ae78bbc90fc488df49e1be76bf.jpeg
+            attr:
+                - image/jpeg
+        field_teaser:
+            name: Teaser
+            value: 'Der er Fashion week i København '
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+        field_subject:
+            name: Subject
+            terms:
+                - mode
+                - modehuse
+                - haute couture
+    list: []
+-
+    nid: 2002
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Om Filmstriben
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p><strong>Om Bibliotekernes Filmtilbud</strong><br />Filmstriben er bibliotekernes digitale filmtilbud til dig. Filmstriben kan bruges af alle, der er oprettet som bruger på deres lokale bibliotek. Filmene er til visning til privat brug.</p>
+                <p>Filmstriben indeholder en bred vifte af spillefilm, kort- og dokumentarfilm for børn, unge og voksne. Filmene udvælges af bibliotekarisk personale ansat på DBC ud fra begreberne kvalitet, alsidighed og aktualitet som foreskrevet i biblioteksloven. Vi bestræber os på at udvælge alt det bedste inden for alle genrer med de begrænsninger, der også er tale om. Vi har nemlig ikke frit valg på alle hylder, da vi (endnu) ikke har aftaler med alle filmselskaber og filmproducenter. Vi arbejder løbende på at indgå aftaler med rettighedshavere som har biblioteksrelevant indhold.</p>
+                <p><strong>Filmstriben tilbyder film med eftertanke</strong><br />Filmstriben er et supplement til de kommercielle filmtjenester, ikke en konkurrent. Derfor vil Filmstriben aldrig blive den filmstreamingtjeneste hvor man kan finde alle film, men forhåbentlig den filmtjeneste hvor man kan finde de bedste film, og de film som kan være svære at finde andre steder. Vi prioriterer smalle film, europæiske film og kvalitets film, film der kan give en god oplevelse og film med stof til eftertanke frem for de helt store blockbustere.</p>
+                <p><strong>Ønsker til filmindhold</strong><br />Alle er velkomne til at komme med filmønsker til Filmstriben. Vi vil bestræbe os på at skaffe filmene, hvis de falder inden for udvælgelseskriterierne. Skriv til vores <a href="https://kundeservice.dbc.dk/filmstriben" target="_blank">kundeservice</a></p>
+                <p><strong>Sikkerhed</strong><br />Al kommunikation med Filmstriben sker via https-protokollen og dine data er dermed krypterede og beskyttede.</p>
+                <p><strong>Hvem står bag Filmstriben?</strong></p>
+                <ul><li>Ansvarlig distributør: DBC as</li>
+                <li>Denne portal indeholder spillefilm og kort &amp; dokumentarfilm</li>
+                </ul><p>Kontakt: <a href="https://kundeservice.dbc.dk/filmstriben" target="_blank">DBC Kundeservice</a></p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: ''
+            attr: []
+        url:
+            name: Url
+            value: "/node/3367"
+            attr: []
+        field_teaser:
+            name: Teaser
+            value: Om Bibliotekernes Filmtilbud
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Om Filmstriben artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
+-
+    nid: 2003
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Om aldersbegrænsning
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p>Mange film er omfattet af bestemmelser som begrænser adgangen for visse aldersgrupper. Begrænsningen er sat af Medierådet for Børn og Unge for at opfylde kravene i Filmloven.</p>
+                <p>Medierådet for Børn og Unge har til opgave at oplyse forældre m.fl. om films egnethed for børn. </p>
+                <p>Alle film, der vises i biografen, eller film der sælges, lejes eller udlånes offentligt til børn skal annonceres i overensstemmelse med de vurderinger, som Medierådet for Børn og Unges vurderingsudvalg giver. Er de ikke det, er det forbudt både at vise, sælge, leje eller udlåne dem offentligt til børn under 15 år.</p>
+                <p>Filmene er mærket med disse symboler:<br /> </p>
+                <p><img alt="" src="http://filmstriben.dk/fjernleje/content/img/medieraadet/a.gif" /> Tilladt for alle</p>
+                <p><img alt="" src="http://filmstriben.dk/fjernleje/content/img/medieraadet/7.gif" /> Tilladt for alle, men frarådes børn under 7 år</p>
+                <p><img alt="" src="http://filmstriben.dk/fjernleje/content/img/medieraadet/11.gif" /> Tilladt for børn over 11 år</p>
+                <p><img alt="" src="http://filmstriben.dk/fjernleje/content/img/medieraadet/15.gif" /> Tilladt for børn over 15 år</p>
+                <p> </p>
+                <p>Kontakt: <a href="https://kundeservice.dbc.dk/filmstriben" target="_blank">DBC Kundeservice</a></p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: ''
+            attr: []
+        url:
+            name: Url
+            value: "/node/3529"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/fc0ecc4ee6845ecfae489c320459a78ea86caeeb.jpeg
+            attr:
+                - image/jpeg
+        field_teaser:
+            name: Teaser
+            value: >
+                Mange film er omfattet af bestemmelser som begrænser adgangen for visse
+                aldersgrupper. Begrænsningen er sat af Medierådet for Børn og Unge for at opfylde
+                kravene i Filmloven.
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Om Filmstriben artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
+-
+    nid: 2004
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Om billedkvalitet
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p>Billedkvaliteten på de film der vises via Filmstriben svarer generelt til en DVD-film, forudsat at brugerens båndbredde er i orden.</p>
+                <p>Kvaliteten afhænger af en række faktorer:</p>
+                <p>•Det oprindelige materiale (kvalitet og slitagegrad af den originale filmkopi inden skanningen)<br />•Skanningen (hvornår og med hvilket udstyr blev filmen overført til video)<br />•Videomasteren (hvilket videoformat blev filmen lagret i)<br />•Masterfilformat (hvilken opløsning og teknologi er brugt til at lagre den digitale film)<br />•Konvertering (hvilken komprimeringsteknologi blev valgt)<br />•Båndbredde (brugerens internetforbindelse)<br />•Computer (hvor avanceret processor, hukommelse, grafikkort etc.)</p>
+                <p>Filmstriben stiller høje krav til båndbredde og computer og anvender teknologier til komprimering, som giver maksimal udnyttelse af materialet i forhold til overføringshastighed.</p>
+                <p>Hvis du oplever forskellig kvalitet på forskellige film, fx støj i billeder eller lyd, vil dette som regel skyldes det materiale der har ligget til grund for fremstillingen af den digitale kopi. Det kan enten være en slidt filmkopi eller en ældre skanning.</p>
+                <p>Kontakt:<br /><a href="https://kundeservice.dbc.dk/filmstriben" target="_blank">DBC Kundeservice</a></p>
+                <p> </p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: '868487'
+            attr: []
+        url:
+            name: Url
+            value: "/node/3532"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/058d98c1d270dd7126a9097f7167cff3414ed4c0.jpeg
+            attr:
+                - image/jpeg
+        field_teaser:
+            name: Teaser
+            value: >
+                Billedkvaliteten på de film der vises via Filmstriben svarer generelt til
+                en DVD-film, forudsat at brugerens båndbredde er i orden.
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Om Filmstriben artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
+-
+    nid: 2005
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Om sikkerhed
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p>For at sikre, at kun registrerede biblioteksbrugere har adgang til filmene, er alle film beskyttet med en digital kryptering, DRM, der står for ”Digital Rights Management”. Krypteringen betyder, at kun de brugere, der har tilladelse kan åbne indholdet og få det vist på deres computer.</p>
+                <p>Som bruger mærker du ikke til dette andet end at du bliver bedt om at logge ind for at starte visningen af filmen.</p>
+                <p>Kontakt:<br /><a href="https://kundeservice.dbc.dk/filmstriben" target="_blank">DBC Kundeservice</a></p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: ab9975
+            attr: []
+        url:
+            name: Url
+            value: "/node/3538"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/5d58fa5e5c2950d1466b781a1b4ed2a61607e4b9.jpeg
+            attr:
+                - image/jpeg
+        field_teaser:
+            name: Teaser
+            value: >
+                For at sikre at kun registrerede biblioteksbrugere har adgang til filmene,
+                er alle film beskyttet med en digital kryptering.
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Om Filmstriben artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
+-
+    nid: 2006
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Om KODA
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p><strong>DBC’s aftale med  KODA/NCB om betaling af vederlag for on demand afspilning af film fra Se film hjemmefra/Bibliotekernes filmtilbud</strong></p>
+                <p>DBC indgik i december 2012 aftale med KODA om betaling af vederlag for fremførelse af film via ”Se film hjemmefra” til visning på egne computere. Aftalen har virkning fra september 2009.<br /> <br />DBC afregner i henhold til aftalen vederlag til KODA/NCB for fremførelse af musik i spillefilm og kort- og dokumentarfilm, som DBC distribuerer via Filmstriben Bibliotekernes Filmtilbud, når biblioteker der har indgået tilslutningsaftale med DBC, lader brugere af biblioteket se spillefilm og kort- og dokumentarfilm via egne computere til private visning. Aftalen gælder også Kort- og dokumentarfilm fra Det Danske Filminstitut, som indgår i portalen ”Se film hjemmefra”.</p>
+                <p>For visning af spillefilm på biblioteket, f.eks. på basis af en spillefilmsaftale med MPLC, skal der fortsat indgås særlig aftale med KODA om vederlag for fremførelse af musik, eller med en part der repræsenterer KODA.</p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: ''
+            attr: []
+        url:
+            name: Url
+            value: "/node/3535"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/793250c8372bbe4f2e6da5787e1e8f1b75b1ed6b.png
+            attr:
+                - image/png
+        field_teaser:
+            name: Teaser
+            value: >
+                DBC’s aftale med  KODA/NCB om betaling af vederlag for on demand afspilning
+                af film fra Se film hjemmefra/Bibliotekernes filmtilbud.
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Om Filmstriben artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
+-
+    nid: 2007
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Om teknologien
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p>Filmene i "Se film hjemmefra" hentes via streamingteknologi, der gør det muligt at overføre og afspille film fra en server til en computer (pc eller mac) uden at filmen lagres på computeren.</p>
+                <p>Filmen kan sættes på pause, frem- og tilbagespoles og kan ses et ubegrænset antal gange i låneperioden som er 48 timer. Når låneperioden er afsluttet skal man ikke foretage sig yderligere.</p>
+                <p>Visning af film via "Se film hjemmefra" forudsætter lånernummer og pinkode til biblioteket, et internetabonnement (ADSL eller bedre) og en computer med kapacitet til at vise film.</p>
+                <p>Find mere information om dette under Teknik</p>
+                <p>Kontakt: <a href="https://kundeservice.dbc.dk/filmstriben" target="_blank">DBC Kundeservice</a></p>
+                <p> </p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: '576160'
+            attr: []
+        url:
+            name: Url
+            value: "/node/3541"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/3611cdbf797500893d89bdf04b0b097b3cab6c34.jpeg
+            attr:
+                - image/jpeg
+        field_teaser:
+            name: Teaser
+            value: >
+                Filmene i "Se film hjemmefra" hentes via streamingteknologi, der gør det
+                muligt at overføre og afspille film fra en server til en computer (pc eller
+                mac) uden at filmen lagres på computeren.
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Om Filmstriben artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
+-
+    nid: 2008
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Om filmrettigheder
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p>De film du kan se i Filmstriben/Se film hjemmefra er nyere og ældre kvalitetsfilm med rettigheder til privat visning. Der er film fra en lang række af danske kort- og dokumentarfilmproducenter, danske fagfilmproducenter og kommercielle spillefilm fra filmselskaberne - for både børn og voksne.</p>
+                <p>Filmene i Filmstriben er clearet til visning i Danmark, så der er kun adgang til at se dem fra danske IP-adresser.</p>
+                <p> </p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: bebebe
+            attr: []
+        url:
+            name: Url
+            value: "/node/3544"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/ffbc261c4418cee56bd47a9e6e642bb426f62420.jpeg
+            attr:
+                - image/jpeg
+        field_teaser:
+            name: Teaser
+            value: >
+                De film du kan låne i Filmstriben - Se film hjemmefra er nyere og ældre
+                kvalitetsfilm med kommercielle rettigheder til privat visning.
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Om Filmstriben artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
+-
+    nid: 2009
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Titel
+            value: Om App til iPad og iPhone
+            attr: []
+        body:
+            name: Brødtekst
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p><strong>App til iPad og iPhone</strong></p>
+                <p>Du kan se film på ipad og iphone, når du har hentet app'en Filmstriben Next i Appstore. App'en er gratis.</p>
+                <p>Installér app'en Filmstriben Next og klik på den. Her finder du den film du gerne vil se. Vælg Se film. Log ind med cpr-nummer og pinkode, som du har fået fra biblioteket. Klik ja til at fortsætte med at se filmen.</p>
+                <p>Så længe du ikke lukker app'en helt, men blot skifter til en anden app, kan du vende tilbage til filmen og fortsætte hvor du slap i de 24 timer dit lån varer.</p>
+                <p><em>Tip: Fryser underteksterne eller tidslinjen? </em>Hvis du oplever at underteksterne fryser eller forsvinder, eller at tidslinjen fryser, så tryk "refresh" i øverste højre hjørne, eller luk app'en og start den op igen.</p>
+                <p><em>Understøttede enheder. </em>Filmene kan ses både på iOS tablet og smartphone. På Wifi og 3G/4G. App'en opdateres løbende til nyeste version af iOS. Vi kan derfor ikke garantere funktionalitet på enheder, der ikke længere kan opgraderes til nyeste version. App'en understøtter ikke styresystemer under ios8+.</p>
+                <p> </p>
+                <p> </p>
+                <p> </p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: ''
+            attr: []
+        url:
+            name: Url
+            value: "/node/3568"
+            attr: []
+        field_images:
+            name: Images
+            value:
+                - files/150027/7ad50bbfe42058eb7cd33ea5735b30d3c8b36051.png
+            attr:
+                - image/png
+        field_teaser:
+            name: Teaser
+            value: >
+                Du kan se film på ipad og iphone, når du har hentet app'en Filmstriben
+                Next i Appstore. App'en er gratis.
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Teknisk artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+        field_subject:
+            name: Subject
+            terms:
+                - Om spørgsmål og svar
+    list: []
+-
+    nid: 2010
+    agency: '999999'
+    type: editorial
+    fields:
+        title:
+            name: Title
+            value: kappa
+            attr: []
+        body:
+            name: Body
+            value: |-
+                <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even"><p>Vivamus sed condimentum ipsum. Mauris varius, augue nec commodo rhoncus, enim ex faucibus sapien, et blandit mi libero non turpis. Nam elementum faucibus ex; vitae cursus urna. Nullam vitae nibh vitae elit rhoncus facilisis nec ut ipsum. Nam eget placerat erat, ac fermentum nisl. Phasellus lorem libero, fermentum eu urna vel, hendrerit mattis magna. Cras sit amet dui nunc. Nulla ullamcorper bibendum rhoncus. Proin sit amet odio elit. Nulla facilisi. Praesent a nulla et augue tempor viverra aliquam vitae quam. Suspendisse congue arcu quis nibh pretium, eu luctus tortor mattis? Vestibulum malesuada odio ut mi pulvinar, sed ornare urna bibendum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent dapibus sem et est interdum, id elementum neque sollicitudin. In consequat metus quis dui consectetur, id luctus eros euismod! Donec in venenatis eros. Maecenas ut tellus elementum, euismod ex eu, pulvinar eros? Sed quam orci, fermentum non purus id, feugiat dignissim justo. Nam gravida laoreet tempor. Cras rutrum mi sed dapibus volutpat. Ut interdum hendrerit est, sed efficitur metus. Fusce id commodo est. Sed in leo fermentum, porta massa quis, sagittis elit. Vestibulum nullam.</p>
+                </div></div></div>
+            attr: []
+        field_weight:
+            name: Weight
+            value: '0'
+            attr: []
+        field_background_color:
+            name: Backgound color
+            value: ''
+            attr: []
+        url:
+            name: Url
+            value: "/node/3627"
+            attr: []
+        field_teaser:
+            name: Teaser
+            value: >
+                "Pellentesque habitant morbi tristique senectus et netus et malesuada fames
+                ac turpis egestas. Aenean ut congue sem, ut lobortis erat. Quisque imperdiet
+                massa mi, sed aliquam erat gravida sed! Curabitur id lorem vitae enim egestas
+                pellentesque. Vivamus volutpat, augue vitae consequat eleifend nullam.\r\n"
+            attr: []
+    taxonomy:
+        field_type:
+            name: Type
+            terms:
+                - Artikel
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+        field_category:
+            name: Category
+            terms: []
+    list: []
