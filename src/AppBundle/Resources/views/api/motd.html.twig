@@ -1,0 +1,43 @@
+<div style="padding: 0 1%;">
+    <div>
+        <h2>API requests</h2>
+        <p>The payload of each <strong>request</strong> (except for GET method) has the following structure:</p>
+        <pre>{
+    "credentials":{
+        "agencyId": {type: String, Required},
+        "key":      {type: String, Required}
+    },
+    "body":{
+        ...
+    }
+}</pre>
+        <p>The <em>credentials</em> section is used for basic authorisation, described below.</p>
+        <p>The <em>body</em> section is a collection of fields that a certain entity consists of and it varies depending on the method used and entity type - content, list or menu.</p>
+        <h2>Authorisation</h2>
+        <p>Every request must be accompanied with authorisation data based on <em>agencyId</em> and <em>key</em> values.</p>
+        <p>These values are passed within the payload in the <em>credentials</em> key.</p>
+        <p>When using GET method requests - these reside in URI, as <em>agency</em> and <em>key</em> query parameters.</p>
+        <p>To generate a <em>key</em>, calculate a SHA1 checksum of the agency value and the secret key of a certain agency.</p>
+        <pre>php > $secret = 'm3u';
+php > $agency = '999999';
+php > echo sha1($agency.$secret);
+96b3df17091e8633aa1c03dd28f40b5f965ad45c</pre>
+        <h2>Images</h2>
+        <p>Best way to push an image within a field value of a content entity is to encode image contents in base64 enconding and pass the encoded value.</p>
+        <p>The image is decoded server-wise into a physical file based on the mime type which should reside in the <em>attr</em> key.</p>
+        <p>Currently supported mime types are <em>image/jpg</em>, <em>image/jpeg</em>, <em>image/png</em> and <em>image/gif</em>.</p>
+        <p>Image field example:</p>
+        <pre>"field_background_image":{
+      "name":"Backgound image",
+      "value":"R0lGODlh/AGM...",
+      "attr":{
+            "filemime":"image/gif"
+      }
+}</pre>
+        <p>The <em>value</em> property will be replaced with the relative path to the file (if the base64 content has been successfully decoded and the stored).</p>
+        <p>To create an URL to this file, prepend the path in the field with webservice URL.</p>
+        <p>For example, the webservice url is <em>http://example.com/web/</em> and the image path is <em>files/100000/4d869d74713a19a622d2dab252f9b8dc.gif</em></p>
+        <p>The resulting URL for the image is <em>http://example.com/web/files/100000/4d869d74713a19a622d2dab252f9b8dc.gif</em></p>
+    </div>
+    <br />
+</div>

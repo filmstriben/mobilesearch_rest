@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Document;
 
@@ -51,11 +48,13 @@ class Agency
      * Set agencyId
      *
      * @param string $agencyId
+     *
      * @return self
      */
     public function setAgencyId($agencyId)
     {
         $this->agencyId = $agencyId;
+
         return $this;
     }
 
@@ -73,11 +72,13 @@ class Agency
      * Set key
      *
      * @param string $key
+     *
      * @return self
      */
     public function setKey($key)
     {
         $this->key = $key;
+
         return $this;
     }
 
@@ -95,11 +96,13 @@ class Agency
      * Set name
      *
      * @param string $name
+     *
      * @return self
      */
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -117,11 +120,13 @@ class Agency
      * Set children
      *
      * @param collection $children
+     *
      * @return self
      */
     public function setChildren($children)
     {
         $this->children = $children;
+
         return $this;
     }
 

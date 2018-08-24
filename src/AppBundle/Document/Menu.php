@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Document;
 
@@ -48,6 +45,11 @@ class Menu
     protected $order;
 
     /**
+     * @MongoDB\boolean
+     */
+    protected $enabled;
+
+    /**
      * Get id
      *
      * @return id $id
@@ -61,11 +63,13 @@ class Menu
      * Set mlid
      *
      * @param int $mlid
+     *
      * @return self
      */
     public function setMlid($mlid)
     {
         $this->mlid = $mlid;
+
         return $this;
     }
 
@@ -83,11 +87,13 @@ class Menu
      * Set agency
      *
      * @param string $agency
+     *
      * @return self
      */
     public function setAgency($agency)
     {
         $this->agency = $agency;
+
         return $this;
     }
 
@@ -105,11 +111,13 @@ class Menu
      * Set type
      *
      * @param string $type
+     *
      * @return self
      */
     public function setType($type)
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -127,11 +135,13 @@ class Menu
      * Set name
      *
      * @param string $name
+     *
      * @return self
      */
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -149,11 +159,13 @@ class Menu
      * Set url
      *
      * @param string $url
+     *
      * @return self
      */
     public function setUrl($url)
     {
         $this->url = $url;
+
         return $this;
     }
 
@@ -171,11 +183,13 @@ class Menu
      * Set order
      *
      * @param int $order
+     *
      * @return self
      */
     public function setOrder($order)
     {
         $this->order = $order;
+
         return $this;
     }
 
@@ -187,5 +201,29 @@ class Menu
     public function getOrder()
     {
         return $this->order;
+    }
+
+    /**
+     * Set enabled
+     *
+     * @param boolean $enabled
+     *
+     * @return self
+     */
+    public function setEnabled($enabled)
+    {
+        $this->enabled = $enabled;
+
+        return $this;
+    }
+
+    /**
+     * Get enabled
+     *
+     * @return boolean
+     */
+    public function getEnabled()
+    {
+        return $this->enabled;
     }
 }

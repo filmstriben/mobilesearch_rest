@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 namespace AppBundle\Document;
 
@@ -61,11 +58,13 @@ class Content
      * Set nid
      *
      * @param int $nid
+     *
      * @return self
      */
     public function setNid($nid)
     {
         $this->nid = $nid;
+
         return $this;
     }
 
@@ -83,11 +82,13 @@ class Content
      * Set type
      *
      * @param string $type
+     *
      * @return self
      */
     public function setType($type)
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -105,11 +106,13 @@ class Content
      * Set fields
      *
      * @param collection $fields
+     *
      * @return self
      */
     public function setFields($fields)
     {
         $this->fields = $fields;
+
         return $this;
     }
 
@@ -127,11 +130,13 @@ class Content
      * Set taxonomy
      *
      * @param collection $taxonomy
+     *
      * @return self
      */
     public function setTaxonomy($taxonomy)
     {
         $this->taxonomy = $taxonomy;
+
         return $this;
     }
 
@@ -149,11 +154,13 @@ class Content
      * Set list
      *
      * @param collection $list
+     *
      * @return self
      */
     public function setList($list)
     {
         $this->list = $list;
+
         return $this;
     }
 
@@ -171,11 +178,13 @@ class Content
      * Set agency
      *
      * @param string $agency
+     *
      * @return self
      */
     public function setAgency($agency)
     {
         $this->agency = $agency;
+
         return $this;
     }
 

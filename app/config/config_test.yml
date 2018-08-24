@@ -12,5 +12,5 @@ web_profiler:
     toolbar: false
     intercept_redirects: false
 
-swiftmailer:
-    disable_delivery: true
+doctrine_mongodb:
+    default_database: "%mongo_db%_test"
