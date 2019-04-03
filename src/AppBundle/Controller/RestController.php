@@ -6,6 +6,7 @@ use AppBundle\Document\Content;
 use AppBundle\Document\Lists;
 use AppBundle\Document\Menu;
 use AppBundle\Exception\RestException;
+use AppBundle\Repositories\ListsRepository;
 use AppBundle\Rest\RestBaseRequest;
 use AppBundle\Rest\RestContentRequest;
 use AppBundle\Rest\RestListsRequest;
@@ -214,13 +215,13 @@ final class RestController extends Controller
     }
 
     /**
-     * 'id' parameter, when specified, ignores any other parameters.<br />
-     * 'node' parameter, like above, ignores any other parameters. The difference between 'id' and 'nid', is that 'id'
+     * <p>'id' parameter, when specified, ignores any other parameters.</p>
+     * <p>'node' parameter, like above, ignores any other parameters. The difference between 'id' and 'nid', is that 'id'
      * is a unique identifier for every piece content stored. Alternatively, 'nid' can repeat, since it might be the
-     * same content pushed to various portals. Please note that this might produce duplicates
-     * due to the fact that content might exists in various portals. To fetch an exact entry(ies) use 'id'.<br />
-     * 'status' parameter legend: '-1' - all content, '0' - not published, '1' - published.<br />
-     * 'order' parameter legend: 'ASC' - ascending, 'DESC' - descending.
+     * same content pushed by different agencies. Please note, that this might produce duplicates
+     * due to the fact that content might exist for several agencies. To fetch an exact entry(ies) use 'id'.</p>
+     * <p>'status' parameter legend: '-1' - all content, '0' - not published, '1' - published.</p>
+     * <p>'order' parameter legend: 'ASC' - ascending, 'DESC' - descending.</p>
      *
      * @ApiDoc(
      *     description="Fetches content entries.",
@@ -349,17 +350,20 @@ final class RestController extends Controller
     }
 
     /**
-     * 'query' parameter can accept regular expressions, case insensitive, when searching within any content fields, unless
-     * the search is made within the 'taxonomy', where a direct match is performed.<br />
-     * 'query' and 'field' parameters must always match in count.<br />
+     * <p>'query' parameter can accept regular expressions, case insensitive, when searching within any content fields, unless
+     * the search is made within the 'taxonomy', where a direct match is performed.</p>
+     * <p>'query' and 'field' parameters must always match in count.<br />
      * There might multiple pairs of 'query' and 'field' parameters. Multiple pairs of search conditions are
-     * treated as a logical AND.<br />
-     * To use multiple conditions, add square brackets after the parameter in the query string.<br />
+     * treated as a logical AND.</p>
+     * <p>To use multiple conditions, add square brackets after the parameter in the query string.<br />
      * 'query' parameter can receive multiple values, separated by comma. This would result for content that is
      * searched, to contain at least one term from the comma separated list.
      * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms</pre>
      * This query string would fetch content with having 'editorial' value as 'type' and 'taxonomy.field_realm.terms'
-     * containing either 'Hjemmefra', or 'At home' terms.
+     * containing either 'Hjemmefra', or 'At home' terms.</p>
+     * <p>Add a 'format=short' pair to the query string to get a plain list of title suggestions.
+     * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms&format=short</pre></p>
+     *
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
@@ -401,6 +405,12 @@ final class RestController extends Controller
      *             "description"="Specifies how many results to skip. Defaults to 0.",
      *             "required"=false
      *         },
+     *         {
+     *             "name"="format",
+     *             "dataType"="string",
+     *             "description"="Use 'short' value to get a plain list of suggested titles.",
+     *             "required"=false
+     *         },
      *     },
      *     output={
      *         "class": "AppBundle\IO\ContentOutput"
@@ -420,6 +430,7 @@ final class RestController extends Controller
             'field' => null,
             'amount' => 10,
             'skip' => 0,
+            'format' => null,
         ];
 
         foreach (array_keys($fields) as $field) {
@@ -443,14 +454,20 @@ final class RestController extends Controller
 
                 /** @var Content $suggestion */
                 foreach ($suggestions as $suggestion) {
-                    $fields = $suggestion->getFields();
-                    $this->lastItems[] = [
-                        'id' => $suggestion->getId(),
-                        'nid' => $suggestion->getNid(),
-                        'agency' => $suggestion->getAgency(),
-                        'title' => isset($fields['title']['value']) ? $fields['title']['value'] : '',
-                        'changed' => isset($fields['changed']['value']) ? $fields['changed']['value'] : '',
-                    ];
+                    $suggestionFields = $suggestion->getFields();
+
+                    if (!empty($fields['format']) && 'short' == $fields['format']) {
+                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
+                    }
+                    else {
+                        $this->lastItems[] = [
+                            'id' => $suggestion->getId(),
+                            'nid' => $suggestion->getNid(),
+                            'agency' => $suggestion->getAgency(),
+                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
+                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                        ];
+                    }
                 }
 
                 $this->lastStatus = true;
@@ -874,7 +891,8 @@ final class RestController extends Controller
     }
 
     /**
-     * 'promoted' parameter legend: '-1' - all lists, '0' - not promoted, '1' - promoted.<br />
+     * <p>'promoted' parameter possible values:</p>
+     * <p>'-1' - all lists, '0' - not promoted, '1' - promoted.</p>
      * @ApiDoc(
      *     description="Fetches list entries.",
      *     section="List",
@@ -908,6 +926,12 @@ final class RestController extends Controller
      *             "dataType"="integer",
      *             "description"="Filter items by promoted value. Defaults to 1 - promoted only.",
      *             "required"=false
+     *         },
+     *         {
+     *              "name"="itemType",
+     *              "dataType"="string",
+     *              "descripion"="Include only items of certain type.",
+     *              "required"=false
      *         }
      *     },
      *     output={
@@ -927,6 +951,7 @@ final class RestController extends Controller
             'amount' => 10,
             'skip' => 0,
             'promoted' => 1,
+            'itemType' => null,
         ];
 
         foreach (array_keys($fields) as $field) {
@@ -943,8 +968,15 @@ final class RestController extends Controller
 
             /** @var Lists[] $suggestions */
             $suggestions = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
+            /** @var ListsRepository $listsRepository */
+            $listsRepository = $em->getRepository(Lists::class);
 
             foreach ($suggestions as $suggestion) {
+                // In case filtering node types is needed.
+                if (count($suggestion->getNids()) > 0 && $fields['itemType']) {
+                    $suggestion = $listsRepository->filterAttachedItems($suggestion, $fields['itemType']);
+                }
+
                 $this->lastItems[] = [
                     'agency' => $suggestion->getAgency(),
                     'key' => $suggestion->getKey(),
@@ -1031,7 +1063,7 @@ final class RestController extends Controller
     }
 
     /**
-     * 'contentType' - content entity type identifier, value in 'type' field of the content entity.<br />
+     * <p>'contentType' - content entity type identifier, value in 'type' field of the content entity.</p>
      *
      * @ApiDoc(
      *     description="Fetches vocabularies for a certain content entity type.",
@@ -1153,10 +1185,10 @@ final class RestController extends Controller
     }
 
     /**
-     * 'vocabulary' - name of the vocabulary under the 'taxonomy' key in content entity.
-     * To fetch all available vocabularies for a certain content entity type, see '/taxonomy/vocabularies' route.<br />
-     * 'contentType' - content entity type identifier, value in 'type' field of the content entity.<br />
-     * 'query' - search string, accepts regular expressions, case insensitive.
+     * <p>'vocabulary' - name of the vocabulary under the 'taxonomy' key in content entity.
+     * To fetch all available vocabularies for a certain content entity type, see '/taxonomy/vocabularies' route.</p>
+     * <p>'contentType' - content entity type identifier, value in 'type' field of the content entity.</p>
+     * <p>'query' - search string, accepts regular expressions, case insensitive.</p>
      *
      * @ApiDoc(
      *     description="Fetches term suggestions matching a search string.",

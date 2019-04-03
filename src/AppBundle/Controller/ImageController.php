@@ -92,7 +92,7 @@ class ImageController extends Controller
     }
 
     /**
-     * resize parameter, when omitted, will default to original image size.
+     * <p>resize parameter, when omitted, will default to original (full) image size.</p>
      *
      * @ApiDoc(
      *     description="Fetches image and, optionally, re-sizes it.",

@@ -142,7 +142,7 @@ class RestListsRequest extends RestBaseRequest
      * @param string $agency    Agency identifier.
      * @param int $amount       Number of entries to fetch.
      * @param int $skip         Number of entries to skip.
-     * @param int $promoted Filter items by promoted value.
+     * @param int $promoted     Filter items by promoted value.
      *
      * @return Lists[]
      */
