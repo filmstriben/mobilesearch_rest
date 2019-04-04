@@ -103,3 +103,12 @@
     promoted: true
     weight: 2
 
+-
+    agency: '999999'
+    key: 9a0c659775a300f9e677e373857d9f2a
+    name: Some list of mixed content
+    nids: [1000,1001,2000]
+    type: manual
+    promoted: true
+    weight: 2
+
