@@ -3,7 +3,9 @@
 namespace AppBundle\Tests;
 
 use AppBundle\DataFixtures\MongoDB\AgencyFixtures;
+use AppBundle\DataFixtures\MongoDB\ContentFixtures;
 use AppBundle\DataFixtures\MongoDB\ListsFixtures;
+use AppBundle\Document\Content;
 
 /**
  * Class ListsFetchTest
@@ -158,6 +160,42 @@ class ListsFetchTest extends AbstractFixtureAwareTest
     }
 
     /**
+     * Filtered item types in lists fetch.
+     */
+    public function testFetchFilteredItems()
+    {
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'promoted' => 1,
+            'amount' => 99,
+            'itemType' => 'os',
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $em = $this->getContainer()->get('doctrine_mongodb');
+
+        foreach ($result['items'] as $item) {
+            $nids = $item['nids'];
+
+            if (!empty($nids)) {
+                foreach ($nids as $nid) {
+                    /** @var Content $node */
+                    $node = $em->getRepository(Content::class)
+                        ->findOneBy(['nid' => (int)$nid]);
+
+                    $this->assertNotEmpty($node);
+                    $this->assertEquals($parameters['itemType'], $node->getType());
+                }
+            }
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getFixtures()
@@ -165,6 +203,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         return [
             new AgencyFixtures(),
             new ListsFixtures(),
+            new ContentFixtures(),
         ];
     }
 }

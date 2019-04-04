@@ -323,6 +323,31 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
     }
 
     /**
+     * Fetch search result in short list format.
+     */
+    public function testShortSuggestionList()
+    {
+        $query = 'Om';
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'query' => [$query],
+            'field' => ['fields.title.value'],
+            'format' => 'short',
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+        $this->assertNotEmpty($result['items']);
+
+        foreach ($result['items'] as $item) {
+            $this->assertInternalType('string', $item);
+            $this->assertContains($query, $item);
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function assertItemStructure(array $item)

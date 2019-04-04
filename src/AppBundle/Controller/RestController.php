@@ -930,7 +930,7 @@ final class RestController extends Controller
      *         {
      *              "name"="itemType",
      *              "dataType"="string",
-     *              "descripion"="Include only items of certain type.",
+     *              "description"="Lists should contain items only if this content type.",
      *              "required"=false
      *         }
      *     },
