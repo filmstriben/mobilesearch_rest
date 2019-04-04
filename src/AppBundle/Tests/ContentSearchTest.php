@@ -23,8 +23,8 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
     public function testSearchWithWrongKey()
     {
         $parameters = [
-            'agency' => SELF::AGENCY,
-            'key' => SELF::KEY.'-wrong',
+            'agency' => self::AGENCY,
+            'key' => self::KEY.'-wrong',
         ];
 
         $response = $this->request(self::URI, $parameters, 'GET');

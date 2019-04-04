@@ -11,7 +11,18 @@ use Doctrine\ODM\MongoDB\DocumentRepository;
  */
 class ListsRepository extends DocumentRepository
 {
-    public function filterAttachedItems(Lists $list, $itemType) {
+    /**
+     * Filter items in the list that are not of certain type.
+     *
+     * @param Lists $list
+     *   The list object.
+     * @param string $itemType
+     *   Item type to keep.
+     * @return Lists
+     *   Altered list object.
+     */
+    public function filterAttachedItems(Lists $list, $itemType)
+    {
         $nids = $list->getNids();
         $qb = $this->getDocumentManager()->createQueryBuilder(Content::class);
 

@@ -458,8 +458,7 @@ final class RestController extends Controller
 
                     if (!empty($fields['format']) && 'short' == $fields['format']) {
                         $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
-                    }
-                    else {
+                    } else {
                         $this->lastItems[] = [
                             'id' => $suggestion->getId(),
                             'nid' => $suggestion->getNid(),
