@@ -34,4 +34,12 @@ class ListOutput
      * @JMS\Type("array<AppBundle\IO\ListItem>")
      */
     private $items;
+
+    /**
+     * Total number of available items.
+     *
+     * @var array
+     * @JMS\Type("integer")
+     */
+    private $hits;
 }

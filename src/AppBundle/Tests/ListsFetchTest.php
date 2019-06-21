@@ -34,6 +34,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         $this->assertFalse($result['status']);
         $this->assertEmpty($result['items']);
         $this->assertEquals($result['message'], 'Failed validating request. Check your credentials (agency & key).');
+        $this->assertEquals(0, $result['hits']);
     }
 
     /**
@@ -56,6 +57,8 @@ class ListsFetchTest extends AbstractFixtureAwareTest
             $this->assertEquals(self::AGENCY, $item['agency']);
             $this->assertTrue($item['promoted']);
         }
+
+        $this->assertGreaterThan(0, $result['hits']);
     }
 
     /**
@@ -85,6 +88,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
             }
 
             $this->assertLessThanOrEqual($amount, count($result['items']));
+            $this->assertGreaterThan(0, $result['hits']);
 
             foreach ($result['items'] as $item) {
                 // Node id's normally should not repeat for same agency.
@@ -157,6 +161,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
 
         // Expect promoted count and not promoted count to match total count.
         $this->assertEquals($allCount, $promotedCount + $notPromotedCount);
+        $this->assertGreaterThan(0, $result['hits']);
     }
 
     /**
@@ -193,6 +198,8 @@ class ListsFetchTest extends AbstractFixtureAwareTest
                 }
             }
         }
+
+        $this->assertGreaterThan(0, $result['hits']);
     }
 
     /**

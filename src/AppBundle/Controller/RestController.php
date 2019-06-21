@@ -322,31 +322,42 @@ final class RestController extends Controller
         $em = $this->get('doctrine_mongodb');
         $restContentRequest = new RestContentRequest($em);
 
+        $hits = 0;
+
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } else {
             unset($fields['agency'], $fields['key']);
-            $items = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
+            try {
+                $items = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
 
-            if (!empty($items)) {
-                /** @var Content $item */
-                foreach ($items as $item) {
-                    $this->lastItems[] = [
-                        'id' => $item->getId(),
-                        'nid' => $item->getNid(),
-                        'agency' => $item->getAgency(),
-                        'type' => $item->getType(),
-                        'fields' => $item->getFields(),
-                        'taxonomy' => $item->getTaxonomy(),
-                        'list' => $item->getList(),
-                    ];
+                if (!empty($items)) {
+                    /** @var Content $item */
+                    foreach ($items as $item) {
+                        $this->lastItems[] = [
+                            'id' => $item->getId(),
+                            'nid' => $item->getNid(),
+                            'agency' => $item->getAgency(),
+                            'type' => $item->getType(),
+                            'fields' => $item->getFields(),
+                            'taxonomy' => $item->getTaxonomy(),
+                            'list' => $item->getList(),
+                        ];
+                    }
+
+                    $this->lastStatus = true;
                 }
 
-                $this->lastStatus = true;
+                $fields['countOnly'] = true;
+                $hits = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
+            }
+            catch (RestException $e) {
+                // TODO: Log this instead.
+                $this->lastMessage = $e->getMessage();
             }
         }
 
-        return $this->setResponse($this->lastStatus, $this->lastMessage, $this->lastItems);
+        return $this->setResponse($this->lastStatus, $this->lastMessage, $this->lastItems, $hits);
     }
 
     /**
@@ -444,19 +455,23 @@ final class RestController extends Controller
         $em = $this->get('doctrine_mongodb');
         $restContentRequest = new RestContentRequest($em);
 
+        $hits = 0;
+
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } elseif (!empty($fields['query']) && !empty($fields['field'])) {
             unset($fields['agency'], $fields['key']);
 
             try {
+                $format = $fields['format'];
+                unset($fields['format']);
                 $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
 
                 /** @var Content $suggestion */
                 foreach ($suggestions as $suggestion) {
                     $suggestionFields = $suggestion->getFields();
 
-                    if (!empty($fields['format']) && 'short' == $fields['format']) {
+                    if ('short' == $format) {
                         $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
                     } else {
                         $this->lastItems[] = [
@@ -469,8 +484,13 @@ final class RestController extends Controller
                     }
                 }
 
+
+                $fields['countOnly'] = TRUE;
+                $hits = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
+
                 $this->lastStatus = true;
             } catch (RestException $e) {
+                // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
             }
         }
@@ -478,7 +498,8 @@ final class RestController extends Controller
         return $this->setResponse(
             $this->lastStatus,
             $this->lastMessage,
-            $this->lastItems
+            $this->lastItems,
+            $hits
         );
     }
 
@@ -697,34 +718,46 @@ final class RestController extends Controller
         $em = $this->get('doctrine_mongodb');
         $restMenuRequest = new RestMenuRequest($em);
 
+        $hits = 0;
+
         if (!$restMenuRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } else {
             unset($fields['key']);
 
-            /** @var Menu[] $suggestions */
-            $menuEntities = call_user_func_array([$restMenuRequest, 'fetchMenus'], $fields);
+            try {
+                /** @var Menu[] $suggestions */
+                $menuEntities = call_user_func_array([$restMenuRequest, 'fetchMenus'], $fields);
 
-            /** @var Menu $menuEntity */
-            foreach ($menuEntities as $menuEntity) {
-                $this->lastItems[] = [
-                    'mlid' => $menuEntity->getMlid(),
-                    'agency' => $menuEntity->getAgency(),
-                    'type' => $menuEntity->getType(),
-                    'name' => $menuEntity->getName(),
-                    'url' => $menuEntity->getUrl(),
-                    'weight' => $menuEntity->getOrder(),
-                    'enabled' => $menuEntity->getEnabled(),
-                ];
+                /** @var Menu $menuEntity */
+                foreach ($menuEntities as $menuEntity) {
+                    $this->lastItems[] = [
+                        'mlid' => $menuEntity->getMlid(),
+                        'agency' => $menuEntity->getAgency(),
+                        'type' => $menuEntity->getType(),
+                        'name' => $menuEntity->getName(),
+                        'url' => $menuEntity->getUrl(),
+                        'weight' => $menuEntity->getOrder(),
+                        'enabled' => $menuEntity->getEnabled(),
+                    ];
+                }
+
+                $this->lastStatus = true;
+
+                $fields['countOnly'] = TRUE;
+                $hits = call_user_func_array([$restMenuRequest, 'fetchMenus'], $fields);
             }
-
-            $this->lastStatus = true;
+            catch (RestException $e) {
+                // TODO: Log this instead.
+                $this->lastMessage = $e->getMessage();
+            }
         }
 
         return $this->setResponse(
             $this->lastStatus,
             $this->lastMessage,
-            $this->lastItems
+            $this->lastItems,
+            $hits
         );
     }
 
@@ -960,40 +993,55 @@ final class RestController extends Controller
         $em = $this->get('doctrine_mongodb');
         $restListsRequest = new RestListsRequest($em);
 
+        $hits = 0;
+
         if (!$restListsRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } else {
             unset($fields['key']);
 
-            /** @var Lists[] $suggestions */
-            $suggestions = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
-            /** @var ListsRepository $listsRepository */
-            $listsRepository = $em->getRepository(Lists::class);
+            try {
+                $itemType = $fields['itemType'];
+                unset($fields['itemType']);
 
-            foreach ($suggestions as $suggestion) {
-                // In case filtering node types is needed.
-                if (count($suggestion->getNids()) > 0 && $fields['itemType']) {
-                    $suggestion = $listsRepository->filterAttachedItems($suggestion, $fields['itemType']);
+                /** @var Lists[] $suggestions */
+                $suggestions = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
+                /** @var ListsRepository $listsRepository */
+                $listsRepository = $em->getRepository(Lists::class);
+
+                foreach ($suggestions as $suggestion) {
+                    // In case filtering node types is needed.
+                    if (count($suggestion->getNids()) > 0 && $itemType) {
+                        $suggestion = $listsRepository->filterAttachedItems($suggestion, $itemType);
+                    }
+
+                    $this->lastItems[] = [
+                        'agency' => $suggestion->getAgency(),
+                        'key' => $suggestion->getKey(),
+                        'name' => $suggestion->getName(),
+                        'nids' => $suggestion->getNids(),
+                        'type' => $suggestion->getType(),
+                        'promoted' => $suggestion->getPromoted(),
+                        'weight' => $suggestion->getWeight(),
+                    ];
                 }
 
-                $this->lastItems[] = [
-                    'agency' => $suggestion->getAgency(),
-                    'key' => $suggestion->getKey(),
-                    'name' => $suggestion->getName(),
-                    'nids' => $suggestion->getNids(),
-                    'type' => $suggestion->getType(),
-                    'promoted' => $suggestion->getPromoted(),
-                    'weight' => $suggestion->getWeight(),
-                ];
-            }
+                $this->lastStatus = true;
 
-            $this->lastStatus = true;
+                $fields['countOnly'] = TRUE;
+                $hits = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
+            }
+            catch (RestException $e) {
+                // TODO: Log this instead.
+                $this->lastMessage = $e->getMessage();
+            }
         }
 
         return $this->setResponse(
             $this->lastStatus,
             $this->lastMessage,
-            $this->lastItems
+            $this->lastItems,
+            $hits
         );
     }
 
@@ -1352,13 +1400,17 @@ final class RestController extends Controller
      *
      * @return Response       Outgoing Response object.
      */
-    private function setResponse($status = true, $message = '', $items = [])
+    private function setResponse($status = true, $message = '', $items = [], $hits = NULL)
     {
         $responseContent = [
             'status' => $status,
             'message' => $message,
             'items' => $items,
         ];
+
+        if (NULL !== $hits) {
+            $responseContent['hits'] = (int) $hits;
+        }
 
         $response = new Response(json_encode($responseContent));
         $response->headers->set('Content-Type', 'application/json');

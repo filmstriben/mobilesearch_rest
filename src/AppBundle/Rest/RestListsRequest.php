@@ -143,10 +143,11 @@ class RestListsRequest extends RestBaseRequest
      * @param int $amount       Number of entries to fetch.
      * @param int $skip         Number of entries to skip.
      * @param int $promoted     Filter items by promoted value.
+     * @param bool $countOnly   Fetch only number of entries.
      *
      * @return Lists[]
      */
-    public function fetchLists($agency, $amount = 10, $skip = 0, $promoted = 1)
+    public function fetchLists($agency, $amount = 10, $skip = 0, $promoted = 1, $countOnly = FALSE)
     {
         $qb = $this->em
             ->getManager()
@@ -154,11 +155,16 @@ class RestListsRequest extends RestBaseRequest
 
         $qb->field('agency')->equals($agency);
 
+        if ($countOnly) {
+            $qb->count();
+        }
+        else {
+            $qb->skip($skip)->limit($amount);
+        }
+
         if (-1 !== (int)$promoted) {
             $qb->field('promoted')->equals((boolean)$promoted);
         }
-
-        $qb->skip($skip)->limit($amount);
 
         return $qb->getQuery()->execute();
     }
