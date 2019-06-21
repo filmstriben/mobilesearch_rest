@@ -32,6 +32,7 @@ class MenuFetchTest extends AbstractFixtureAwareTest implements AssertItemStruct
         $this->assertFalse($result['status']);
         $this->assertEmpty($result['items']);
         $this->assertEquals($result['message'], 'Failed validating request. Check your credentials (agency & key).');
+        $this->assertEquals(0, $result['hits']);
     }
 
     /**
@@ -55,6 +56,8 @@ class MenuFetchTest extends AbstractFixtureAwareTest implements AssertItemStruct
             $this->assertEquals(self::AGENCY, $item['agency']);
             $this->assertItemStructure($item);
         }
+
+        $this->assertGreaterThan(0, $result['hits']);
     }
 
     /**
@@ -84,6 +87,7 @@ class MenuFetchTest extends AbstractFixtureAwareTest implements AssertItemStruct
             }
 
             $this->assertLessThanOrEqual($amount, count($result['items']));
+            $this->assertGreaterThan(0, $result['hits']);
 
             foreach ($result['items'] as $item) {
                 // Node id's normally should not repeat for same agency.

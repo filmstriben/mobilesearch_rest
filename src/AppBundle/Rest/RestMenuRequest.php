@@ -110,20 +110,27 @@ class RestMenuRequest extends RestBaseRequest
     /**
      * Fetched menu entries.
      *
-     * @param string $agency Agency identifier.
-     * @param int $amount    Number of entries to fetch.
-     * @param int $skip      Number of entries to skip.
+     * @param string $agency  Agency identifier.
+     * @param int $amount     Number of entries to fetch.
+     * @param int $skip       Number of entries to skip.
+     * @param bool $countOnly Fetch only number of entries.
      *
      * @return Menu[]
      */
-    public function fetchMenus($agency, $amount = 10, $skip = 0)
+    public function fetchMenus($agency, $amount = 10, $skip = 0, $countOnly = FALSE)
     {
         $qb = $this->em
             ->getManager()
             ->createQueryBuilder(Menu::class);
 
         $qb->field('agency')->equals($agency);
-        $qb->skip($skip)->limit($amount);
+
+        if ($countOnly) {
+            $qb->count();
+        }
+        else {
+            $qb->skip($skip)->limit($amount);
+        }
 
         return $qb->getQuery()->execute();
     }
