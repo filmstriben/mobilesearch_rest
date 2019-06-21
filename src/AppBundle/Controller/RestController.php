@@ -1397,6 +1397,7 @@ final class RestController extends Controller
      * @param bool $status    Request processed status.
      * @param string $message Debug message, if any.
      * @param array $items    Response items, if any.
+     * @param int $hits       Number of available items.
      *
      * @return Response       Outgoing Response object.
      */
