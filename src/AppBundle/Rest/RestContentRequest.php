@@ -68,14 +68,15 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content that fulfills certain criteria.
      *
-     * @param string $id     Fetch these specific entries (_id field match, multiple values separated by comma).
-     * @param string $node   Fetch these specific entries (nid field match, multiple values separated by comma).
-     * @param int $amount    Fetch this amount of entries.
-     * @param int $skip      Skip this amount of entries.
-     * @param string $sort   Sort field.
-     * @param string $dir    Sort direction. Either ASC or DESC.
-     * @param string $type   Entry type (type field).
-     * @param string $status Entry status (fields.status.value field).
+     * @param string $id      Fetch these specific entries (_id field match, multiple values separated by comma).
+     * @param string $node    Fetch these specific entries (nid field match, multiple values separated by comma).
+     * @param int $amount     Fetch this amount of entries.
+     * @param int $skip       Skip this amount of entries.
+     * @param string $sort    Sort field.
+     * @param string $dir     Sort direction. Either ASC or DESC.
+     * @param string $type    Entry type (type field).
+     * @param string $status  Entry status (fields.status.value field).
+     * @param bool $countOnly Get only the number of results.
      *
      * @return Content[]     A set of entities.
      */
@@ -87,17 +88,27 @@ class RestContentRequest extends RestBaseRequest
         $sort = '',
         $dir = '',
         $type = null,
-        $status = self::STATUS_PUBLISHED
+        $status = self::STATUS_PUBLISHED,
+        $countOnly = FALSE
     ) {
         if (!empty($id)) {
-            return $this->fetchContent(explode(',', $id), '_id');
+            $ids = explode(',', $id);
+            return $this->fetchContent($ids, '_id', $countOnly);
         } elseif (!empty($node)) {
-            return $this->fetchContent(explode(',', $node), 'nid');
+            $nids = explode(',', $node);
+            return $this->fetchContent($nids, 'nid', $countOnly);
         }
 
         $qb = $this->em
             ->getManager()
             ->createQueryBuilder(Content::class);
+
+        if ($countOnly) {
+            $qb->count();
+        }
+        else {
+            $qb->skip($skip)->limit($amount);
+        }
 
         if ($type) {
             $qb->field('type')->equals($type);
@@ -117,25 +128,24 @@ class RestContentRequest extends RestBaseRequest
             $qb->field('fields.status.value')->equals($status);
         }
 
-        $qb->skip($skip)->limit($amount);
-
         return $qb->getQuery()->execute();
     }
 
     /**
      * Searches content suggestions based on certain criteria.
      *
-     * @param array $query Search query.
-     * @param array $field Field to search in.
-     * @param int $amount  Fetch this amount of suggestions.
-     * @param int $skip    Skip this amount of suggestions.
+     * @param array $query    Search query.
+     * @param array $field    Field to search in.
+     * @param int $amount     Fetch this amount of suggestions.
+     * @param int $skip       Skip this amount of suggestions.
+     * @param bool $countOnly Return only count of results.
      *
      * @return Content[]   A set of suggested entities.
      *
      * @throws RestException
      * @throws \Doctrine\ODM\MongoDB\MongoDBException
      */
-    public function fetchSuggestions(array $query, array $field, $amount = 10, $skip = 0)
+    public function fetchSuggestions(array $query, array $field, $amount = 10, $skip = 0, $countOnly = FALSE)
     {
         if (count($query) != count($field)) {
             throw new RestException('Query and fields parameters count mismatch.');
@@ -149,6 +159,13 @@ class RestContentRequest extends RestBaseRequest
             ->em
             ->getManager()
             ->createQueryBuilder(Content::class);
+
+        if ($countOnly) {
+            $qb->count();
+        }
+        else {
+            $qb->skip($skip)->limit($amount);
+        }
 
         while ($currentQuery = current($query)) {
             $currentField = current($field);
@@ -166,8 +183,6 @@ class RestContentRequest extends RestBaseRequest
             next($query);
             next($field);
         }
-
-        $qb->skip($skip)->limit($amount);
 
         return $qb->getQuery()->execute();
     }
@@ -217,15 +232,16 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content by id.
      *
-     * @param array $ids    Content id's.
-     * @param string $field Field where to seek the id's.
+     * @param array $ids      Content id's.
+     * @param string $field   Field where to seek the id's.
+     * @param bool $countOnly Fetch only number of entries.
      *
-     * @return Content[]    A set of entities.
+     * @return Content[]|int      A set of entities or their count.
      */
-    public function fetchContent(array $ids, $field = 'nid')
+    public function fetchContent(array $ids, $field = 'nid', $countOnly = FALSE)
     {
         if (empty($ids)) {
-            return [];
+            return $countOnly ? 0 : [];
         }
 
         // Mongo has strict type check, and since 'nid' is stored as int
@@ -244,15 +260,17 @@ class RestContentRequest extends RestBaseRequest
             }
         );
 
-        $criteria = [
-            $field => ['$in' => $ids],
-        ];
+        $qb = $this->em
+            ->getManager()
+            ->createQueryBuilder(Content::class);
 
-        $entities = $this->em
-            ->getRepository('AppBundle:Content')
-            ->findBy($criteria);
+        if ($countOnly) {
+            $qb->count();
+        }
 
-        return $entities;
+        $qb->field($field)->in($ids);
+
+        return $qb->getQuery()->execute();
     }
 
     /**

@@ -34,4 +34,12 @@ class ContentOutput
      * @JMS\Type("array<AppBundle\IO\ContentItem>")
      */
     private $items;
+
+    /**
+     * Total number of available items.
+     *
+     * @var array
+     * @JMS\Type("integer")
+     */
+    private $hits;
 }

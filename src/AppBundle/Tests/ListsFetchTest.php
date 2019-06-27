@@ -3,7 +3,9 @@
 namespace AppBundle\Tests;
 
 use AppBundle\DataFixtures\MongoDB\AgencyFixtures;
+use AppBundle\DataFixtures\MongoDB\ContentFixtures;
 use AppBundle\DataFixtures\MongoDB\ListsFixtures;
+use AppBundle\Document\Content;
 
 /**
  * Class ListsFetchTest
@@ -32,6 +34,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         $this->assertFalse($result['status']);
         $this->assertEmpty($result['items']);
         $this->assertEquals($result['message'], 'Failed validating request. Check your credentials (agency & key).');
+        $this->assertEquals(0, $result['hits']);
     }
 
     /**
@@ -54,6 +57,8 @@ class ListsFetchTest extends AbstractFixtureAwareTest
             $this->assertEquals(self::AGENCY, $item['agency']);
             $this->assertTrue($item['promoted']);
         }
+
+        $this->assertGreaterThan(0, $result['hits']);
     }
 
     /**
@@ -83,6 +88,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
             }
 
             $this->assertLessThanOrEqual($amount, count($result['items']));
+            $this->assertGreaterThan(0, $result['hits']);
 
             foreach ($result['items'] as $item) {
                 // Node id's normally should not repeat for same agency.
@@ -155,6 +161,45 @@ class ListsFetchTest extends AbstractFixtureAwareTest
 
         // Expect promoted count and not promoted count to match total count.
         $this->assertEquals($allCount, $promotedCount + $notPromotedCount);
+        $this->assertGreaterThan(0, $result['hits']);
+    }
+
+    /**
+     * Filtered item types in lists fetch.
+     */
+    public function testFetchFilteredItems()
+    {
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'promoted' => 1,
+            'amount' => 99,
+            'itemType' => 'os',
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $em = $this->getContainer()->get('doctrine_mongodb');
+
+        foreach ($result['items'] as $item) {
+            $nids = $item['nids'];
+
+            if (!empty($nids)) {
+                foreach ($nids as $nid) {
+                    /** @var Content $node */
+                    $node = $em->getRepository(Content::class)
+                        ->findOneBy(['nid' => (int)$nid]);
+
+                    $this->assertNotEmpty($node);
+                    $this->assertEquals($parameters['itemType'], $node->getType());
+                }
+            }
+        }
+
+        $this->assertGreaterThan(0, $result['hits']);
     }
 
     /**
@@ -165,6 +210,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         return [
             new AgencyFixtures(),
             new ListsFixtures(),
+            new ContentFixtures(),
         ];
     }
 }
