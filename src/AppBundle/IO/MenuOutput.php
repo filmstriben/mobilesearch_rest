@@ -34,4 +34,12 @@ class MenuOutput
      * @JMS\Type("array<AppBundle\IO\MenuItem>")
      */
     private $items;
+
+    /**
+     * Total number of available items.
+     *
+     * @var array
+     * @JMS\Type("integer")
+     */
+    private $hits;
 }

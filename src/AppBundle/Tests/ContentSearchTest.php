@@ -23,8 +23,8 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
     public function testSearchWithWrongKey()
     {
         $parameters = [
-            'agency' => SELF::AGENCY,
-            'key' => SELF::KEY.'-wrong',
+            'agency' => self::AGENCY,
+            'key' => self::KEY.'-wrong',
         ];
 
         $response = $this->request(self::URI, $parameters, 'GET');
@@ -319,6 +319,31 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
         foreach ($result['items'] as $item) {
             $this->assertContains($query[0], $item[$field[0]]);
             $this->assertContains($query[1], $item['taxonomy']['field_realm']['terms']);
+        }
+    }
+
+    /**
+     * Fetch search result in short list format.
+     */
+    public function testShortSuggestionList()
+    {
+        $query = 'Om';
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'query' => [$query],
+            'field' => ['fields.title.value'],
+            'format' => 'short',
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+        $this->assertNotEmpty($result['items']);
+
+        foreach ($result['items'] as $item) {
+            $this->assertInternalType('string', $item);
+            $this->assertContains($query, $item);
         }
     }
 
