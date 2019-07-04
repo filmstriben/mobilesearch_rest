@@ -185,6 +185,9 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         $em = $this->getContainer()->get('doctrine_mongodb');
 
         foreach ($result['items'] as $item) {
+            // Assert there are no duplicates.
+            $this->assertEquals(count($item['nids']), count(array_unique($item['nids'])));
+
             $nids = $item['nids'];
 
             if (!empty($nids)) {
