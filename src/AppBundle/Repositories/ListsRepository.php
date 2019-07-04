@@ -26,16 +26,13 @@ class ListsRepository extends DocumentRepository
         $nids = $list->getNids();
         $qb = $this->getDocumentManager()->createQueryBuilder(Content::class);
 
+        $qb->distinct('nid');
         $qb->field('nid')->in($nids);
         $qb->field('type')->equals($itemType);
 
         $contentItems = $qb->getQuery()->execute();
-        $nids = [];
-        foreach ($contentItems as $contentItem) {
-            $nids[] = $contentItem->getNid();
-        }
 
-        $list->setNids($nids);
+        $list->setNids(array_values(array_intersect($nids, $contentItems->toArray())));
         return $list;
     }
 }
