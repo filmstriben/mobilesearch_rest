@@ -185,7 +185,7 @@ abstract class RestBaseRequest
         $exceptionMessage = '';
 
         if (!$this->requestBody) {
-            $exceptionMessage = 'Failed parsing request.';
+            $exceptionMessage = 'Failed parsing request or empty payload.';
         } elseif (!$this->isRequestValid()) {
             $exceptionMessage = 'Failed validating request. Check your credentials (agency & key).';
         } elseif (empty($this->getParsedBody())) {

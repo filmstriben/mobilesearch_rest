@@ -2,12 +2,14 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Document\Configuration;
 use AppBundle\Document\Content;
 use AppBundle\Document\Lists;
 use AppBundle\Document\Menu;
 use AppBundle\Exception\RestException;
 use AppBundle\Repositories\ListsRepository;
 use AppBundle\Rest\RestBaseRequest;
+use AppBundle\Rest\RestConfigurationRequest;
 use AppBundle\Rest\RestContentRequest;
 use AppBundle\Rest\RestListsRequest;
 use AppBundle\Rest\RestMenuRequest;
@@ -350,8 +352,7 @@ final class RestController extends Controller
 
                 $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
-            }
-            catch (RestException $e) {
+            } catch (RestException $e) {
                 // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
             }
@@ -485,7 +486,7 @@ final class RestController extends Controller
                 }
 
 
-                $fields['countOnly'] = TRUE;
+                $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
 
                 $this->lastStatus = true;
@@ -744,10 +745,9 @@ final class RestController extends Controller
 
                 $this->lastStatus = true;
 
-                $fields['countOnly'] = TRUE;
+                $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restMenuRequest, 'fetchMenus'], $fields);
-            }
-            catch (RestException $e) {
+            } catch (RestException $e) {
                 // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
             }
@@ -1028,10 +1028,9 @@ final class RestController extends Controller
 
                 $this->lastStatus = true;
 
-                $fields['countOnly'] = TRUE;
+                $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
-            }
-            catch (RestException $e) {
+            } catch (RestException $e) {
                 // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
             }
@@ -1367,6 +1366,141 @@ final class RestController extends Controller
     }
 
     /**
+     * Payload example:
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "key": "3339b2bbfbb515cc1aa873861c7a738845c7dc49",
+     *     "agencyId": "100000"
+     *   },
+     *   "body": {
+     *     "cid": "c90e277c62a6508cb9e5cc7efbf976326b4d009d",
+     *     "agency": "100001",
+     *     "settings": {
+     *       "some_setting": "setting_value"
+     *     }
+     *   }
+     * }
+     * </pre>
+     * @ApiDoc(
+     *     section="Configuration"
+     * )
+     * @Route("/configuration")
+     * @Method({"PUT"})
+     */
+    public function configurationCreateAction(Request $request)
+    {
+        return $this->configurationDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *     section="Configuration"
+     * )
+     * @Route("/configuration")
+     * @Method({"POST"})
+     */
+    public function configurationUpdateAction(Request $request)
+    {
+        return $this->configurationDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *     section="Configuration"
+     * )
+     * @Route("/configuration")
+     * @Method({"DELETE"})
+     */
+    public function configurationDeleteAction(Request $request)
+    {
+        return $this->configurationDispatcher($request);
+    }
+
+    /**
+     * @ApiDoc(
+     *     description="Fetches content entries.",
+     *     section="Configuration",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ConfigurationOutput"
+     *     }
+     * )
+     * @Route("/configuration")
+     * @Method({"GET"})
+     */
+    public function configurationFetchAction(Request $request)
+    {
+        $this->lastMethod = $request->getMethod();
+
+        $fields = [
+            'agency' => null,
+            'key' => null,
+        ];
+
+        foreach (array_keys($fields) as $field) {
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        $em = $this->get('doctrine_mongodb');
+        $restConfigurationRequest = new RestConfigurationRequest($em);
+
+        if (!$restConfigurationRequest->isSignatureValid($fields['agency'], $fields['key'])) {
+            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
+        } else {
+            unset($fields['key']);
+            try {
+                /** @var Configuration[] $items */
+                $items = call_user_func_array([$restConfigurationRequest, 'getConfiguration'], $fields);
+                $settings = [];
+                foreach ($items as $k => $item) {
+                    $settings[$item->getAgency()] = [
+                        'cid' => $item->getCid(),
+                        'settings' => $item->getSettings()
+                    ];
+                }
+
+                $this->lastItems = $settings;
+                $this->lastStatus = true;
+            } catch (RestException $e) {
+                // TODO: Log this instead.
+                $this->lastMessage = $e->getMessage();
+            }
+        }
+
+        return $this->setResponse($this->lastStatus, $this->lastMessage, $this->lastItems);
+    }
+
+    /**
+     * Dispatches configuration related requests.
+     *
+     * @param Request $request Incoming Request object.
+     *
+     * @return Response        Outgoing Response object.
+     */
+    public function configurationDispatcher(Request $request)
+    {
+        $this->lastMethod = $request->getMethod();
+        $this->rawContent = $request->getContent();
+
+        $em = $this->get('doctrine_mongodb');
+        $restContentRequest = new RestConfigurationRequest($em);
+
+        return $this->relay($restContentRequest);
+    }
+
+    /**
      * Processes incoming requests, except for the ones sent with GET method.
      *
      * @param RestBaseRequest $genericRequest Generic request object wrapper.
@@ -1386,9 +1520,7 @@ final class RestController extends Controller
             $this->lastMessage = 'Generic fault: '.$exc->getMessage();
         }
 
-        $response = $this->setResponse($this->lastStatus, $this->lastMessage);
-
-        return $response;
+        return $this->setResponse($this->lastStatus, $this->lastMessage);
     }
 
     /**
@@ -1401,7 +1533,7 @@ final class RestController extends Controller
      *
      * @return Response       Outgoing Response object.
      */
-    private function setResponse($status = true, $message = '', $items = [], $hits = NULL)
+    private function setResponse($status = true, $message = '', $items = [], $hits = null)
     {
         $responseContent = [
             'status' => $status,
@@ -1409,7 +1541,7 @@ final class RestController extends Controller
             'items' => $items,
         ];
 
-        if (NULL !== $hits) {
+        if (null !== $hits) {
             $responseContent['hits'] = (int) $hits;
         }
 
