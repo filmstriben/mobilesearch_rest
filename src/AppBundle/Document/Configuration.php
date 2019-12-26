@@ -17,11 +17,6 @@ class Configuration
     /**
      * @MongoDB\String()
      */
-    protected $cid;
-
-    /**
-     * @MongoDB\String()
-     */
     protected $agency;
 
     /**
@@ -103,31 +98,6 @@ class Configuration
             $this->settings[$k] = $v;
         }
 
-
         return $this;
-    }
-
-    /**
-     * Set cid.
-     *
-     * @param string $cid
-     *
-     * @return self
-     */
-    public function setCid($cid)
-    {
-        $this->cid = $cid;
-
-        return $this;
-    }
-
-    /**
-     * Get cid.
-     *
-     * @return string $cid
-     */
-    public function getCid()
-    {
-        return $this->cid;
     }
 }

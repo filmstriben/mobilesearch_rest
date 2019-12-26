@@ -11,17 +11,25 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
  */
 class RestConfigurationRequest extends RestBaseRequest
 {
+    /**
+     * RestConfigurationRequest constructor.
+     *
+     * @param MongoEM $em
+     *   Entity manager.
+     */
     public function __construct(MongoEM $em)
     {
         parent::__construct($em);
 
-        $this->primaryIdentifier = 'cid';
+        $this->primaryIdentifier = 'agency';
         $this->requiredFields = [
-            $this->primaryIdentifier,
-            'agency',
+            $this->primaryIdentifier
         ];
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function exists($id, $agency)
     {
         $entity = $this->get($id, $agency);
@@ -29,11 +37,14 @@ class RestConfigurationRequest extends RestBaseRequest
         return !is_null($entity);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function get($id, $agency)
     {
+        // Ignore id, since agency is considered the unique id here.
         $criteria = [
-            $this->primaryIdentifier => $id,
-            'agency' => $agency,
+            $this->primaryIdentifier => $agency,
         ];
 
         return $this->em
@@ -41,6 +52,9 @@ class RestConfigurationRequest extends RestBaseRequest
             ->findOneBy($criteria);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function insert()
     {
         $entity = $this->prepare(new Configuration());
@@ -52,6 +66,9 @@ class RestConfigurationRequest extends RestBaseRequest
         return $entity;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function update($id, $agency)
     {
         $loadedEntity = $this->get($id, $agency);
@@ -63,6 +80,9 @@ class RestConfigurationRequest extends RestBaseRequest
         return $updatedEntity;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function delete($id, $agency)
     {
         $entity = $this->get($id, $agency);
@@ -85,15 +105,12 @@ class RestConfigurationRequest extends RestBaseRequest
     {
         $body = $this->getParsedBody();
 
-        $cid = !empty($body['cid']) ? $body['cid'] : sha1(mt_rand());
-        $configuration->setCid($cid);
-
         $agency = !empty($body['agency']) ? $body['agency'] : '000000';
         $configuration->setAgency($agency);
 
         $settings = !empty($body['settings']) ? $body['settings']: [];
-        var_dump($settings);
         if (is_array($settings)) {
+            // TODO: The settings array must be validated prior write.
             $configuration->mergeSettings($settings);
         }
 
