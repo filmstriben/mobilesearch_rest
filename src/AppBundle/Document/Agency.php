@@ -137,6 +137,12 @@ class Agency
      */
     public function getChildren()
     {
-        return $this->children;
+        if (empty($this->children)) {
+            $this->children = [];
+        }
+
+        return array_map(function ($v) {
+            return (string) $v;
+        }, $this->children);
     }
 }

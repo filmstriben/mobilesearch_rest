@@ -2,6 +2,7 @@
 
 namespace AppBundle\Tests;
 
+use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -54,8 +55,15 @@ abstract class AbstractBaseTest extends WebTestCase
      */
     public function request($uri, array $parameters, $method = 'GET')
     {
+        /** @var Client $client */
         $client = $this->getClient();
-        $client->request($method, $uri, $parameters);
+
+        if ('GET' !== $method) {
+            $client->request($method, $uri, [], [], ['Content-Type' => 'application/json'], json_encode($parameters));
+        }
+        else {
+            $client->request($method, $uri, $parameters);
+        }
 
         /** @var Response $response */
         $response = $client->getResponse();
