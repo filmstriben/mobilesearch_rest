@@ -33,6 +33,24 @@ class ListsRepository extends DocumentRepository
         $contentItems = $qb->getQuery()->execute();
 
         $list->setNids(array_values(array_intersect($nids, $contentItems->toArray())));
+
         return $list;
+    }
+
+    /**
+     * Finds related list items containing specified node ids.
+     *
+     * @param array $nodeIds
+     *   A set of node id's that list might contain.
+     *
+     * @return Lists[]
+     */
+    public function findAttached(Content $node) {
+        $qb = $this
+            ->createQueryBuilder()
+            ->field('agency')->equals($node->getAgency())
+            ->field('nids')->in([$node->getNid()]);
+
+        return $qb->getQuery()->execute();
     }
 }
