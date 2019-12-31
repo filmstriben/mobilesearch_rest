@@ -38,18 +38,23 @@ class ListsRepository extends DocumentRepository
     }
 
     /**
-     * Finds related list items containing specified node ids.
+     * Finds lists containing the respective content node.
      *
-     * @param array $nodeIds
-     *   A set of node id's that list might contain.
+     * @param Content $node
+     *   Content entity as main search criteria.
+     * @param boolean $withAgency
+     *   Seek lists from same agency.
      *
      * @return Lists[]
      */
-    public function findAttached(Content $node) {
+    public function findAttached(Content $node, $withAgency = false) {
         $qb = $this
             ->createQueryBuilder()
-            ->field('agency')->equals($node->getAgency())
             ->field('nids')->in([$node->getNid()]);
+
+        if ($withAgency) {
+            $qb->field('agency')->equals($node->getAgency());
+        }
 
         return $qb->getQuery()->execute();
     }
