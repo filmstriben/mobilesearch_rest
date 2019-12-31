@@ -45,11 +45,14 @@ class ListsRepository extends DocumentRepository
      *
      * @return Lists[]
      */
-    public function findAttached(Content $node) {
+    public function findAttached(Content $node, $withAgency = false) {
         $qb = $this
             ->createQueryBuilder()
-            ->field('agency')->equals($node->getAgency())
             ->field('nids')->in([$node->getNid()]);
+
+        if ($withAgency) {
+            $qb->field('agency')->equals($node->getAgency());
+        }
 
         return $qb->getQuery()->execute();
     }
