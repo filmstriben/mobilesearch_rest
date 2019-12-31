@@ -38,10 +38,12 @@ class ListsRepository extends DocumentRepository
     }
 
     /**
-     * Finds related list items containing specified node ids.
+     * Finds lists containing the respective content node.
      *
-     * @param array $nodeIds
-     *   A set of node id's that list might contain.
+     * @param Content $node
+     *   Content entity as main search criteria.
+     * @param boolean $withAgency
+     *   Seek lists from same agency.
      *
      * @return Lists[]
      */
