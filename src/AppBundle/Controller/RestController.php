@@ -2,17 +2,20 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Document\Configuration;
 use AppBundle\Document\Content;
 use AppBundle\Document\Lists;
 use AppBundle\Document\Menu;
 use AppBundle\Exception\RestException;
 use AppBundle\Repositories\ListsRepository;
 use AppBundle\Rest\RestBaseRequest;
+use AppBundle\Rest\RestConfigurationRequest;
 use AppBundle\Rest\RestContentRequest;
 use AppBundle\Rest\RestListsRequest;
 use AppBundle\Rest\RestMenuRequest;
 use AppBundle\Rest\RestTaxonomyRequest;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -350,8 +353,7 @@ final class RestController extends Controller
 
                 $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
-            }
-            catch (RestException $e) {
+            } catch (RestException $e) {
                 // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
             }
@@ -485,7 +487,7 @@ final class RestController extends Controller
                 }
 
 
-                $fields['countOnly'] = TRUE;
+                $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
 
                 $this->lastStatus = true;
@@ -744,10 +746,9 @@ final class RestController extends Controller
 
                 $this->lastStatus = true;
 
-                $fields['countOnly'] = TRUE;
+                $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restMenuRequest, 'fetchMenus'], $fields);
-            }
-            catch (RestException $e) {
+            } catch (RestException $e) {
                 // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
             }
@@ -1028,10 +1029,9 @@ final class RestController extends Controller
 
                 $this->lastStatus = true;
 
-                $fields['countOnly'] = TRUE;
+                $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
-            }
-            catch (RestException $e) {
+            } catch (RestException $e) {
                 // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
             }
@@ -1367,6 +1367,247 @@ final class RestController extends Controller
     }
 
     /**
+     * <p>Creating configuration is possible for master agency or it's children.
+     * The 'body.agency' value should be either a child agency id or match with
+     * 'credentials.agencyId'.</p>
+     * <p>Payload example:</p>
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "key": "3339b2bbfbb515cc1aa873861c7a738845c7dc49",
+     *     "agencyId": "100000"
+     *   },
+     *   "body": {
+     *     "agency": "100001",
+     *     "settings": {
+     *       "some_setting": "setting_value",
+     *       "another_setting": "value"
+     *     }
+     *   }
+     * }
+     * </pre>
+     * @ApiDoc(
+     *     description="Creates a configuration entry identified by agency id.",
+     *     section="Configuration",
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="json",
+     *             "description"="Request credentials."
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="json",
+     *             "description"="Request body."
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
+     * )
+     * @Route("/configuration")
+     * @Method({"PUT"})
+     */
+    public function configurationCreateAction(Request $request)
+    {
+        return $this->configurationDispatcher($request);
+    }
+
+    /**
+     * <p>The keys and their values under the 'settings' key are merged with
+     * existing data. That being said, values for existing keys are updated
+     * and new keys are appended.</p>
+     * <p>Updating configuration is possible for master agency or it's children.
+     * The 'body.agency' value should be either a child agency id or match with
+     * 'credentials.agencyId'.</p>
+     * <p>Payload example:</p>
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "key": "3339b2bbfbb515cc1aa873861c7a738845c7dc49",
+     *     "agencyId": "100000"
+     *   },
+     *   "body": {
+     *     "agency": "100001",
+     *     "settings": {
+     *       "xtra_config": "alpha"
+     *     },
+     *   }
+     * }
+     * </pre>
+     * @ApiDoc(
+     *     description="Updates a config entry identified by a certain agency id.",
+     *     section="Configuration",
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="json",
+     *             "description"="Request credentials."
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="json",
+     *             "description"="Request body."
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
+     * )
+     * @Route("/configuration")
+     * @Method({"POST"})
+     */
+    public function configurationUpdateAction(Request $request)
+    {
+        return $this->configurationDispatcher($request);
+    }
+
+    /**
+     * <p>Deleting configuration is possible for master agency or it's children.
+     * The 'body.agency' value should be either a child agency id or match with
+     * 'credentials.agencyId'.</p>
+     * <p>Payload example:</p>
+     * <pre>
+     * {
+     *   "credentials": {
+     *     "key": "3339b2bbfbb515cc1aa873861c7a738845c7dc49",
+     *     "agencyId": "100000"
+     *   },
+     *   "body": {
+     *     "agency": "100001"
+     *   }
+     * }
+     * </pre>
+     * @ApiDoc(
+     *     description="Deletes a config entry identified by a certain agency id.",
+     *     section="Configuration",
+     *     requirements={
+     *         {
+     *             "name"="credentials",
+     *             "dataType"="json",
+     *             "description"="Request credentials."
+     *         },
+     *         {
+     *             "name"="body",
+     *             "dataType"="json",
+     *             "description"="Request body."
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\Output"
+     *     }
+     * )
+     * @Route("/configuration")
+     * @Method({"DELETE"})
+     */
+    public function configurationDeleteAction(Request $request)
+    {
+        return $this->configurationDispatcher($request);
+    }
+
+    /**
+     * <p>This one will include configuration for children agencies.</p>
+     * <p>Requests to this route are accepted only from agencies that are
+     * "parent" to other agencies.</p>
+     * <p>Sample output:</p>
+     * <pre>
+     * {
+     *   "status":true,
+     *   "message":"",
+     *   "items": {
+     *     "100000": {
+     *       "empty_search_list": "b24ecd059c7f08792876d7d8588f680c"
+     *      },
+     *     "100001":{
+     *       "xtra":"alpha",
+     *       "empty_search_list": "ac54895bc3a66963d540f5137b6ac72f"
+     *      },
+     *      "100002":{
+     *        "empty_search_list": "b212d737c953153266ae08135ead8590"
+     *      }
+     *   }
+     * }
+     * </pre>
+     * @ApiDoc(
+     *     description="Fetches content entries.",
+     *     section="Configuration",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ConfigurationOutput"
+     *     }
+     * )
+     * @Route("/configuration")
+     * @Method({"GET"})
+     */
+    public function configurationFetchAction(Request $request)
+    {
+        $this->lastMethod = $request->getMethod();
+
+        $fields = [
+            'agency' => null,
+            'key' => null,
+        ];
+
+        foreach (array_keys($fields) as $field) {
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        $em = $this->get('doctrine_mongodb');
+        $restConfigurationRequest = new RestConfigurationRequest($em);
+
+        if (!$restConfigurationRequest->isSignatureValid($fields['agency'], $fields['key'])) {
+            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
+        } else {
+            unset($fields['key']);
+            try {
+                /** @var Configuration[] $items */
+                $items = call_user_func_array([$restConfigurationRequest, 'getConfiguration'], $fields);
+                $settings = [];
+                foreach ($items as $k => $item) {
+                    $settings[$item->getAgency()] = $item->getSettings();
+                }
+
+                $this->lastItems = $settings;
+                $this->lastStatus = true;
+            } catch (RestException $e) {
+                // TODO: Log this instead.
+                $this->lastMessage = $e->getMessage();
+            }
+        }
+
+        return $this->setResponse($this->lastStatus, $this->lastMessage, $this->lastItems);
+    }
+
+    /**
+     * Dispatches configuration related requests.
+     *
+     * @param Request $request Incoming Request object.
+     *
+     * @return Response        Outgoing Response object.
+     */
+    public function configurationDispatcher(Request $request)
+    {
+        $this->lastMethod = $request->getMethod();
+        $this->rawContent = $request->getContent();
+
+        $em = $this->get('doctrine_mongodb');
+        $restContentRequest = new RestConfigurationRequest($em);
+
+        return $this->relay($restContentRequest);
+    }
+
+    /**
      * Processes incoming requests, except for the ones sent with GET method.
      *
      * @param RestBaseRequest $genericRequest Generic request object wrapper.
@@ -1386,9 +1627,7 @@ final class RestController extends Controller
             $this->lastMessage = 'Generic fault: '.$exc->getMessage();
         }
 
-        $response = $this->setResponse($this->lastStatus, $this->lastMessage);
-
-        return $response;
+        return $this->setResponse($this->lastStatus, $this->lastMessage);
     }
 
     /**
@@ -1401,7 +1640,7 @@ final class RestController extends Controller
      *
      * @return Response       Outgoing Response object.
      */
-    private function setResponse($status = true, $message = '', $items = [], $hits = NULL)
+    private function setResponse($status = true, $message = '', $items = [], $hits = null)
     {
         $responseContent = [
             'status' => $status,
@@ -1409,7 +1648,7 @@ final class RestController extends Controller
             'items' => $items,
         ];
 
-        if (NULL !== $hits) {
+        if (null !== $hits) {
             $responseContent['hits'] = (int) $hits;
         }
 
