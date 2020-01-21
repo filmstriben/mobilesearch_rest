@@ -185,9 +185,9 @@ abstract class RestBaseRequest
         $exceptionMessage = '';
 
         if (!$this->requestBody) {
-            $exceptionMessage = 'Failed parsing request.';
+            $exceptionMessage = 'Failed parsing request or empty payload.';
         } elseif (!$this->isRequestValid()) {
-            $exceptionMessage = 'Failed validating request. Check your credentials (agency & key).';
+            $exceptionMessage = 'Unauthorized.';
         } elseif (empty($this->getParsedBody())) {
             $exceptionMessage = 'Empty request body.';
         }
@@ -207,25 +207,30 @@ abstract class RestBaseRequest
      */
     private function isRequestValid()
     {
-        $isValid = true;
-
         $requiredFields = [
             'agencyId',
             'key',
         ];
 
         $requestCredentials = $this->getParsedCredentials();
-        foreach ($requiredFields as $field) {
-            if (empty($requestCredentials[$field])) {
-                $isValid = false;
-            } elseif ($field == 'agencyId' && !$this->isAgencyValid($requestCredentials[$field])) {
-                $isValid = false;
-            } elseif ($field == 'key' && !$this->isSignatureValid($requestCredentials['agencyId'], $requestCredentials['key'])) {
-                $isValid = false;
-            }
+        // Simple one-liner to get only needed parameters.
+        $requestCredentials = array_intersect_key($requestCredentials, array_flip($requiredFields));
+
+        // We assume that parameters received should be same in number
+        // as we expect to.
+        if (count(array_filter($requestCredentials)) !== count($requiredFields)) {
+            return false;
         }
 
-        return $isValid;
+        if (!$this->isAgencyValid($requestCredentials['agencyId'])) {
+            return false;
+        }
+
+        if (!$this->isSignatureValid($requestCredentials['agencyId'], $requestCredentials['key'])) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
