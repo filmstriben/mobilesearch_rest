@@ -3,9 +3,9 @@
 namespace AppBundle\Controller;
 
 use Imagine\Exception\Exception as ImagineExc;
-use Imagine\Exception\InvalidArgumentException as ImagineArgExc;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
+use Imagine\Image\ImageInterface;
 use Imagine\Image\Point;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -18,14 +18,17 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class ImageController.
+ */
 class ImageController extends Controller
 {
     const ASPECT_PRECISION = 3;
+
     protected $filesStorageDir = '../web/storage/images';
     protected $response;
     protected $imagineOptions = [
-        'jpeg_quality' => 95,
-        'png_compression_level' => 2,
+        'quality' => 90,
     ];
 
     /**
@@ -61,9 +64,10 @@ class ImageController extends Controller
      */
     public function imageAction(Request $request, $agency, $resize, $filename)
     {
+        // TODO: Consider Imagick and fallback to GD.
         // For those weird instances that lack GD extension.
-        if (!extension_loaded('gd')) {
-            throw new \Exception('GD php extension not loaded.');
+        if (!extension_loaded('imagick')) {
+            throw new \Exception('Imagick php extension not loaded.');
         }
 
         $this->response = new Response();
@@ -142,10 +146,16 @@ class ImageController extends Controller
      * @param array $wantedDimensions Desired width and height.
      *
      * @return boolean
+     *   Resize action result.
      */
     protected function resizeImage($source, $target, array $wantedDimensions)
     {
+        /** @var \Psr\Log\LoggerInterface $logger */
+        $logger = $this->get('logger');
+
+        // TODO: Consider Imagick and fallback to GD.
         $imagine = new Imagine();
+
         try {
             $image = $imagine->open($source);
             $imageSize = $image->getSize();
@@ -154,12 +164,25 @@ class ImageController extends Controller
                 'height' => $imageSize->getHeight(),
             ];
             $imageManipulations = $this->getResizeDimensions($originalSize, $wantedDimensions);
-            $image->resize($imageManipulations['resize'])
-                ->crop($imageManipulations['crop'], $imageManipulations['final_size'])
-                ->save($target, $this->imagineOptions);
+            $image
+                ->resize($imageManipulations['resize'])
+                ->crop($imageManipulations['crop'], $imageManipulations['final_size']);
+
+            // GD only.
+            // Apply a convolution matrix before save to increase sharpness.
+            $gdImageResource = $image->getGdResource();
+            $convolutionMatrix = [
+                [-1, -1, -1],
+                [-1, 32, -1],
+                [-1, -1, -1],
+            ];
+            $divisor = array_sum(array_map('array_sum', $convolutionMatrix));
+            imageconvolution($gdImageResource, $convolutionMatrix, $divisor, 0);
+
+            $image->save($target, $this->imagineOptions);
         } catch (ImagineExc $e) {
-            return false;
-        } catch (ImagineArgExc $e) {
+            $logger->error('Failed to resize image "' . $source .'" with exception: ' . $e->getMessage());
+
             return false;
         }
 
