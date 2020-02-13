@@ -66,8 +66,8 @@ class ImageController extends Controller
     {
         // TODO: Consider Imagick and fallback to GD.
         // For those weird instances that lack GD extension.
-        if (!extension_loaded('imagick')) {
-            throw new \Exception('Imagick php extension not loaded.');
+        if (!extension_loaded('gd')) {
+            throw new \Exception('GD php extension not loaded.');
         }
 
         $this->response = new Response();
