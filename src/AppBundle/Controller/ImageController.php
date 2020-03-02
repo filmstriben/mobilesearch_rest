@@ -31,7 +31,7 @@ class ImageController extends Controller
     protected $options = [
         'quality' => 90,
         'sample_filter' => ImageInterface::FILTER_LANCZOS,
-        'effect_sharpen' => FALSE,
+        'effect_sharpen' => false,
     ];
 
     /**
@@ -136,7 +136,7 @@ class ImageController extends Controller
             $fs = new Filesystem();
             // Both when image exits or it's smaller/bigger counterpart
             // was created - replace the filepath with the result image.
-            if ($fs->exists($resizedFilePath) && FALSE === $force) {
+            if ($fs->exists($resizedFilePath) && false === $force) {
                 $filePath = $resizedFilePath;
             } elseif ($this->resizeImage($filePath, $resizedFilePath, $dimensions)) {
                 $filePath = $resizedFilePath;
@@ -165,8 +165,7 @@ class ImageController extends Controller
 
         if (extension_loaded('imagick')) {
             $imagine = new ImagickImagine();
-        }
-        else {
+        } else {
             $imagine = new GdImagine();
         }
 
@@ -180,8 +179,7 @@ class ImageController extends Controller
             $imageManipulations = $this->getResizeDimensions($originalSize, $wantedDimensions);
             if ($imagine instanceof ImagickImagine) {
                 $image->resize($imageManipulations['resize'], $this->options['sample_filter']);
-            }
-            else {
+            } else {
                 $image->resize($imageManipulations['resize']);
             }
 
@@ -193,7 +191,7 @@ class ImageController extends Controller
 
             $image->save($target, $this->options);
         } catch (ImagineExc $e) {
-            $logger->error('Failed to resize image "' . $source .'" with exception: ' . $e->getMessage());
+            $logger->error('Failed to resize image "'.$source.'" with exception: '.$e->getMessage());
 
             return false;
         }
@@ -351,11 +349,11 @@ class ImageController extends Controller
      * @param int $quality
      *   Quality range, from 1 to 100.
      */
-    private function setQuality($quality = 90) {
+    private function setQuality($quality = 90)
+    {
         if (empty($quality)) {
             $quality = 90;
-        }
-        else {
+        } else {
             $quality = $quality > 100 ? 100 : $quality;
             $quality = $quality < 1 ? 1 : $quality;
         }
@@ -373,8 +371,9 @@ class ImageController extends Controller
      *
      * @see \Imagine\Image\ImageInterface
      */
-    private function setSamplingFilter($sampleFilter = ImageInterface::FILTER_UNDEFINED) {
-        $supportedFilters = array(
+    private function setSamplingFilter($sampleFilter = ImageInterface::FILTER_UNDEFINED)
+    {
+        $supportedFilters = [
             ImageInterface::FILTER_UNDEFINED,
             ImageInterface::FILTER_BESSEL,
             ImageInterface::FILTER_BLACKMAN,
@@ -391,7 +390,7 @@ class ImageController extends Controller
             ImageInterface::FILTER_QUADRATIC,
             ImageInterface::FILTER_SINC,
             ImageInterface::FILTER_TRIANGLE,
-        );
+        ];
 
         $sampleFilter = in_array($sampleFilter, $supportedFilters) ? $sampleFilter : ImageInterface::FILTER_UNDEFINED;
 
@@ -406,7 +405,8 @@ class ImageController extends Controller
      * @param bool $sharpen
      *   TRUE to sharpen, FALSE to leave as is.
      */
-    private function setSharpen($sharpen = false) {
+    private function setSharpen($sharpen = false)
+    {
         $this->options['effect_sharpen'] = filter_var($sharpen, FILTER_VALIDATE_BOOLEAN);
     }
 }
