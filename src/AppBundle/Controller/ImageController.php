@@ -126,10 +126,12 @@ class ImageController extends Controller
         $force = filter_var($force, FILTER_VALIDATE_BOOLEAN);
 
         $dimensions = $this->getSizeFromParam($resize);
+        // Keep a separate directory for a specific size.
+        $subDirectory = implode('x', $dimensions);
         // If resize parameter is received, try parse it and apply the style to
         // the image.
-        if (!empty($dimensions) && implode($dimensions) != '00' && $this->checkThumbnailSubdir($resize, $agency)) {
-            $resizedFilePath = $this->filesStorageDir.'/'.$agency.'/'.$resize.'/'.$quality.'_'.$filename;
+        if (!empty($dimensions) && implode($dimensions) != '00' && $this->checkThumbnailSubdir($subDirectory, $agency)) {
+            $resizedFilePath = $this->filesStorageDir.'/'.$agency.'/'.$subDirectory.'/'.$this->options['quality'].'_'.$filename;
 
             $fs = new Filesystem();
             // Both when image exits or it's smaller/bigger counterpart
@@ -347,11 +349,16 @@ class ImageController extends Controller
      * Internal use only.
      *
      * @param int $quality
-     *   Quality range, from 0 to 100.
+     *   Quality range, from 1 to 100.
      */
     private function setQuality($quality = 90) {
-        $quality = $quality > 100 ? 100 : $quality;
-        $quality = $quality < 0 ? 0 : $quality;
+        if (empty($quality)) {
+            $quality = 90;
+        }
+        else {
+            $quality = $quality > 100 ? 100 : $quality;
+            $quality = $quality < 1 ? 1 : $quality;
+        }
 
         $this->options['quality'] = $quality;
     }
