@@ -3,7 +3,8 @@
 namespace AppBundle\Controller;
 
 use Imagine\Exception\Exception as ImagineExc;
-use Imagine\Gd\Imagine;
+use Imagine\Imagick\Imagine as ImagickImagine;
+use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Point;
@@ -27,8 +28,10 @@ class ImageController extends Controller
 
     protected $filesStorageDir = '../web/storage/images';
     protected $response;
-    protected $imagineOptions = [
+    protected $options = [
         'quality' => 90,
+        'sample_filter' => ImageInterface::FILTER_LANCZOS,
+        'effect_sharpen' => false,
     ];
 
     /**
@@ -64,35 +67,11 @@ class ImageController extends Controller
      */
     public function imageAction(Request $request, $agency, $resize, $filename)
     {
-        // TODO: Consider Imagick and fallback to GD.
-        // For those weird instances that lack GD extension.
-        if (!extension_loaded('gd')) {
-            throw new \Exception('GD php extension not loaded.');
-        }
-
-        $this->response = new Response();
-
-        $filePath = $this->filesStorageDir.'/'.$agency.'/'.$filename;
-
-        $dimensions = $this->getSizeFromParam($resize);
-        // If resize parameter is received, try parse it and apply the style to
-        // the image.
-        if (!empty($dimensions) && implode($dimensions) != '00' && $this->checkThumbnailSubdir($resize, $agency)) {
-            $resizedFilePath = $this->filesStorageDir.'/'.$agency.'/'.$resize.'/'.$filename;
-
-            $fs = new Filesystem();
-            // Both when image exits or it's smaller/bigger counterpart1
-            // was created - replace the filepath with the result image.
-            if ($fs->exists($resizedFilePath)) {
-                $filePath = $resizedFilePath;
-            } elseif ($this->resizeImage($filePath, $resizedFilePath, $dimensions)) {
-                $filePath = $resizedFilePath;
-            }
-        }
-
-        $this->serveImage($filePath);
-
-        return $this->response;
+        return $this->forward('AppBundle:Image:imageNew', [
+            'request' => $request,
+            'agency' => $agency,
+            'filename' => $filename,
+        ]);
     }
 
     /**
@@ -128,14 +107,45 @@ class ImageController extends Controller
      */
     public function imageNewAction(Request $request, $agency, $filename)
     {
-        $response = $this->forward('AppBundle:Image:image', [
-            'request' => $request,
-            'agency' => $agency,
-            'filename' => $filename,
-            'resize' => $request->query->get('resize'),
-        ]);
+        $this->response = new Response();
 
-        return $response;
+        $filePath = $this->filesStorageDir.'/'.$agency.'/'.$filename;
+
+        $resize = $request->query->get('resize', $request->attributes->get('resize'));
+
+        $quality = $request->query->get('q', 90);
+        $this->setQuality($quality);
+
+        $sampleFilter = $request->query->get('r', ImageInterface::FILTER_LANCZOS);
+        $this->setSamplingFilter($sampleFilter);
+
+        $sharpen = $request->query->get('s', false);
+        $this->setSharpen($sharpen);
+
+        $force = $request->query->get('f', false);
+        $force = filter_var($force, FILTER_VALIDATE_BOOLEAN);
+
+        $dimensions = $this->getSizeFromParam($resize);
+        // Keep a separate directory for a specific size.
+        $subDirectory = implode('x', $dimensions);
+        // If resize parameter is received, try parse it and apply the style to
+        // the image.
+        if (!empty($dimensions) && implode($dimensions) != '00' && $this->checkThumbnailSubdir($subDirectory, $agency)) {
+            $resizedFilePath = $this->filesStorageDir.'/'.$agency.'/'.$subDirectory.'/'.$this->options['quality'].'_'.$filename;
+
+            $fs = new Filesystem();
+            // Both when image exits or it's smaller/bigger counterpart
+            // was created - replace the filepath with the result image.
+            if ($fs->exists($resizedFilePath) && false === $force) {
+                $filePath = $resizedFilePath;
+            } elseif ($this->resizeImage($filePath, $resizedFilePath, $dimensions)) {
+                $filePath = $resizedFilePath;
+            }
+        }
+
+        $this->serveImage($filePath);
+
+        return $this->response;
     }
 
     /**
@@ -153,8 +163,11 @@ class ImageController extends Controller
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
-        // TODO: Consider Imagick and fallback to GD.
-        $imagine = new Imagine();
+        if (extension_loaded('imagick')) {
+            $imagine = new ImagickImagine();
+        } else {
+            $imagine = new GdImagine();
+        }
 
         try {
             $image = $imagine->open($source);
@@ -164,24 +177,21 @@ class ImageController extends Controller
                 'height' => $imageSize->getHeight(),
             ];
             $imageManipulations = $this->getResizeDimensions($originalSize, $wantedDimensions);
-            $image
-                ->resize($imageManipulations['resize'])
-                ->crop($imageManipulations['crop'], $imageManipulations['final_size']);
+            if ($imagine instanceof ImagickImagine) {
+                $image->resize($imageManipulations['resize'], $this->options['sample_filter']);
+            } else {
+                $image->resize($imageManipulations['resize']);
+            }
 
-            // GD only.
-            // Apply a convolution matrix before save to increase sharpness.
-            $gdImageResource = $image->getGdResource();
-            $convolutionMatrix = [
-                [-1, -1, -1],
-                [-1, 32, -1],
-                [-1, -1, -1],
-            ];
-            $divisor = array_sum(array_map('array_sum', $convolutionMatrix));
-            imageconvolution($gdImageResource, $convolutionMatrix, $divisor, 0);
+            $image->crop($imageManipulations['crop'], $imageManipulations['final_size']);
 
-            $image->save($target, $this->imagineOptions);
+            if ($this->options['effect_sharpen']) {
+                $image->effects()->sharpen();
+            }
+
+            $image->save($target, $this->options);
         } catch (ImagineExc $e) {
-            $logger->error('Failed to resize image "' . $source .'" with exception: ' . $e->getMessage());
+            $logger->error('Failed to resize image "'.$source.'" with exception: '.$e->getMessage());
 
             return false;
         }
@@ -329,5 +339,74 @@ class ImageController extends Controller
         }
 
         return $dimensions;
+    }
+
+    /**
+     * Sets image output quality.
+     *
+     * Internal use only.
+     *
+     * @param int $quality
+     *   Quality range, from 1 to 100.
+     */
+    private function setQuality($quality = 90)
+    {
+        if (empty($quality)) {
+            $quality = 90;
+        } else {
+            $quality = $quality > 100 ? 100 : $quality;
+            $quality = $quality < 1 ? 1 : $quality;
+        }
+
+        $this->options['quality'] = $quality;
+    }
+
+    /**
+     * Sets sampling filter.
+     *
+     * Internal use only.
+     *
+     * @param string $sampleFilter
+     *   A filter name, as Imagine provides.
+     *
+     * @see \Imagine\Image\ImageInterface
+     */
+    private function setSamplingFilter($sampleFilter = ImageInterface::FILTER_UNDEFINED)
+    {
+        $supportedFilters = [
+            ImageInterface::FILTER_UNDEFINED,
+            ImageInterface::FILTER_BESSEL,
+            ImageInterface::FILTER_BLACKMAN,
+            ImageInterface::FILTER_BOX,
+            ImageInterface::FILTER_CATROM,
+            ImageInterface::FILTER_CUBIC,
+            ImageInterface::FILTER_GAUSSIAN,
+            ImageInterface::FILTER_HANNING,
+            ImageInterface::FILTER_HAMMING,
+            ImageInterface::FILTER_HERMITE,
+            ImageInterface::FILTER_LANCZOS,
+            ImageInterface::FILTER_MITCHELL,
+            ImageInterface::FILTER_POINT,
+            ImageInterface::FILTER_QUADRATIC,
+            ImageInterface::FILTER_SINC,
+            ImageInterface::FILTER_TRIANGLE,
+        ];
+
+        $sampleFilter = in_array($sampleFilter, $supportedFilters) ? $sampleFilter : ImageInterface::FILTER_UNDEFINED;
+
+        $this->options['sample_filter'] = $sampleFilter;
+    }
+
+    /**
+     * Applies additional sharpening.
+     *
+     * Internal use only.
+     *
+     * @param bool $sharpen
+     *   TRUE to sharpen, FALSE to leave as is.
+     */
+    private function setSharpen($sharpen = false)
+    {
+        $this->options['effect_sharpen'] = filter_var($sharpen, FILTER_VALIDATE_BOOLEAN);
     }
 }
