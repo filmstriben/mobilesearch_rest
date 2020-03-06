@@ -8,6 +8,7 @@ use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Point;
+use lsolesen\pel\PelJpeg;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -163,11 +164,7 @@ class ImageController extends Controller
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
-        if (extension_loaded('imagick')) {
-            $imagine = new ImagickImagine();
-        } else {
-            $imagine = new GdImagine();
-        }
+        $imagine = new GdImagine();
 
         try {
             $image = $imagine->open($source);
@@ -190,6 +187,16 @@ class ImageController extends Controller
             }
 
             $image->save($target, $this->options);
+
+            $inputPel = new PelJpeg($source);
+            $outputPel = new PelJpeg($target);
+
+            if ($icc = $inputPel->getIcc()) {
+                $outputPel->setIcc($icc);
+            }
+
+            $outputPel->saveFile($target);
+
         } catch (ImagineExc $e) {
             $logger->error('Failed to resize image "'.$source.'" with exception: '.$e->getMessage());
 
