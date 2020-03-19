@@ -32,7 +32,7 @@ class ImageController extends Controller
 
     protected $sampleFilter = ImageInterface::FILTER_CATROM;
 
-    protected $format = 'xmp';
+    protected $format = 'webp';
 
     protected $publicCache = 60 * 60 * 24 * 30;
 
@@ -151,7 +151,6 @@ class ImageController extends Controller
     {
         $resize = $request->query->get('resize', $request->attributes->get('resize'));
 
-
         if ($quality = (int)$request->query->get('q')) {
             $this->setQuality($quality);
         }
@@ -233,7 +232,6 @@ class ImageController extends Controller
             $response->setStatusCode(Response::HTTP_OK);
             $response->setContent(file_get_contents($imagePath));
         }
-
 
         return $response;
     }
