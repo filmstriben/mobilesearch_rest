@@ -8,6 +8,7 @@ use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Point;
+use lsolesen\pel\PelJpeg;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -125,6 +126,9 @@ class ImageController extends Controller
         $force = $request->query->get('f', false);
         $force = filter_var($force, FILTER_VALIDATE_BOOLEAN);
 
+        $engine = $request->query->get('e', 'gd');
+        $this->setEngine($engine);
+
         $dimensions = $this->getSizeFromParam($resize);
         // Keep a separate directory for a specific size.
         $subDirectory = implode('x', $dimensions);
@@ -163,10 +167,13 @@ class ImageController extends Controller
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
-        if (extension_loaded('imagick')) {
-            $imagine = new ImagickImagine();
-        } else {
-            $imagine = new GdImagine();
+        switch ($this->options['engine']) {
+            case 'imagick':
+                $imagine = new ImagickImagine();
+                break;
+            case 'gd':
+            default:
+                $imagine = new GdImagine();
         }
 
         try {
@@ -190,6 +197,18 @@ class ImageController extends Controller
             }
 
             $image->save($target, $this->options);
+
+            // GD is unable to deal with ICC profiles.
+            if ($imagine instanceof GdImagine) {
+                $inputPel = new PelJpeg($source);
+                $outputPel = new PelJpeg($target);
+
+                if ($icc = $inputPel->getIcc()) {
+                    $outputPel->setIcc($icc);
+                }
+
+                $outputPel->saveFile($target);
+            }
         } catch (ImagineExc $e) {
             $logger->error('Failed to resize image "'.$source.'" with exception: '.$e->getMessage());
 
@@ -408,5 +427,20 @@ class ImageController extends Controller
     private function setSharpen($sharpen = false)
     {
         $this->options['effect_sharpen'] = filter_var($sharpen, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Set the image processing engine.
+     *
+     * Internal use only.
+     *
+     * @param string $engine
+     *   Image processor identifier.
+     */
+    private function setEngine($engine = 'gd') {
+        $engines = ['imagick', 'gd'];
+        $engine = in_array($engine, $engines) && extension_loaded($engine) ? $engine : 'gd';
+
+        $this->options['engine'] = $engine;
     }
 }

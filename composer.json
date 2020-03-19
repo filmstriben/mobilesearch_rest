@@ -10,6 +10,7 @@
     "require": {
         "php": ">=5.3.9",
         "ext-json": "*",
+        "ext-mongo": "1.4.4",
         "symfony/symfony": "2.8.*",
         "doctrine/orm": "^2.4.8",
         "doctrine/doctrine-bundle": "~1.4",
@@ -24,7 +25,8 @@
         "imagine/imagine": "~0.5.0",
         "nelmio/api-doc-bundle": "^2.13",
         "fzaninotto/faker": "^1.7",
-        "jms/serializer-bundle": "^2.4.2"
+        "jms/serializer-bundle": "^2.4.2",
+        "lsolesen/pel": "^0.9.8"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3",
