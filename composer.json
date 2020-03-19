@@ -10,6 +10,7 @@
     "require": {
         "php": ">=5.3.9",
         "ext-json": "*",
+        "ext-mongo": "1.4.4",
         "symfony/symfony": "2.8.*",
         "doctrine/orm": "^2.4.8",
         "doctrine/doctrine-bundle": "~1.4",
@@ -21,7 +22,7 @@
         "incenteev/composer-parameter-handler": "~2.0",
         "doctrine/mongodb-odm": "1.0.4",
         "doctrine/mongodb-odm-bundle": "3.0.1",
-        "imagine/imagine": "~0.5.0",
+        "imagine/imagine": "^1.2",
         "nelmio/api-doc-bundle": "^2.13",
         "fzaninotto/faker": "^1.7",
         "jms/serializer-bundle": "^2.4.2"
