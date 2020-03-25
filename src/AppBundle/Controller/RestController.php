@@ -14,8 +14,8 @@ use AppBundle\Rest\RestContentRequest;
 use AppBundle\Rest\RestListsRequest;
 use AppBundle\Rest\RestMenuRequest;
 use AppBundle\Rest\RestTaxonomyRequest;
+use Doctrine\MongoDB\Query\Expr;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
-use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -363,6 +363,7 @@ final class RestController extends Controller
     }
 
     /**
+     * <p><strong>DEPRECATED<br /></strong>Consider '/content/filter' route.</p>
      * <p>'query' parameter can accept regular expressions, case insensitive, when searching within any content fields, unless
      * the search is made within the 'taxonomy', where a direct match is performed.</p>
      * <p>'query' and 'field' parameters must always match in count.<br />
@@ -376,7 +377,6 @@ final class RestController extends Controller
      * containing either 'Hjemmefra', or 'At home' terms.</p>
      * <p>Add a 'format=short' pair to the query string to get a plain list of title suggestions.
      * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms&format=short</pre></p>
-     *
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
@@ -427,7 +427,8 @@ final class RestController extends Controller
      *     },
      *     output={
      *         "class": "AppBundle\IO\ContentOutput"
-     *     }
+     *     },
+     *     deprecated=true
      * )
      * @Route("/content/search")
      * @Method({"GET"})
@@ -469,7 +470,7 @@ final class RestController extends Controller
                 unset($fields['format']);
                 $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
 
-                /** @var Content $suggestion */
+                /** @var \AppBundle\Document\Content $suggestion */
                 foreach ($suggestions as $suggestion) {
                     $suggestionFields = $suggestion->getFields();
 
@@ -485,7 +486,6 @@ final class RestController extends Controller
                         ];
                     }
                 }
-
 
                 $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
@@ -503,6 +503,293 @@ final class RestController extends Controller
             $this->lastItems,
             $hits
         );
+    }
+
+    /**
+     * <p>
+     * Query <strong>(q)</strong> examples:<br />
+     * ("type[eq]:os")<br />
+     * ("type[eq]:os" OR "type[eq]:editorial")<br />
+     * ("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin%20Scorsese")<br />
+     * ("type[eq]:os" AND "taxonomy.drt.terms[regex]:scorsese")<br />
+     * ("type[eq]:os" AND "fields.title.value[regex]:av") OR ("type[eq]:editorial" AND "agency[eq]:150064")<br />
+     * </p>
+     *
+     * @ApiDoc(
+     *     description="Searches content entries by certain criteria(s).",
+     *     section="Content",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="q",
+     *             "dataType"="string",
+     *             "description"="Search query.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="amount",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to fetch. Defaults to 10.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="skip",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to skip. Defaults to 0.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="format",
+     *             "dataType"="string",
+     *             "description"="Use 'short' value to get a plain list of suggested titles.",
+     *             "required"=false
+     *         },
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ContentOutput"
+     *     },
+     * )
+     * @Route("/content/search-extended")
+     * @Method({"GET"})
+     */
+    public function searchExtendedAction(Request $request) {
+        $this->lastMethod = $request->getMethod();
+
+        $fields = [
+            'agency' => null,
+            'key' => null,
+            'q' => null,
+            'amount' => 10,
+            'skip' => 0,
+            'format' => null,
+        ];
+
+        foreach (array_keys($fields) as $field) {
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+
+            if (in_array($field, ['query', 'field'])) {
+                $fields[$field] = array_filter((array)$fields[$field]);
+            }
+        }
+
+        $em = $this->get('doctrine_mongodb');
+        $restContentRequest = new RestContentRequest($em);
+
+        $hits = 0;
+
+        if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
+            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
+        } elseif (!empty($fields['q'])) {
+            unset($fields['agency'], $fields['key']);
+
+            try {
+                $q = $fields['q'];
+                $q = preg_replace('~\s+~', ' ', $q);
+                $q = preg_split('~~u', $q, -1, PREG_SPLIT_NO_EMPTY);
+
+                $ops = [];
+
+                $error = false;
+                $start = null;
+                $end = null;
+                $start_count = 0;
+                $end_count = 0;
+                for ($i = 0; $i < count($q); $i++) {
+                    if ('(' == $q[$i]) {
+                        if (null !== $start) {
+                            $error = true;
+                            break;
+                        }
+                        $start_count++;
+                        $start = $i;
+                        continue;
+                    }
+
+                    if (')' == $q[$i]) {
+                        $end_count++;
+                        $end = $i;
+                    }
+
+                    if (null !== $start && null !== $end) {
+                        $op = '';
+                        for ($j = $start; $j <= $end; $j++) {
+                            $op .= $q[$j];
+                        }
+
+                        $start = null;
+                        $end = null;
+                        $ops[] = $op;
+                    }
+                }
+
+                if ($start_count != $end_count) {
+                    $error = true;
+                }
+
+                $ops = array_filter($ops, function ($v) {
+                    return !empty(trim(trim($v, '()')));
+                });
+
+                $tokens = [];
+                foreach ($ops as $op) {
+                    if (!preg_match('~\("[a-z.]+\[[a-z]+\]:[0-9\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z.]+\[[a-z]+\]:[0-9\p{L}-_+\s]+")*\)~iu', $op)) {
+                        $error = true;
+                        break;
+                    }
+
+                    $tokens[sha1(microtime(TRUE) . $op)] = $op;
+                }
+
+                $split_query = [];
+                $_q = str_replace(array_values($tokens), array_keys($tokens), implode('', $q));
+                foreach (explode(' ', $_q) as $tokenized_chunk) {
+                    foreach ($tokens as $token => $grouped_query) {
+                        if (FALSE !== strpos($tokenized_chunk, $token)) {
+                            $split_query[] = $token;
+                            break;
+                        }
+                    }
+
+                    if (in_array($tokenized_chunk, ['OR', 'AND'])) {
+                        $split_query[] = $tokenized_chunk;
+                    }
+                }
+
+                /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
+                $qb = $this
+                    ->get('doctrine_mongodb')
+                    ->getManager()
+                    ->createQueryBuilder(Content::class);
+
+                if (1 == count($tokens)) {
+                    $token = reset($tokens);
+                    $this->queryToExpression($token, $qb);
+                } else {
+                    $offset = 0;
+                    while ($split = array_slice($split_query, $offset, 3)) {
+                        if (count(array_intersect(array_keys($tokens), $split)) !== 2) {
+                            break;
+                        }
+
+                        list($left, $operator, $right) = [
+                            $this->queryToExpression($tokens[$split[0]], null),
+                            $split[1],
+                            $this->queryToExpression($tokens[$split[2]], null),
+                        ];
+
+                        switch (strtolower($operator)) {
+                            case 'and':
+                                $qb->addAnd($left, $right);
+                                break;
+                            case 'or':
+                                $qb->addOr($left, $right);
+                            default:
+                        }
+
+                        $offset += 3;
+                    }
+                }
+
+                $qbCount = clone($qb);
+                $hits = $qbCount->count()->getQuery()->execute();
+
+                $skip = $fields['skip'];
+                $amount = $fields['amount'];
+                $qb->skip($skip)->limit($amount);
+
+                $query = $qb->getQuery();
+                $suggestions = $query->execute();
+
+                $format = $fields['format'];
+
+                /** @var \AppBundle\Document\Content $suggestion */
+                foreach ($suggestions as $suggestion) {
+                    $suggestionFields = $suggestion->getFields();
+
+                    if ('short' == $format) {
+                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
+                    } else {
+                        $this->lastItems[] = [
+                            'id' => $suggestion->getId(),
+                            'nid' => $suggestion->getNid(),
+                            'agency' => $suggestion->getAgency(),
+                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
+                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                        ];
+                    }
+                }
+            } catch (RestException $e) {
+                // TODO: Log this instead.
+                $this->lastMessage = $e->getMessage();
+            }
+        }
+
+        return $this->setResponse(
+            $this->lastStatus,
+            $this->lastMessage,
+            $this->lastItems,
+            $hits
+        );
+    }
+
+    /**
+     *
+     *
+     * @param string $query
+     * @param \Doctrine\MongoDB\Query\Builder $qb
+     *
+     * @return \Doctrine\MongoDB\Query\Expr|\Doctrine\MongoDB\Query\Builder
+     */
+    private function queryToExpression($query, $qb) {
+        $query = trim($query, '()');
+
+        $matches = [];
+        preg_match('~"\s(or|and)\s"~i', $query, $matches);
+        $operator = !empty($matches[1]) ? $matches[1] : 'and';
+
+        $operands = preg_split('~\s(or|and)\s~i', $query, -1,PREG_SPLIT_NO_EMPTY);
+
+        $expr = (null !== $qb) ? $qb : new Expr();
+        $operatorArgs = [];
+        foreach ($operands as $operand) {
+            preg_match('~"([a-z.]+)\[([a-z]+)\]:([0-9\p{L}-_+\s]+)"~i', $operand, $matches);
+            array_shift($matches);
+            list($field, $comparison, $value) = $matches;
+
+            $exprMethod = null;
+            switch ($comparison) {
+                case 'regex':
+                    $value = new \MongoRegex('/' . $value . '/i');
+                case 'eq':
+                default:
+                    $exprMethod = 'equals';
+            }
+            $_expr = new Expr();
+            $operatorArgs[] = $_expr->field($field)->{$exprMethod}($value);
+        }
+
+        $operatorMethod = null;
+        switch (strtolower($operator)) {
+            case 'and':
+                $operatorMethod = 'addAnd';
+                break;
+            case 'or':
+            default:
+                $operatorMethod = 'addOr';
+        }
+
+        return call_user_func_array([$expr, $operatorMethod], $operatorArgs);
     }
 
     /**
@@ -1292,78 +1579,6 @@ final class RestController extends Controller
         );
 
         return $response;
-    }
-
-    /**
-     * Replaced by '/content/search' route.
-     *
-     * @ApiDoc(
-     *     description="Fetches content entries containing certain vocabulary terms.",
-     *     section="Content",
-     *     requirements={},
-     *     output={
-     *         "class": "AppBundle\IO\ContentOutput"
-     *     },
-     *     deprecated=true
-     * )
-     * @Route("/content/related")
-     * @Method({"GET"})
-     */
-    public function taxonomyRelatedContentAction(Request $request)
-    {
-        $this->lastMethod = $request->getMethod();
-
-        $fields = [
-            'agency' => null,
-            'key' => null,
-            'vocabulary' => null,
-            'terms' => null,
-        ];
-
-        foreach (array_keys($fields) as $field) {
-            $fields[$field] = $request->query->get($field);
-        }
-
-        $em = $this->get('doctrine_mongodb');
-        $rtr = new RestTaxonomyRequest($em);
-
-        if (!$rtr->isSignatureValid($fields['agency'], $fields['key'])) {
-            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        } else {
-            $this->lastItems = [];
-
-            try {
-                $items = $rtr->fetchRelatedContent(
-                    $fields['agency'],
-                    (array)$fields['vocabulary'],
-                    (array)$fields['terms']
-                );
-
-                if (!empty($items)) {
-                    foreach ($items as $item) {
-                        $this->lastItems[] = [
-                            'id' => $item->getId(),
-                            'nid' => $item->getNid(),
-                            'agency' => $item->getAgency(),
-                            'type' => $item->getType(),
-                            'fields' => $item->getFields(),
-                            'taxonomy' => $item->getTaxonomy(),
-                            'list' => $item->getList(),
-                        ];
-                    }
-                }
-
-                $this->lastStatus = true;
-            } catch (RestException $e) {
-                $this->lastMessage = $e->getMessage();
-            }
-        }
-
-        return $this->setResponse(
-            $this->lastStatus,
-            $this->lastMessage,
-            $this->lastItems
-        );
     }
 
     /**

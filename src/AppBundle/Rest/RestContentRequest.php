@@ -5,6 +5,8 @@ namespace AppBundle\Rest;
 use AppBundle\Document\Content;
 use AppBundle\Exception\RestException;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\Query\Expr\Comparison;
 use Symfony\Component\Filesystem\Filesystem as FSys;
 
 /**
