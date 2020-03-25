@@ -507,12 +507,22 @@ final class RestController extends Controller
 
     /**
      * <p>
-     * Query <strong>(q)</strong> examples:<br />
-     * ("type[eq]:os")<br />
-     * ("type[eq]:os" OR "type[eq]:editorial")<br />
-     * ("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin Scorsese")<br />
-     * ("type[eq]:os" AND "taxonomy.drt.terms[regex]:scorsese")<br />
-     * ("type[eq]:os" AND "fields.title.value[regex]:av") OR ("type[eq]:editorial" AND "agency[eq]:150064")<br />
+     * Query string <strong>(q)</strong> SHOULD comply with the following PCRE pattern:<br />
+     * <em>~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu</em>
+     * </p>
+     * <p>
+     * As for the PCRE pattern above, a query chunk MUST be quoted with double quotes.<br />
+     * Whole query MUST be surrounded with round brackets.<br />
+     * Query chunk has the following pattern: "FIELD[OPERATOR]:VALUE"<br />
+     * </p>
+     * <p>
+     * Query <strong>(q)</strong> examples:
+     * Items with 'type' 'os': <pre>("type[eq]:os")</pre>
+     * Items with 'type' either 'os' or 'editorial': <pre>("type[eq]:os" OR "type[eq]:editorial")</pre>
+     * Items with 'type' 'os' with director terms 'Martin Scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin Scorsese")</pre>
+     * Items with 'type' 'os' with director terms containing 'scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[regex]:scorsese")</pre>
+     * Either items with 'type' 'os' and whose title contain 'av' or 'editorial' items which belong to agency '150064': <pre>("type[eq]:os" AND "fields.title.value[regex]:av") OR ("type[eq]:editorial" AND "agency[eq]:150064")</pre>
+     * Items with the specific faust numbers belonging to agency '150027': <pre>("fields.field_faust_number.value[regex]:29056439|27415679" AND "agency[eq]:150027")</pre>
      * </p>
      *
      * @ApiDoc(
@@ -643,7 +653,7 @@ final class RestController extends Controller
 
                 $tokens = [];
                 foreach ($ops as $op) {
-                    if (!preg_match('~\("[a-z.]+\[[a-z]+\]:[0-9\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z.]+\[[a-z]+\]:[0-9\p{L}-_+\s]+")*\)~iu', $op)) {
+                    if (!preg_match('~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu', $op)) {
                         $error = true;
                         break;
                     }
@@ -763,7 +773,7 @@ final class RestController extends Controller
         $expr = (null !== $qb) ? $qb : new Expr();
         $operatorArgs = [];
         foreach ($operands as $operand) {
-            preg_match('~"([a-z.]+)\[([a-z]+)\]:([0-9\p{L}-_+\s]+)"~i', $operand, $matches);
+            preg_match('~"([a-z._]+)\[([a-z]+)\]:([0-9|\p{L}-_+\s]+)"~i', $operand, $matches);
             array_shift($matches);
             list($field, $comparison, $value) = $matches;
 
