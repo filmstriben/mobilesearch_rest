@@ -363,7 +363,7 @@ final class RestController extends Controller
     }
 
     /**
-     * <p><strong>DEPRECATED<br /></strong>Consider '/content/filter' route.</p>
+     * <p><strong>DEPRECATED<br /></strong>Consider '/content/search-extended' route.</p>
      * <p>'query' parameter can accept regular expressions, case insensitive, when searching within any content fields, unless
      * the search is made within the 'taxonomy', where a direct match is performed.</p>
      * <p>'query' and 'field' parameters must always match in count.<br />
