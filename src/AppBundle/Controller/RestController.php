@@ -510,10 +510,16 @@ final class RestController extends Controller
      * Query string <strong>(q)</strong> SHOULD comply with the following PCRE pattern:<br />
      * <em>~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu</em>
      * </p>
+     * <p>Queries that do not match the pattern are invalidated and search result defaults empty searching criteria,
+     * i.e. all items.</p>
+     * <p>Nested AND/OR operations are NOT supported.</p>
      * <p>
      * As for the PCRE pattern above, a query chunk MUST be quoted with double quotes.<br />
      * Whole query MUST be surrounded with round brackets.<br />
-     * Query chunk has the following pattern: "FIELD[OPERATOR]:VALUE"<br />
+     * Query chunk has the following pattern: <pre>"FIELD[OPERATOR]:VALUE"</pre>
+     * FIELD - any field found in the respective record. To descend into structure hierarchy, use dot '.' notation.<br />
+     * OPERATOR - Comparison operator. Can be either 'eq' or 'regex'. Use 'eq' for exact match and 'regex' for regular expression match.<br />
+     * VALUE - Value to compare against.
      * </p>
      * <p>
      * Query <strong>(q)</strong> examples:
@@ -572,6 +578,9 @@ final class RestController extends Controller
      * )
      * @Route("/content/search-extended")
      * @Method({"GET"})
+     *
+     * TODO: Too much is happening here.
+     * TODO: Test coverage.
      */
     public function searchExtendedAction(Request $request) {
         $this->lastMethod = $request->getMethod();
@@ -587,10 +596,6 @@ final class RestController extends Controller
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
-
-            if (in_array($field, ['query', 'field'])) {
-                $fields[$field] = array_filter((array)$fields[$field]);
-            }
         }
 
         $em = $this->get('doctrine_mongodb');
@@ -605,7 +610,10 @@ final class RestController extends Controller
 
             try {
                 $q = $fields['q'];
+                // Remove the repeating spaces.
                 $q = preg_replace('~\s+~', ' ', $q);
+                // Split the string into an array of characters,
+                // since iterating char by char unicode strings is pain.
                 $q = preg_split('~~u', $q, -1, PREG_SPLIT_NO_EMPTY);
 
                 $ops = [];
@@ -615,6 +623,7 @@ final class RestController extends Controller
                 $end = null;
                 $start_count = 0;
                 $end_count = 0;
+                // Cut the query chunks, encapsed by round brackets.
                 for ($i = 0; $i < count($q); $i++) {
                     if ('(' == $q[$i]) {
                         if (null !== $start) {
@@ -647,11 +656,13 @@ final class RestController extends Controller
                     $error = true;
                 }
 
+                // Remove the leading/trailing brackets and non-printable characters, if any.
                 $ops = array_filter($ops, function ($v) {
                     return !empty(trim(trim($v, '()')));
                 });
 
                 $tokens = [];
+                // Validate the query chunks.
                 foreach ($ops as $op) {
                     if (!preg_match('~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu', $op)) {
                         $error = true;
@@ -661,6 +672,7 @@ final class RestController extends Controller
                     $tokens[sha1(microtime(TRUE) . $op)] = $op;
                 }
 
+                // Tokenize the query string to assemble the correct order of transformations.
                 $split_query = [];
                 $_q = str_replace(array_values($tokens), array_keys($tokens), implode('', $q));
                 foreach (explode(' ', $_q) as $tokenized_chunk) {
@@ -682,16 +694,20 @@ final class RestController extends Controller
                     ->getManager()
                     ->createQueryBuilder(Content::class);
 
+                // If there is one query chunk directly apply it to the query builder.
+                // If not, use lately created tokenized query to know what goes where.
                 if (1 == count($tokens)) {
                     $token = reset($tokens);
                     $this->queryToExpression($token, $qb);
                 } else {
                     $offset = 0;
                     while ($split = array_slice($split_query, $offset, 3)) {
+                        // Every split chunk MUST contain two tokens - for left and right operands..
                         if (count(array_intersect(array_keys($tokens), $split)) !== 2) {
                             break;
                         }
 
+                        // ... as well as the operator value.
                         list($left, $operator, $right) = [
                             $this->queryToExpression($tokens[$split[0]], null),
                             $split[1],
@@ -707,6 +723,8 @@ final class RestController extends Controller
                             default:
                         }
 
+                        // The tokenized query array size is expected to be a multiple of 3.
+                        // Hence two tokens and the operator between them.
                         $offset += 3;
                     }
                 }
@@ -715,7 +733,7 @@ final class RestController extends Controller
                 $hits = $qbCount->count()->getQuery()->execute();
 
                 $skip = $fields['skip'];
-                $amount = $fields['amount'];
+                $amount = $fields['amount'] > 100 ? 100 : $fields['amount'];
                 $qb->skip($skip)->limit($amount);
 
                 $query = $qb->getQuery();
@@ -754,26 +772,51 @@ final class RestController extends Controller
     }
 
     /**
+     * Converts a string query to odm expression.
      *
+     * In case the query lacks AND/OR operations, directly assign
+     * the criteria to query builder. Therefore the last parameter
+     * should be passed from the main query builder.
+     *
+     * In case when there is an AND/OR operation(s), return an
+     * expression instead, which is assigned to main query builder
+     * outside the scope of this method.
+     *
+     * The reasons for all this is that query builder lacks methods
+     * to provide it's expression(s) for outside changes and odm specifics
+     * for nested and/or conditions.
+     *
+     * When builder is passed, the builder instance is returned,
+     * otherwise new expression is returned instead for later use.
      *
      * @param string $query
+     *   Raw query.
      * @param \Doctrine\MongoDB\Query\Builder $qb
+     *   Query builder.
      *
      * @return \Doctrine\MongoDB\Query\Expr|\Doctrine\MongoDB\Query\Builder
+     *   Query builder, or new expression.
      */
-    private function queryToExpression($query, $qb) {
+    private function queryToExpression($query, $qb = null) {
         $query = trim($query, '()');
 
+        // Find out the operator in the expression.
         $matches = [];
         preg_match('~"\s(or|and)\s"~i', $query, $matches);
         $operator = !empty($matches[1]) ? $matches[1] : 'and';
 
+        // Get the left and right operands of the expression.
         $operands = preg_split('~\s(or|and)\s~i', $query, -1,PREG_SPLIT_NO_EMPTY);
 
+        // If query builder is passed, assign the expression directly.
         $expr = (null !== $qb) ? $qb : new Expr();
         $operatorArgs = [];
         foreach ($operands as $operand) {
+            // Three parts we need from the query - the field, comparison identifier and the value to compare.
+            // Normally should never fail, unless the query format is not validated
+            // earlier to match needed format.
             preg_match('~"([a-z._]+)\[([a-z]+)\]:([0-9|\p{L}-_+\s]+)"~i', $operand, $matches);
+            // We don't need the whole match.
             array_shift($matches);
             list($field, $comparison, $value) = $matches;
 
