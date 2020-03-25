@@ -510,7 +510,7 @@ final class RestController extends Controller
      * Query <strong>(q)</strong> examples:<br />
      * ("type[eq]:os")<br />
      * ("type[eq]:os" OR "type[eq]:editorial")<br />
-     * ("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin%20Scorsese")<br />
+     * ("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin Scorsese")<br />
      * ("type[eq]:os" AND "taxonomy.drt.terms[regex]:scorsese")<br />
      * ("type[eq]:os" AND "fields.title.value[regex]:av") OR ("type[eq]:editorial" AND "agency[eq]:150064")<br />
      * </p>
