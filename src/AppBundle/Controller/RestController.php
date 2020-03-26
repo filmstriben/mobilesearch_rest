@@ -757,6 +757,8 @@ final class RestController extends Controller
                         ];
                     }
                 }
+
+                $this->lastStatus = !$error;
             } catch (RestException $e) {
                 // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
@@ -815,7 +817,7 @@ final class RestController extends Controller
             // Three parts we need from the query - the field, comparison identifier and the value to compare.
             // Normally should never fail, unless the query format is not validated
             // earlier to match needed format.
-            preg_match('~"([a-z._]+)\[([a-z]+)\]:([0-9|\p{L}-_+\s]+)"~i', $operand, $matches);
+            preg_match('~"([a-z._]+)\[([a-z]+)\]:([0-9|\p{L}-_+\s]+)"~iu', $operand, $matches);
             // We don't need the whole match.
             array_shift($matches);
             list($field, $comparison, $value) = $matches;
