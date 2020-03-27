@@ -205,6 +205,7 @@ class ImageController extends Controller
 
                 // Clear meta-data to save bandwidth.
                 $image->strip();
+                // TODO: Preserve ICC profile, if any.
 
                 try {
                     $image->save($imageResizedPath, [
@@ -225,19 +226,42 @@ class ImageController extends Controller
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
             $response->setContent('File not found.');
         } else {
-            $response->headers->set('Content-Type', 'image/'.$this->format);
-            $response->headers->set('Cache-Control', 'max-age='.$this->publicCache.', public');
-            $response->headers->set('Expires', gmdate(DATE_RFC1123, time() + $this->publicCache));
+            $eTag = $this->fileContentsHash($imagePath);
+            if (FALSE !== $eTag && $eTag === $request->headers->get('If-None-Match')) {
+                $response->setStatusCode(Response::HTTP_NOT_MODIFIED);
+            } else {
+                $response->headers->set('Content-Type', 'image/' . $this->format);
+                $response->headers->set('Cache-Control', 'max-age=' . $this->publicCache . ', public');
+                $response->headers->set('Expires', gmdate(DATE_RFC1123, time() + $this->publicCache));
+                $response->headers->set('ETag', $eTag);
 
-            $imageContents = file_get_contents($imagePath);
-            $eTag = sha1($imageContents);
-            $response->headers->set('ETag', $eTag);
-
-            $response->setStatusCode(Response::HTTP_OK);
-            $response->setContent(file_get_contents($imagePath));
+                $response->setStatusCode(Response::HTTP_OK);
+                $response->setContent(file_get_contents($imagePath));
+            }
         }
 
         return $response;
+    }
+
+    /**
+     * Generate file contents hash.
+     *
+     * Used to generate ETag's.
+     *
+     * @param string $path
+     *   File path.
+     *
+     * @return bool|string
+     *   False if file does not exist, or hash of the contents.
+     */
+    protected function fileContentsHash($path)
+    {
+        $fs = new Filesystem();
+        if (!$fs->exists($path)) {
+            return false;
+        }
+
+        return sha1(file_get_contents($path));
     }
 
     /**
