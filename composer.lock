@@ -4628,7 +4628,6 @@
         "ext-imagick": "*",
         "ext-json": "*",
         "ext-mongo": "*"
-
     },
     "platform-dev": []
 }
