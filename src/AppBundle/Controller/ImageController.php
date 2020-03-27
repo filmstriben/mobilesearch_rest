@@ -229,6 +229,10 @@ class ImageController extends Controller
             $response->headers->set('Cache-Control', 'max-age='.$this->publicCache.', public');
             $response->headers->set('Expires', gmdate(DATE_RFC1123, time() + $this->publicCache));
 
+            $imageContents = file_get_contents($imagePath);
+            $eTag = sha1($imageContents);
+            $response->headers->set('ETag', $eTag);
+
             $response->setStatusCode(Response::HTTP_OK);
             $response->setContent(file_get_contents($imagePath));
         }
