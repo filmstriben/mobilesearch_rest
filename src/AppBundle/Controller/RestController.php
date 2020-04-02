@@ -1924,6 +1924,7 @@ final class RestController extends Controller
 
         $response = new Response(json_encode($responseContent));
         $response->headers->set('Content-Type', 'application/json');
+        $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
     }
