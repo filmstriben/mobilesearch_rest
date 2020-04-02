@@ -47,7 +47,7 @@ class Content
     /**
      * Get id
      *
-     * @return id $id
+     * @return string $id
      */
     public function getId()
     {
@@ -105,7 +105,7 @@ class Content
     /**
      * Set fields
      *
-     * @param collection $fields
+     * @param array $fields
      *
      * @return self
      */
@@ -119,7 +119,7 @@ class Content
     /**
      * Get fields
      *
-     * @return collection $fields
+     * @return array $fields
      */
     public function getFields()
     {
@@ -129,7 +129,7 @@ class Content
     /**
      * Set taxonomy
      *
-     * @param collection $taxonomy
+     * @param array $taxonomy
      *
      * @return self
      */
@@ -143,7 +143,7 @@ class Content
     /**
      * Get taxonomy
      *
-     * @return collection $taxonomy
+     * @return array $taxonomy
      */
     public function getTaxonomy()
     {
@@ -153,7 +153,7 @@ class Content
     /**
      * Set list
      *
-     * @param collection $list
+     * @param array $list
      *
      * @return self
      */
@@ -167,7 +167,7 @@ class Content
     /**
      * Get list
      *
-     * @return collection $list
+     * @return array $list
      */
     public function getList()
     {

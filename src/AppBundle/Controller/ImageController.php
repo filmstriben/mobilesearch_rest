@@ -2,8 +2,7 @@
 
 namespace AppBundle\Controller;
 
-use Imagine\Exception\Exception as ImagineExc;
-use Imagine\Gd\Imagine;
+use Imagine\Imagick\Imagine as ImagickImagine;
 use Imagine\Image\Box;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Point;
@@ -13,23 +12,31 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class ImageController.
+ *
+ * TODO: Test coverage.
  */
 class ImageController extends Controller
 {
     const ASPECT_PRECISION = 3;
 
     protected $filesStorageDir = '../web/storage/images';
+
     protected $response;
-    protected $imagineOptions = [
-        'quality' => 90,
-    ];
+
+    protected $quality = 75;
+
+    protected $sharpen = true;
+
+    protected $sampleFilter = ImageInterface::FILTER_CATROM;
+
+    protected $format = 'webp';
+
+    protected $publicCache = 60 * 60 * 24 * 30;
 
     /**
      * Replaced by '/files/{agency}/{filename}' route.
@@ -64,39 +71,23 @@ class ImageController extends Controller
      */
     public function imageAction(Request $request, $agency, $resize, $filename)
     {
-        // TODO: Consider Imagick and fallback to GD.
-        // For those weird instances that lack GD extension.
-        if (!extension_loaded('gd')) {
-            throw new \Exception('GD php extension not loaded.');
-        }
-
-        $this->response = new Response();
-
-        $filePath = $this->filesStorageDir.'/'.$agency.'/'.$filename;
-
-        $dimensions = $this->getSizeFromParam($resize);
-        // If resize parameter is received, try parse it and apply the style to
-        // the image.
-        if (!empty($dimensions) && implode($dimensions) != '00' && $this->checkThumbnailSubdir($resize, $agency)) {
-            $resizedFilePath = $this->filesStorageDir.'/'.$agency.'/'.$resize.'/'.$filename;
-
-            $fs = new Filesystem();
-            // Both when image exits or it's smaller/bigger counterpart1
-            // was created - replace the filepath with the result image.
-            if ($fs->exists($resizedFilePath)) {
-                $filePath = $resizedFilePath;
-            } elseif ($this->resizeImage($filePath, $resizedFilePath, $dimensions)) {
-                $filePath = $resizedFilePath;
-            }
-        }
-
-        $this->serveImage($filePath);
-
-        return $this->response;
+        return $this->forward('AppBundle:Image:imageNew', [
+            'request' => $request,
+            'agency' => $agency,
+            'filename' => $filename,
+        ]);
     }
 
     /**
-     * <p>resize parameter, when omitted, will default to original (full) image size.</p>
+     * <p>If one of the size parameters - '<strong>w</strong>' or '<strong>h</strong>' - are omitted or one of them is equal to '0',
+     * the another size parameter is adjusted automatically to maintain aspect ratio of the image.</p>
+     * <p>If both size parameters are omitted or are equal to '0', original image is served instead and all other parameters are discarded.</p>
+     * <p> Resample  - '<strong>r</strong>' - parameter can be one of following:
+     * 'point', 'box', 'triangle', 'hermite', 'hanning', 'hamming', 'blackman', 'gaussian', 'quadratic', 'cubic', 'catrom',
+     * 'mitchell', 'lanczos', 'bessel' or 'sinc'.<br />
+     * Various resampling algorithms would deliver slightly different results and will vary image size slightly.<br />
+     * To obtain sharper images, use 'point', 'lanczos' or 'sinc'. <br />
+     * Softer or blurry images can be obtained by using 'cubic' or 'triangle' resampling.</p>
      *
      * @ApiDoc(
      *     description="Fetches image and, optionally, re-sizes it.",
@@ -115,11 +106,43 @@ class ImageController extends Controller
      *     },
      *     parameters={
      *         {
-     *             "name"="resize",
-     *             "dataType"="string",
-     *             "description"="Image size (WIDTHxHEIGHT).",
+     *             "name"="w",
+     *             "dataType"="int",
+     *             "description"="Target image width",
      *             "required"=false,
-     *             "format"="{\d}+x{\d}+"
+     *             "format"="{\d}"
+     *         },
+     *         {
+     *             "name"="h",
+     *             "dataType"="int",
+     *             "description"="Target image height",
+     *             "required"=false,
+     *             "format"="{\d}"
+     *         },
+     *         {
+     *             "name"="q",
+     *             "dataType"="int",
+     *             "description"="Target image quality. Range from '1' (worst) to '100' (best). Default - '75'.",
+     *             "required"=false,
+     *             "format"="{\d}"
+     *         },
+     *         {
+     *             "name"="o",
+     *             "dataType"="string",
+     *             "description"="Convert image format. Default - 'webp'.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="r",
+     *             "dataType"="string",
+     *             "description"="Apply custom resampling algorithm. Default - 'catrom'.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="s",
+     *             "dataType"="boolean",
+     *             "description"="Apply additional sharpening to target image. Default - 'true'.",
+     *             "required"=false
      *         },
      *     }
      * )
@@ -128,65 +151,148 @@ class ImageController extends Controller
      */
     public function imageNewAction(Request $request, $agency, $filename)
     {
-        $response = $this->forward('AppBundle:Image:image', [
-            'request' => $request,
-            'agency' => $agency,
-            'filename' => $filename,
-            'resize' => $request->query->get('resize'),
-        ]);
+        // TODO: Legacy support.
+        $resize = $request->query->get('resize', $request->attributes->get('resize'));
+
+        if ($quality = (int)$request->query->get('q')) {
+            $this->setQuality($quality);
+        }
+
+        if ($sampleFilter = $request->query->get('r')) {
+            $this->setSamplingFilter($sampleFilter);
+        }
+
+        if ($sharpen = $request->query->get('s')) {
+            $this->setSharpen($sharpen);
+        }
+
+        if ($output = $request->query->get('o')) {
+            $this->setFormat($output);
+        }
+
+        if ($force = $request->query->get('f')) {
+            $force = filter_var($force, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        $targetWidth = (int)$request->query->get('w');
+        $targetHeight = (int)$request->query->get('h');
+        // TODO: Legacy support.
+        if (!empty($resize)) {
+            list($targetWidth, $targetHeight) = explode('x', $resize);
+        }
+
+        // Keep a separate directory for a specific size.
+        $subDirectory = implode('x', [$targetWidth, $targetHeight]);
+
+        $imagePath = $this->filesStorageDir.'/'.$agency.'/'.$filename;
+
+        $response = new Response();
+        $fs = new Filesystem();
+
+        // Both sides are zero, therefore serve original image.
+        $serveOriginal = $targetWidth + $targetHeight === 0;
+        if (!$serveOriginal && $this->checkThumbnailSubdir($subDirectory, $agency) && $fs->exists($imagePath)) {
+            list($baseName, $extension) = explode('.', $filename);
+            $filename = $baseName.'.'.$this->format;
+            $imageResizedPath = $this->filesStorageDir.'/'.$agency.'/'.$subDirectory.'/'.$this->quality.'_'.$filename;
+
+            if (!$fs->exists($imageResizedPath) || true === $force) {
+                $imagineInstance = new ImagickImagine();
+                $image = $imagineInstance->open($imagePath);
+
+                $this->resizeImage($image, $targetWidth, $targetHeight);
+
+                if ($this->sharpen) {
+                    $image->effects()->sharpen();
+                }
+
+                // Clear meta-data to save bandwidth.
+                $image->strip();
+                // TODO: Preserve ICC profile, if any.
+
+                try {
+                    $image->save($imageResizedPath, [
+                        'quality' => $this->quality,
+                        'format' => $this->format,
+                    ]);
+                } catch (\Exception $exception) {
+                    /** @var \Psr\Log\LoggerInterface $logger */
+                    $logger = $this->container->get('logger');
+                    $logger->warning($imageResizedPath . ': ' . $exception->getMessage());
+                }
+            }
+
+            $imagePath = $imageResizedPath;
+        }
+
+        if (!$fs->exists($imagePath)) {
+            $response->setStatusCode(Response::HTTP_NOT_FOUND);
+            $response->setContent('File not found.');
+        } else {
+            $eTag = $this->fileContentsHash($imagePath);
+            if (FALSE !== $eTag && $eTag === $request->headers->get('If-None-Match')) {
+                $response->setStatusCode(Response::HTTP_NOT_MODIFIED);
+            } else {
+                $response->headers->set('Content-Type', 'image/' . $this->format);
+                $response->headers->set('Cache-Control', 'max-age=' . $this->publicCache . ', public');
+                $response->headers->set('Expires', gmdate(DATE_RFC1123, time() + $this->publicCache));
+                $response->headers->set('ETag', $eTag);
+
+                $response->setStatusCode(Response::HTTP_OK);
+                $response->setContent(file_get_contents($imagePath));
+            }
+        }
 
         return $response;
     }
 
     /**
-     * Resizes and saves images.
+     * Generate file contents hash.
      *
-     * @param string $source          Original image path.
-     * @param string $target          Target path for re-sized images.
-     * @param array $wantedDimensions Desired width and height.
+     * Used to generate ETag's.
      *
-     * @return boolean
-     *   Resize action result.
+     * @param string $path
+     *   File path.
+     *
+     * @return bool|string
+     *   False if file does not exist, or hash of the contents.
      */
-    protected function resizeImage($source, $target, array $wantedDimensions)
+    protected function fileContentsHash($path)
     {
-        /** @var \Psr\Log\LoggerInterface $logger */
-        $logger = $this->get('logger');
-
-        // TODO: Consider Imagick and fallback to GD.
-        $imagine = new Imagine();
-
-        try {
-            $image = $imagine->open($source);
-            $imageSize = $image->getSize();
-            $originalSize = [
-                'width' => $imageSize->getWidth(),
-                'height' => $imageSize->getHeight(),
-            ];
-            $imageManipulations = $this->getResizeDimensions($originalSize, $wantedDimensions);
-            $image
-                ->resize($imageManipulations['resize'])
-                ->crop($imageManipulations['crop'], $imageManipulations['final_size']);
-
-            // GD only.
-            // Apply a convolution matrix before save to increase sharpness.
-            $gdImageResource = $image->getGdResource();
-            $convolutionMatrix = [
-                [-1, -1, -1],
-                [-1, 32, -1],
-                [-1, -1, -1],
-            ];
-            $divisor = array_sum(array_map('array_sum', $convolutionMatrix));
-            imageconvolution($gdImageResource, $convolutionMatrix, $divisor, 0);
-
-            $image->save($target, $this->imagineOptions);
-        } catch (ImagineExc $e) {
-            $logger->error('Failed to resize image "' . $source .'" with exception: ' . $e->getMessage());
-
+        $fs = new Filesystem();
+        if (!$fs->exists($path)) {
             return false;
         }
 
-        return true;
+        return sha1(file_get_contents($path));
+    }
+
+    /**
+     * Re-sizes and crops an image object.
+     *
+     * @param \Imagine\Image\ImageInterface $image
+     *   Image object.
+     * @param int $wantedWidth
+     *   Image target width.
+     * @param int $wantedHeight
+     *   Image target height.
+     *
+     * @return \Imagine\Image\ImageInterface
+     *   Imagine image object.
+     */
+    protected function resizeImage(ImageInterface $image, $wantedWidth = 0, $wantedHeight = 0)
+    {
+        $imageManipulations = $this->getResizeDimensions(
+            $image->getSize()->getWidth(),
+            $image->getSize()->getHeight(),
+            (int) $wantedWidth,
+            (int) $wantedHeight
+        );
+
+        $image->resize($imageManipulations['resize'], $this->sampleFilter);
+        $image->crop($imageManipulations['crop'], $imageManipulations['final_size']);
+
+        return $image;
     }
 
     /**
@@ -198,18 +304,23 @@ class ImageController extends Controller
      * If target ratio is different, the image is scaled to fit the smallest
      * side and cropped from the center of the image.
      *
-     * @param array $originalSize Original image size (width and height).
-     * @param array $targetSize   Desired target size (width and height).
+     * @param int $originalWidth
+     *   Original image width.
+     * @param int $originalHeight
+     *   Original image height.
+     * @param int $targetWidth
+     *   Target image width.
+     * @param int $targetHeight
+     *   Target image height.
      *
-     * @return array              A set of instructions needed to be applied to original image.
-     *                            - resize: size of the image to crop from (Box object).
-     *                            - crop: coordinates where to crop the image (Point object).
-     *                            - final_size: Requested image size dimensions.
+     * @return array
+     *   A set of instructions needed to be applied to original image.
+     *   - resize: size of the image to crop from (Box object).
+     *   - crop: coordinates where to crop the image (Point object).
+     *   - final_size: Requested image size dimensions.
      */
-    protected function getResizeDimensions(array $originalSize, array $targetSize)
+    protected function getResizeDimensions($originalWidth, $originalHeight, $targetWidth, $targetHeight)
     {
-        list ($originalWidth, $originalHeight) = array_values($originalSize);
-        list ($targetWidth, $targetHeight) = array_values($targetSize);
         // Calculate the aspect ratios of original and target sizes.
         $originalAspect = round($originalWidth / $originalHeight, self::ASPECT_PRECISION);
 
@@ -257,36 +368,15 @@ class ImageController extends Controller
     }
 
     /**
-     * Serves the image to the browse output.
-     *
-     * This serves status code 200 if OK, or 404 if the image is not found.
-     * Adequate headers are passed as well.
-     *
-     * @param string $path Image path.
-     */
-    protected function serveImage($path)
-    {
-        try {
-            $file = new File($path);
-            $this->response->headers->set('Content-Type', $file->getMimeType());
-            $this->response->headers->set('Cache-Control', 'max-age=86400, public');
-            $this->response->headers->set('Expires', gmdate(DATE_RFC1123, time() + 86400));
-
-            $this->response->setStatusCode(Response::HTTP_OK);
-            $this->response->setContent(file_get_contents($path));
-        } catch (FileNotFoundException $e) {
-            $this->response->setStatusCode(Response::HTTP_NOT_FOUND);
-            $this->response->setContent('File not found.');
-        }
-    }
-
-    /**
-     * Check and optionally prepare the directory where resized images
+     * Checks and optionally prepares the directory where resized images
      * are stored.
      *
-     * @param string $name    File name.
-     * @param string $agency  Agency id.
-     * @param boolean $create Whether to create the directories.
+     * @param string $name
+     *   File name.
+     * @param string $agency
+     *   Agency id.
+     * @param boolean $create
+     *   Whether to create the directories.
      *
      * @return boolean
      */
@@ -300,7 +390,10 @@ class ImageController extends Controller
             try {
                 $fs->mkdir($path);
                 $exists = true;
-            } catch (IOException $e) {
+            } catch (IOException $exception) {
+                $logger = $this->container->get('logger');
+                $logger->warning($exception->getMessage());
+
                 return false;
             }
         }
@@ -309,25 +402,93 @@ class ImageController extends Controller
     }
 
     /**
-     * Parses the desired image size from query string parameter.
+     * Sets image output quality.
      *
-     * The parameter must be in form WIDTHxHEIGHT.
+     * Internal use only.
      *
-     * @param string $resizeParam Query string resize parameter.
-     *
-     * @return array              Required width and height of the image.
+     * @param int $quality
+     *   Quality range, from 1 to 100.
      */
-    protected function getSizeFromParam($resizeParam)
+    private function setQuality($quality = 90)
     {
-        $dimensions = [];
-        $sizes = [];
-        if (!empty($resizeParam) && preg_match('/^(\d+)x(\d+)$/', $resizeParam, $sizes)) {
-            $dimensions = [
-                'width' => (int)$sizes[1],
-                'height' => (int)$sizes[2],
-            ];
+        if (empty($quality)) {
+            $quality = 90;
+        } else {
+            $quality = $quality > 100 ? 100 : $quality;
+            $quality = $quality < 1 ? 1 : $quality;
         }
 
-        return $dimensions;
+        $this->quality = $quality;
+    }
+
+    /**
+     * Sets sampling filter.
+     *
+     * Internal use only.
+     *
+     * @param string $sampleFilter
+     *   A filter name, as Imagine provides.
+     *
+     * @see \Imagine\Image\ImageInterface
+     */
+    private function setSamplingFilter($sampleFilter = ImageInterface::FILTER_UNDEFINED)
+    {
+        $supportedFilters = [
+            ImageInterface::FILTER_UNDEFINED,
+            ImageInterface::FILTER_BESSEL,
+            ImageInterface::FILTER_BLACKMAN,
+            ImageInterface::FILTER_BOX,
+            ImageInterface::FILTER_CATROM,
+            ImageInterface::FILTER_CUBIC,
+            ImageInterface::FILTER_GAUSSIAN,
+            ImageInterface::FILTER_HANNING,
+            ImageInterface::FILTER_HAMMING,
+            ImageInterface::FILTER_HERMITE,
+            ImageInterface::FILTER_LANCZOS,
+            ImageInterface::FILTER_MITCHELL,
+            ImageInterface::FILTER_POINT,
+            ImageInterface::FILTER_QUADRATIC,
+            ImageInterface::FILTER_SINC,
+            ImageInterface::FILTER_TRIANGLE,
+        ];
+
+        $sampleFilter = in_array($sampleFilter, $supportedFilters) ? $sampleFilter : ImageInterface::FILTER_UNDEFINED;
+
+        $this->sampleFilter = $sampleFilter;
+    }
+
+    /**
+     * Applies additional sharpening.
+     *
+     * Internal use only.
+     *
+     * @param bool $sharpen
+     *   TRUE to sharpen, FALSE to leave as is.
+     */
+    private function setSharpen($sharpen = false)
+    {
+        $this->sharpen = filter_var($sharpen, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Convert image to specific format.
+     *
+     * Internal use only.
+     *
+     * @param string $format
+     *   Desired image format.
+     */
+    private function setFormat($format)
+    {
+        $allowedFormats = [
+            'jpeg',
+            'jpg',
+            'gif',
+            'png',
+            'webp',
+        ];
+        $format = in_array($format, $allowedFormats) ? $format : 'jpeg';
+
+        $this->format = $format;
     }
 }
