@@ -337,15 +337,7 @@ final class RestController extends Controller
                 if (!empty($items)) {
                     /** @var Content $item */
                     foreach ($items as $item) {
-                        $this->lastItems[] = [
-                            'id' => $item->getId(),
-                            'nid' => $item->getNid(),
-                            'agency' => $item->getAgency(),
-                            'type' => $item->getType(),
-                            'fields' => $item->getFields(),
-                            'taxonomy' => $item->getTaxonomy(),
-                            'list' => $item->getList(),
-                        ];
+                        $this->lastItems[] = $item->toArray();
                     }
 
                     $this->lastStatus = true;
@@ -401,12 +393,6 @@ final class RestController extends Controller
      *             "required"=false
      *         },
      *         {
-     *             "name"="field",
-     *             "dataType"="string",
-     *             "description"="Content entity field to search in.",
-     *             "required"=false
-     *         },
-     *         {
      *             "name"="amount",
      *             "dataType"="integer",
      *             "description"="Specifies how many results to fetch. Defaults to 10.",
@@ -440,8 +426,7 @@ final class RestController extends Controller
         $fields = [
             'agency' => null,
             'key' => null,
-            'query' => null,
-            'field' => null,
+            'q' => null,
             'amount' => 10,
             'skip' => 0,
             'format' => null,
@@ -449,10 +434,6 @@ final class RestController extends Controller
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
-
-            if (in_array($field, ['query', 'field'])) {
-                $fields[$field] = array_filter((array)$fields[$field]);
-            }
         }
 
         $em = $this->get('doctrine_mongodb');
@@ -462,7 +443,7 @@ final class RestController extends Controller
 
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        } elseif (!empty($fields['query']) && !empty($fields['field'])) {
+        } elseif (!empty($fields['q'])) {
             unset($fields['agency'], $fields['key']);
 
             try {
@@ -474,16 +455,22 @@ final class RestController extends Controller
                 foreach ($suggestions as $suggestion) {
                     $suggestionFields = $suggestion->getFields();
 
-                    if ('short' == $format) {
-                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
-                    } else {
-                        $this->lastItems[] = [
-                            'id' => $suggestion->getId(),
-                            'nid' => $suggestion->getNid(),
-                            'agency' => $suggestion->getAgency(),
-                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
-                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
-                        ];
+                    switch ($format) {
+                        case 'short':
+                            $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
+                            break;
+                        case 'full':
+                            $this->lastItems[] = $suggestion->toArray();
+                            break;
+                        default:
+                            $this->lastItems[] = [
+                                'id' => $suggestion->getId(),
+                                'nid' => $suggestion->getNid(),
+                                'agency' => $suggestion->getAgency(),
+                                'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
+                                'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                                'score' => $suggestion->getScore()
+                            ];
                     }
                 }
 

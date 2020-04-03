@@ -45,6 +45,21 @@ class Content
     protected $list;
 
     /**
+     * @MongoDB\NotSaved()
+     */
+    public $score;
+
+    public function setScore($score) {
+        $this->score = $score;
+
+        return $this;
+    }
+
+    public function getScore() {
+        return $this->score;
+    }
+
+    /**
      * Get id
      *
      * @return string $id
@@ -196,5 +211,18 @@ class Content
     public function getAgency()
     {
         return $this->agency;
+    }
+
+    public function toArray() {
+        return [
+            'id' => $this->getId(),
+            'nid' => $this->getNid(),
+            'agency' => $this->getAgency(),
+            'type' => $this->getType(),
+            'fields' => $this->getFields(),
+            'taxonomy' => $this->getTaxonomy(),
+            'list' => $this->getList(),
+            'score' => $this->getScore(),
+        ];
     }
 }
