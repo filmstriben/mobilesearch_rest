@@ -72,6 +72,6 @@
       "taxonomy.stl.terms": 9,
       "taxonomy.vac.terms": 9
     },
-    name: "freeText"
+    "name": "freeText"
   }
 ]

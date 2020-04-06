@@ -7,6 +7,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 
+/**
+ * Class EnsureIndexCommand.
+ *
+ * Command to create default db index.
+ */
 class EnsureIndexCommand extends ContainerAwareCommand {
     /**
      * {@inheritDoc}
@@ -24,8 +29,9 @@ class EnsureIndexCommand extends ContainerAwareCommand {
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $finder = new Finder();
-        $finder->in('app/Resources');
-        $finder->name('content_index.json');
+        $finder
+            ->in('app/Resources')
+            ->name('content_index.json');
 
         foreach ($finder as $file) {
             $contents = $file->getContents();
@@ -44,8 +50,10 @@ class EnsureIndexCommand extends ContainerAwareCommand {
             /** @var \MongoCollection $collection */
             $collection = $db->selectCollection('Content');
 
-            var_dump($contents);
-//            $collection->createIndex($indexDefinition);
+            $createIndexResult = $collection->createIndex($indexDefinition[0], $indexDefinition[1]);
+            if (array_key_exists('note', $createIndexResult)) {
+                $output->writeln($createIndexResult['note']);
+            }
         }
     }
 }

@@ -355,168 +355,22 @@ final class RestController extends Controller
     }
 
     /**
-     * <p><strong>DEPRECATED<br /></strong>Consider '/content/search-extended' route.</p>
-     * <p>'query' parameter can accept regular expressions, case insensitive, when searching within any content fields, unless
-     * the search is made within the 'taxonomy', where a direct match is performed.</p>
-     * <p>'query' and 'field' parameters must always match in count.<br />
-     * There might multiple pairs of 'query' and 'field' parameters. Multiple pairs of search conditions are
-     * treated as a logical AND.</p>
-     * <p>To use multiple conditions, add square brackets after the parameter in the query string.<br />
-     * 'query' parameter can receive multiple values, separated by comma. This would result for content that is
-     * searched, to contain at least one term from the comma separated list.
-     * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms</pre>
-     * This query string would fetch content with having 'editorial' value as 'type' and 'taxonomy.field_realm.terms'
-     * containing either 'Hjemmefra', or 'At home' terms.</p>
-     * <p>Add a 'format=short' pair to the query string to get a plain list of title suggestions.
-     * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms&format=short</pre></p>
-     *
-     * @ApiDoc(
-     *     description="Searches content entries by certain criteria(s).",
-     *     section="Content",
-     *     requirements={
-     *         {
-     *             "name"="agency",
-     *             "dataType"="string",
-     *             "description"="Agency number."
-     *         },
-     *         {
-     *             "name"="key",
-     *             "dataType"="string",
-     *             "description"="Authentication key."
-     *         }
-     *     },
-     *     parameters={
-     *         {
-     *             "name"="query",
-     *             "dataType"="string",
-     *             "description"="Search query.",
-     *             "required"=false
-     *         },
-     *         {
-     *             "name"="amount",
-     *             "dataType"="integer",
-     *             "description"="Specifies how many results to fetch. Defaults to 10.",
-     *             "required"=false
-     *         },
-     *         {
-     *             "name"="skip",
-     *             "dataType"="integer",
-     *             "description"="Specifies how many results to skip. Defaults to 0.",
-     *             "required"=false
-     *         },
-     *         {
-     *             "name"="format",
-     *             "dataType"="string",
-     *             "description"="Use 'short' value to get a plain list of suggested titles.",
-     *             "required"=false
-     *         },
-     *     },
-     *     output={
-     *         "class": "AppBundle\IO\ContentOutput"
-     *     },
-     *     deprecated=true
-     * )
-     * @Route("/content/search")
-     * @Method({"GET"})
-     */
-    public function contentSearchAction(Request $request)
-    {
-        $this->lastMethod = $request->getMethod();
-
-        $fields = [
-            'agency' => null,
-            'key' => null,
-            'q' => null,
-            'amount' => 10,
-            'skip' => 0,
-            'format' => null,
-        ];
-
-        foreach (array_keys($fields) as $field) {
-            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
-        }
-
-        $em = $this->get('doctrine_mongodb');
-        $restContentRequest = new RestContentRequest($em);
-
-        $hits = 0;
-
-        if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
-            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        } elseif (!empty($fields['q'])) {
-            unset($fields['agency'], $fields['key']);
-
-            try {
-                $format = $fields['format'];
-                unset($fields['format']);
-                $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
-
-                /** @var \AppBundle\Document\Content $suggestion */
-                foreach ($suggestions as $suggestion) {
-                    $suggestionFields = $suggestion->getFields();
-
-                    switch ($format) {
-                        case 'short':
-                            $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
-                            break;
-                        case 'full':
-                            $this->lastItems[] = $suggestion->toArray();
-                            break;
-                        default:
-                            $this->lastItems[] = [
-                                'id' => $suggestion->getId(),
-                                'nid' => $suggestion->getNid(),
-                                'agency' => $suggestion->getAgency(),
-                                'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
-                                'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
-                                'score' => $suggestion->getScore()
-                            ];
-                    }
-                }
-
-                $fields['countOnly'] = true;
-                $hits = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
-
-                $this->lastStatus = true;
-            } catch (RestException $e) {
-                // TODO: Log this instead.
-                $this->lastMessage = $e->getMessage();
-            }
-        }
-
-        return $this->setResponse(
-            $this->lastStatus,
-            $this->lastMessage,
-            $this->lastItems,
-            $hits
-        );
-    }
-
-    /**
-     * <p>
-     * Query string <strong>(q)</strong> SHOULD comply with the following PCRE pattern:<br />
-     * <em>~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu</em>
-     * </p>
-     * <p>Queries that do not match the pattern are invalidated and search result defaults empty searching criteria,
-     * i.e. all items.</p>
-     * <p>Nested AND/OR operations are NOT supported.</p>
-     * <p>
-     * As for the PCRE pattern above, a query chunk MUST be quoted with double quotes.<br />
-     * Whole query MUST be surrounded with round brackets.<br />
-     * Query chunk has the following pattern: <pre>"FIELD[OPERATOR]:VALUE"</pre>
-     * FIELD - any field found in the respective record. To descend into structure hierarchy, use dot '.' notation.<br />
-     * OPERATOR - Comparison operator. Can be either 'eq' or 'regex'. Use 'eq' for exact match and 'regex' for regular expression match.<br />
-     * VALUE - Value to compare against.
-     * </p>
-     * <p>
-     * Query <strong>(q)</strong> examples:
-     * Items with 'type' 'os': <pre>("type[eq]:os")</pre>
-     * Items with 'type' either 'os' or 'editorial': <pre>("type[eq]:os" OR "type[eq]:editorial")</pre>
-     * Items with 'type' 'os' with director terms 'Martin Scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin Scorsese")</pre>
-     * Items with 'type' 'os' with director terms containing 'scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[regex]:scorsese")</pre>
-     * Either items with 'type' 'os' and whose title contain 'av' or 'editorial' items which belong to agency '150064': <pre>("type[eq]:os" AND "fields.title.value[regex]:av") OR ("type[eq]:editorial" AND "agency[eq]:150064")</pre>
-     * Items with the specific faust numbers belonging to agency '150027': <pre>("fields.field_faust_number.value[regex]:29056439|27415679" AND "agency[eq]:150027")</pre>
-     * </p>
+     * <p>This endpoint allows ranked searches.</p>
+     * <p><strong>(q)</strong> is the query string to find matches on.<br />
+     * A search query with punctuation or spaces tokenizes the search query and a search perform within all tokens using the OR operator.<br />
+     * The below is treated as <em>'harry OR potter':</em></p>
+     * <pre>harry potter</pre>
+     * <p>Wrap the search query in double-quotes to perform an exact match search:</p>
+     * <pre>"harry potter"</pre>
+     * <p>To exclude a term, use a minus sign in front of the term.<br />
+     * This would search for items with either <em>harry</em> or <em>potter</em>, but without 150064 matches - useful to filter agencies:</p>
+     * <pre>harry potter -150064</pre>
+     * <p>Hard limit is for <strong>(amount)</strong> parameters is '100' items per request.</p>
+     * <p>Format parameter <strong>(format)</strong> can be either <em>'full'</em>, <em>'short'</em> or an empty value (default).<br />
+     * <em>'full'</em> format result would return content in it's complete representation.<br />
+     * <em>'short'</em> format returns only search results titles. <br />
+     * Empty format parameter value (or skipped), returns a short variant of search results. This is the default behavior.</p>
+     * <p>Each item contains a search score value and all items are ordered by their search score, descending.</p>
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
@@ -555,8 +409,171 @@ final class RestController extends Controller
      *         {
      *             "name"="format",
      *             "dataType"="string",
-     *             "description"="Use 'short' value to get a plain list of suggested titles.",
+     *             "description"="Use 'short' value to get a plain list of suggested titles and 'full' for a full content representation",
+     *             "required"=false,
+     *             "format"="short|full|default"
+     *         },
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ContentOutput"
+     *     }
+     * )
+     * @Route("/content/search")
+     * @Method({"GET"})
+     *
+     * TODO: Test coverage.
+     */
+    public function contentSearchAction(Request $request)
+    {
+        $this->lastMethod = $request->getMethod();
+
+        $fields = [
+            'agency' => null,
+            'key' => null,
+            'q' => null,
+            'amount' => 10,
+            'skip' => 0,
+            'format' => null,
+        ];
+
+        foreach (array_keys($fields) as $field) {
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        // Hard upper limit to 100 items per request.
+        $fields['amount'] = $fields['amount'] > 100 ? 100 : $fields['amount'];
+
+        $em = $this->get('doctrine_mongodb');
+        $restContentRequest = new RestContentRequest($em);
+
+        $hits = 0;
+
+        if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
+            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
+        } elseif (!empty($fields['q'])) {
+            $em = $this->get('doctrine_mongodb');
+            /** @var \AppBundle\Repositories\ContentRepository $contentRepository */
+            $contentRepository = $em->getRepository(Content::class);
+            $suggestions = $contentRepository->fetchSuggestions(
+                $fields['q'],
+                $fields['amount'],
+                $fields['skip']
+            );
+
+            /** @var \AppBundle\Document\Content $suggestion */
+            foreach ($suggestions as $suggestion) {
+                $suggestionFields = $suggestion->getFields();
+
+                switch ($fields['format']) {
+                    case 'short':
+                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
+                        break;
+                    case 'full':
+                        $this->lastItems[] = $suggestion->toArray(true);
+                        break;
+                    default:
+                        $this->lastItems[] = [
+                            'id' => $suggestion->getId(),
+                            'nid' => $suggestion->getNid(),
+                            'agency' => $suggestion->getAgency(),
+                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
+                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                            'score' => $suggestion->getScore()
+                        ];
+                }
+            }
+
+            $fields['countOnly'] = true;
+            $hits = $contentRepository->fetchSuggestions(
+                $fields['q'],
+                $fields['amount'],
+                $fields['skip'],
+                true
+            );
+
+            $this->lastStatus = true;
+        }
+
+        return $this->setResponse(
+            $this->lastStatus,
+            $this->lastMessage,
+            $this->lastItems,
+            $hits
+        );
+    }
+
+    /**
+     * <p>This endpoint allows to search content within arbitrary fields and leverage usage of conditional operators.</p>
+     * <p>Note that the results returned from such a search are not ranked in any way. Use <em>/search</em> endpoint to perform a ranked search.</p>
+     * <p>
+     * Query string <strong>(q)</strong> SHOULD comply with the following PCRE pattern:<br />
+     * <em>~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu</em>
+     * </p>
+     * <p>Queries that do not match the pattern are invalidated and search result defaults empty searching criteria,
+     * i.e. all items.</p>
+     * <p>Nested AND/OR operations are NOT supported.</p>
+     * <p>
+     * As for the PCRE pattern above, a query chunk MUST be quoted with double quotes.<br />
+     * Whole query MUST be surrounded with round brackets.<br />
+     * Query chunk has the following pattern: <pre>"FIELD[OPERATOR]:VALUE"</pre>
+     * FIELD - any field found in the respective record. To descend into structure hierarchy, use dot '.' notation.<br />
+     * OPERATOR - Comparison operator. Can be either 'eq' or 'regex'. Use 'eq' for exact match and 'regex' for regular expression match.<br />
+     * VALUE - Value to compare against.
+     * </p>
+     * <p>
+     * Query <strong>(q)</strong> examples:
+     * Items with 'type' 'os': <pre>("type[eq]:os")</pre>
+     * Items with 'type' either 'os' or 'editorial': <pre>("type[eq]:os" OR "type[eq]:editorial")</pre>
+     * Items with 'type' 'os' with director terms 'Martin Scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin Scorsese")</pre>
+     * Items with 'type' 'os' with director terms containing 'scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[regex]:scorsese")</pre>
+     * Either items with 'type' 'os' and whose title contain 'av' or 'editorial' items which belong to agency '150064': <pre>("type[eq]:os" AND "fields.title.value[regex]:av") OR ("type[eq]:editorial" AND "agency[eq]:150064")</pre>
+     * Items with the specific faust numbers belonging to agency '150027': <pre>("fields.field_faust_number.value[regex]:29056439|27415679" AND "agency[eq]:150027")</pre>
+     * </p>
+     * <p>Format parameter <strong>(format)</strong> can be either <em>'full'</em>, <em>'short'</em> or an empty value (default).<br />
+     * <em>'full'</em> format result would return content in it's complete representation.<br />
+     * <em>'short'</em> format returns only search results titles. <br />
+     * Empty format parameter value (or skipped), returns a short variant of search results. This is the default behavior.</p>
+     *
+     * @ApiDoc(
+     *     description="Searches content entries by certain criteria(s).",
+     *     section="Content",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="q",
+     *             "dataType"="string",
+     *             "description"="Search query.",
      *             "required"=false
+     *         },
+     *         {
+     *             "name"="amount",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to fetch. Defaults to 10.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="skip",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to skip. Defaults to 0.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="format",
+     *             "dataType"="string",
+     *             "description"="Use 'short' value to get a plain list of suggested titles and 'full' for a full content representation.",
+     *             "required"=false,
+     *             "format"="short|full|default"
      *         },
      *     },
      *     output={
@@ -726,22 +743,26 @@ final class RestController extends Controller
                 $query = $qb->getQuery();
                 $suggestions = $query->execute();
 
-                $format = $fields['format'];
 
                 /** @var \AppBundle\Document\Content $suggestion */
                 foreach ($suggestions as $suggestion) {
                     $suggestionFields = $suggestion->getFields();
 
-                    if ('short' == $format) {
-                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
-                    } else {
-                        $this->lastItems[] = [
-                            'id' => $suggestion->getId(),
-                            'nid' => $suggestion->getNid(),
-                            'agency' => $suggestion->getAgency(),
-                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
-                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
-                        ];
+                    switch ($fields['format']) {
+                        case 'short':
+                            $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
+                            break;
+                        case 'full':
+                            $this->lastItems[] = $suggestion->toArray();
+                            break;
+                        default:
+                            $this->lastItems[] = [
+                                'id' => $suggestion->getId(),
+                                'nid' => $suggestion->getNid(),
+                                'agency' => $suggestion->getAgency(),
+                                'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
+                                'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                            ];
                     }
                 }
 
