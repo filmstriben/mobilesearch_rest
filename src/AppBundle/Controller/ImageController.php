@@ -251,7 +251,7 @@ class ImageController extends Controller
 
             // Webp images deliver a non-image mime type, so override this one.
             $mime = mime_content_type($imagePath);
-            if ($mime === 'application/octet-stream' && 'webp' === $this->format) {
+            if ('application/octet-stream' === $mime && 'webp' === $this->format) {
                 $mime = 'image/webp';
             }
             $response->headers->set('Content-Type', $mime);
