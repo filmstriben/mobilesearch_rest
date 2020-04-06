@@ -5,7 +5,7 @@ namespace AppBundle\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
 /**
- * @MongoDB\Document
+ * @MongoDB\Document(repositoryClass="AppBundle\Repositories\ContentRepository")
  */
 class Content
 {
@@ -213,8 +213,8 @@ class Content
         return $this->agency;
     }
 
-    public function toArray() {
-        return [
+    public function toArray($withScore = false) {
+        $return = [
             'id' => $this->getId(),
             'nid' => $this->getNid(),
             'agency' => $this->getAgency(),
@@ -222,7 +222,12 @@ class Content
             'fields' => $this->getFields(),
             'taxonomy' => $this->getTaxonomy(),
             'list' => $this->getList(),
-            'score' => $this->getScore(),
         ];
+
+        if ($withScore) {
+            $return['score'] = $this->getScore();
+        }
+
+        return $return;
     }
 }

@@ -270,6 +270,8 @@ abstract class RestBaseRequest
      * @param string $signature Signature to check.
      *
      * @return bool
+     *
+     * TODO: Move to a service.
      */
     public function isSignatureValid($agencyId, $signature)
     {
