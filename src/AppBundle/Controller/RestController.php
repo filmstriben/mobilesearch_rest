@@ -369,7 +369,7 @@ final class RestController extends Controller
      * <p>Format parameter <strong>(format)</strong> can be either <em>'full'</em>, <em>'short'</em> or an empty value (default).<br />
      * <em>'full'</em> format result would return content in it's complete representation.<br />
      * <em>'short'</em> format returns only search results titles. <br />
-     * Empty format parameter value (or skipped), returns a short variant of search results. This is the default behavior.</p>
+     * Empty format parameter value (or skipped), returns a compact variant of search results. This is the default behavior.</p>
      * <p>Each item contains a search score value and all items are ordered by their search score, descending.</p>
      *
      * @ApiDoc(
@@ -409,9 +409,9 @@ final class RestController extends Controller
      *         {
      *             "name"="format",
      *             "dataType"="string",
-     *             "description"="Use 'short' value to get a plain list of suggested titles and 'full' for a full content representation",
+     *             "description"="Sets item reponse format.",
      *             "required"=false,
-     *             "format"="short|full|default"
+     *             "format"="short|full"
      *         },
      *     },
      *     output={
@@ -532,7 +532,7 @@ final class RestController extends Controller
      * <p>Format parameter <strong>(format)</strong> can be either <em>'full'</em>, <em>'short'</em> or an empty value (default).<br />
      * <em>'full'</em> format result would return content in it's complete representation.<br />
      * <em>'short'</em> format returns only search results titles. <br />
-     * Empty format parameter value (or skipped), returns a short variant of search results. This is the default behavior.</p>
+     * Empty format parameter value (or skipped), returns a compact variant of search results. This is the default behavior.</p>
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
@@ -571,9 +571,9 @@ final class RestController extends Controller
      *         {
      *             "name"="format",
      *             "dataType"="string",
-     *             "description"="Use 'short' value to get a plain list of suggested titles and 'full' for a full content representation.",
+     *             "description"="Sets item reponse format.",
      *             "required"=false,
-     *             "format"="short|full|default"
+     *             "format"="short|full"
      *         },
      *     },
      *     output={
