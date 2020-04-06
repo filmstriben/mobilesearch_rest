@@ -70,17 +70,27 @@ class RestContentRequest extends RestBaseRequest
     /**
      * Fetches content that fulfills certain criteria.
      *
-     * @param string $id      Fetch these specific entries (_id field match, multiple values separated by comma).
-     * @param string $node    Fetch these specific entries (nid field match, multiple values separated by comma).
-     * @param int $amount     Fetch this amount of entries.
-     * @param int $skip       Skip this amount of entries.
-     * @param string $sort    Sort field.
-     * @param string $dir     Sort direction. Either ASC or DESC.
-     * @param string $type    Entry type (type field).
-     * @param string $status  Entry status (fields.status.value field).
-     * @param bool $countOnly Get only the number of results.
+     * @param string $id
+     *   Fetch these specific entries (_id field match, multiple values separated by comma).
+     * @param string $node
+     *   Fetch these specific entries (nid field match, multiple values separated by comma).
+     * @param int $amount
+     *   Fetch this amount of entries.
+     * @param int $skip
+     *   Skip this amount of entries.
+     * @param string $sort
+     *   Sort field.
+     * @param string $dir
+     *   Sort direction. Either ASC or DESC.
+     * @param string $type
+     *   Entry type (type field).
+     * @param string $status
+     *   Entry status (fields.status.value field).
+     * @param bool $countOnly
+     *   Get only the number of results.
      *
-     * @return Content[]     A set of entities.
+     * @return \AppBundle\Document\Content[]
+     *   A set of entities.
      */
     public function fetchFiltered(
         $id = null,
@@ -101,6 +111,7 @@ class RestContentRequest extends RestBaseRequest
             return $this->fetchContent($nids, 'nid', $countOnly);
         }
 
+        /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
         $qb = $this->em
             ->getManager()
             ->createQueryBuilder(Content::class);
@@ -128,62 +139,6 @@ class RestContentRequest extends RestBaseRequest
         // Set a status filter only if it differs from the default one.
         if (self::STATUS_ALL != $status && in_array($status, $possibleStatuses)) {
             $qb->field('fields.status.value')->equals($status);
-        }
-
-        return $qb->getQuery()->execute();
-    }
-
-    /**
-     * Searches content suggestions based on certain criteria.
-     *
-     * @param array $query    Search query.
-     * @param array $field    Field to search in.
-     * @param int $amount     Fetch this amount of suggestions.
-     * @param int $skip       Skip this amount of suggestions.
-     * @param bool $countOnly Return only count of results.
-     *
-     * @return Content[]   A set of suggested entities.
-     *
-     * @throws RestException
-     * @throws \Doctrine\ODM\MongoDB\MongoDBException
-     */
-    public function fetchSuggestions(array $query, array $field, $amount = 10, $skip = 0, $countOnly = FALSE)
-    {
-        if (count($query) != count($field)) {
-            throw new RestException('Query and fields parameters count mismatch.');
-        }
-
-        reset($query);
-        reset($field);
-
-        /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
-        $qb = $this
-            ->em
-            ->getManager()
-            ->createQueryBuilder(Content::class);
-
-        if ($countOnly) {
-            $qb->count();
-        }
-        else {
-            $qb->skip($skip)->limit($amount);
-        }
-
-        while ($currentQuery = current($query)) {
-            $currentField = current($field);
-
-            if (preg_match('/taxonomy\..*\.terms/', $currentField)) {
-                $qb
-                    ->field($currentField)
-                    ->in(explode(',', $currentQuery));
-            } else {
-                $qb
-                    ->field($currentField)
-                    ->equals(new \MongoRegex('/'.$currentQuery.'/i'));
-            }
-
-            next($query);
-            next($field);
         }
 
         return $qb->getQuery()->execute();
