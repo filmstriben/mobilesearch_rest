@@ -9,6 +9,7 @@
     },
     "require": {
         "php": ">=5.6",
+        "ext-fileinfo": "*",
         "ext-imagick": "*",
         "ext-json": "*",
         "ext-mongo": "*",
