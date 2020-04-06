@@ -186,7 +186,6 @@ class ImageController extends Controller
 
         $imagePath = $this->filesStorageDir.'/'.$agency.'/'.$filename;
 
-        $response = new Response();
         $fs = new Filesystem();
 
         // Both sides are zero, therefore serve original image.
@@ -225,22 +224,37 @@ class ImageController extends Controller
             $imagePath = $imageResizedPath;
         }
 
+        $response = new Response();
         if (!$fs->exists($imagePath)) {
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
             $response->setContent('File not found.');
         } else {
             $eTag = $this->fileContentsHash($imagePath);
-            if (FALSE !== $eTag && $eTag === $request->headers->get('If-None-Match')) {
-                $response->setStatusCode(Response::HTTP_NOT_MODIFIED);
-            } else {
-                $response->headers->set('Content-Type', 'image/' . $this->format);
-                $response->headers->set('Cache-Control', 'max-age=' . $this->publicCache . ', public');
-                $response->headers->set('Expires', gmdate(DATE_RFC1123, time() + $this->publicCache));
-                $response->headers->set('ETag', $eTag);
 
-                $response->setStatusCode(Response::HTTP_OK);
-                $response->setContent(file_get_contents($imagePath));
+            $now = new \DateTime();
+            $now->setTimestamp(filemtime($imagePath));
+
+            $response->setCache([
+                'etag' => $eTag,
+                'last_modified' => $now,
+                'max_age' => $this->publicCache,
+                's_maxage' => $this->publicCache,
+                'public' => true,
+            ]);
+
+            if ($response->isNotModified($request)) {
+                return $response;
             }
+
+            $response->setStatusCode(Response::HTTP_OK);
+            $response->setContent(file_get_contents($imagePath));
+
+            // Webp images deliver a non-image mime type, so override this one.
+            $mime = mime_content_type($imagePath);
+            if ('application/octet-stream' === $mime && 'webp' === $this->format) {
+                $mime = 'image/webp';
+            }
+            $response->headers->set('Content-Type', $mime);
         }
 
         return $response;

@@ -10,6 +10,10 @@ use Symfony\Component\HttpFoundation\Response;
  * Class ContentSearchTest
  *
  * Functional tests for searching content related entries.
+ *
+ * TODO: Should be adapted to new search controller.
+ *
+ * @see \AppBundle\Controller\RestController::contentSearchAction()
  */
 class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemStructureInterface
 {
