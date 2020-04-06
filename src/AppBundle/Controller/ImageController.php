@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class ImageController.
+ *
+ * TODO: Test coverage.
  */
 class ImageController extends Controller
 {
@@ -149,6 +151,7 @@ class ImageController extends Controller
      */
     public function imageNewAction(Request $request, $agency, $filename)
     {
+        // TODO: Legacy support.
         $resize = $request->query->get('resize', $request->attributes->get('resize'));
 
         if ($quality = (int)$request->query->get('q')) {
@@ -205,6 +208,7 @@ class ImageController extends Controller
 
                 // Clear meta-data to save bandwidth.
                 $image->strip();
+                // TODO: Preserve ICC profile, if any.
 
                 try {
                     $image->save($imageResizedPath, [
@@ -225,23 +229,53 @@ class ImageController extends Controller
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
             $response->setContent('File not found.');
         } else {
-            $response->headers->set('Content-Type', 'image/'.$this->format);
-            $response->headers->set('Cache-Control', 'max-age='.$this->publicCache.', public');
-            $response->headers->set('Expires', gmdate(DATE_RFC1123, time() + $this->publicCache));
+            $eTag = $this->fileContentsHash($imagePath);
+            if (FALSE !== $eTag && $eTag === $request->headers->get('If-None-Match')) {
+                $response->setStatusCode(Response::HTTP_NOT_MODIFIED);
+            } else {
+                $response->headers->set('Content-Type', 'image/' . $this->format);
+                $response->headers->set('Cache-Control', 'max-age=' . $this->publicCache . ', public');
+                $response->headers->set('Expires', gmdate(DATE_RFC1123, time() + $this->publicCache));
+                $response->headers->set('ETag', $eTag);
 
-            $response->setStatusCode(Response::HTTP_OK);
-            $response->setContent(file_get_contents($imagePath));
+                $response->setStatusCode(Response::HTTP_OK);
+                $response->setContent(file_get_contents($imagePath));
+            }
         }
 
         return $response;
     }
 
     /**
-     * Resizes and saves images.
+     * Generate file contents hash.
      *
-     * @param string $source Original image path.
-     * @param string $target Target path for re-sized images.
-     * @param array $wantedDimensions Desired width and height.
+     * Used to generate ETag's.
+     *
+     * @param string $path
+     *   File path.
+     *
+     * @return bool|string
+     *   False if file does not exist, or hash of the contents.
+     */
+    protected function fileContentsHash($path)
+    {
+        $fs = new Filesystem();
+        if (!$fs->exists($path)) {
+            return false;
+        }
+
+        return sha1(file_get_contents($path));
+    }
+
+    /**
+     * Re-sizes and crops an image object.
+     *
+     * @param \Imagine\Image\ImageInterface $image
+     *   Image object.
+     * @param int $wantedWidth
+     *   Image target width.
+     * @param int $wantedHeight
+     *   Image target height.
      *
      * @return \Imagine\Image\ImageInterface
      *   Imagine image object.
@@ -251,11 +285,11 @@ class ImageController extends Controller
         $imageManipulations = $this->getResizeDimensions(
             $image->getSize()->getWidth(),
             $image->getSize()->getHeight(),
-            $wantedWidth,
-            $wantedHeight
+            (int) $wantedWidth,
+            (int) $wantedHeight
         );
-        $image->resize($imageManipulations['resize'], $this->sampleFilter);
 
+        $image->resize($imageManipulations['resize'], $this->sampleFilter);
         $image->crop($imageManipulations['crop'], $imageManipulations['final_size']);
 
         return $image;
@@ -270,13 +304,20 @@ class ImageController extends Controller
      * If target ratio is different, the image is scaled to fit the smallest
      * side and cropped from the center of the image.
      *
-     * @param array $originalSize Original image size (width and height).
-     * @param array $targetSize Desired target size (width and height).
+     * @param int $originalWidth
+     *   Original image width.
+     * @param int $originalHeight
+     *   Original image height.
+     * @param int $targetWidth
+     *   Target image width.
+     * @param int $targetHeight
+     *   Target image height.
      *
-     * @return array              A set of instructions needed to be applied to original image.
-     *                            - resize: size of the image to crop from (Box object).
-     *                            - crop: coordinates where to crop the image (Point object).
-     *                            - final_size: Requested image size dimensions.
+     * @return array
+     *   A set of instructions needed to be applied to original image.
+     *   - resize: size of the image to crop from (Box object).
+     *   - crop: coordinates where to crop the image (Point object).
+     *   - final_size: Requested image size dimensions.
      */
     protected function getResizeDimensions($originalWidth, $originalHeight, $targetWidth, $targetHeight)
     {
@@ -327,12 +368,15 @@ class ImageController extends Controller
     }
 
     /**
-     * Check and optionally prepare the directory where resized images
+     * Checks and optionally prepares the directory where resized images
      * are stored.
      *
-     * @param string $name File name.
-     * @param string $agency Agency id.
-     * @param boolean $create Whether to create the directories.
+     * @param string $name
+     *   File name.
+     * @param string $agency
+     *   Agency id.
+     * @param boolean $create
+     *   Whether to create the directories.
      *
      * @return boolean
      */
@@ -346,35 +390,15 @@ class ImageController extends Controller
             try {
                 $fs->mkdir($path);
                 $exists = true;
-            } catch (IOException $e) {
+            } catch (IOException $exception) {
+                $logger = $this->container->get('logger');
+                $logger->warning($exception->getMessage());
+
                 return false;
             }
         }
 
         return $exists;
-    }
-
-    /**
-     * Parses the desired image size from query string parameter.
-     *
-     * The parameter must be in form WIDTHxHEIGHT.
-     *
-     * @param string $resizeParam Query string resize parameter.
-     *
-     * @return array              Required width and height of the image.
-     */
-    protected function getSizeFromParam($resizeParam)
-    {
-        $dimensions = [];
-        $sizes = [];
-        if (!empty($resizeParam) && preg_match('/^(\d+)x(\d+)$/', $resizeParam, $sizes)) {
-            $dimensions = [
-                'width' => (int)$sizes[1],
-                'height' => (int)$sizes[2],
-            ];
-        }
-
-        return $dimensions;
     }
 
     /**

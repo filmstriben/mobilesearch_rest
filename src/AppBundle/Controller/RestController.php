@@ -14,8 +14,8 @@ use AppBundle\Rest\RestContentRequest;
 use AppBundle\Rest\RestListsRequest;
 use AppBundle\Rest\RestMenuRequest;
 use AppBundle\Rest\RestTaxonomyRequest;
+use Doctrine\MongoDB\Query\Expr;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
-use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -363,6 +363,7 @@ final class RestController extends Controller
     }
 
     /**
+     * <p><strong>DEPRECATED<br /></strong>Consider '/content/search-extended' route.</p>
      * <p>'query' parameter can accept regular expressions, case insensitive, when searching within any content fields, unless
      * the search is made within the 'taxonomy', where a direct match is performed.</p>
      * <p>'query' and 'field' parameters must always match in count.<br />
@@ -376,7 +377,6 @@ final class RestController extends Controller
      * containing either 'Hjemmefra', or 'At home' terms.</p>
      * <p>Add a 'format=short' pair to the query string to get a plain list of title suggestions.
      * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms&format=short</pre></p>
-     *
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
@@ -427,7 +427,8 @@ final class RestController extends Controller
      *     },
      *     output={
      *         "class": "AppBundle\IO\ContentOutput"
-     *     }
+     *     },
+     *     deprecated=true
      * )
      * @Route("/content/search")
      * @Method({"GET"})
@@ -469,7 +470,7 @@ final class RestController extends Controller
                 unset($fields['format']);
                 $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
 
-                /** @var Content $suggestion */
+                /** @var \AppBundle\Document\Content $suggestion */
                 foreach ($suggestions as $suggestion) {
                     $suggestionFields = $suggestion->getFields();
 
@@ -485,7 +486,6 @@ final class RestController extends Controller
                         ];
                     }
                 }
-
 
                 $fields['countOnly'] = true;
                 $hits = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
@@ -503,6 +503,348 @@ final class RestController extends Controller
             $this->lastItems,
             $hits
         );
+    }
+
+    /**
+     * <p>
+     * Query string <strong>(q)</strong> SHOULD comply with the following PCRE pattern:<br />
+     * <em>~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu</em>
+     * </p>
+     * <p>Queries that do not match the pattern are invalidated and search result defaults empty searching criteria,
+     * i.e. all items.</p>
+     * <p>Nested AND/OR operations are NOT supported.</p>
+     * <p>
+     * As for the PCRE pattern above, a query chunk MUST be quoted with double quotes.<br />
+     * Whole query MUST be surrounded with round brackets.<br />
+     * Query chunk has the following pattern: <pre>"FIELD[OPERATOR]:VALUE"</pre>
+     * FIELD - any field found in the respective record. To descend into structure hierarchy, use dot '.' notation.<br />
+     * OPERATOR - Comparison operator. Can be either 'eq' or 'regex'. Use 'eq' for exact match and 'regex' for regular expression match.<br />
+     * VALUE - Value to compare against.
+     * </p>
+     * <p>
+     * Query <strong>(q)</strong> examples:
+     * Items with 'type' 'os': <pre>("type[eq]:os")</pre>
+     * Items with 'type' either 'os' or 'editorial': <pre>("type[eq]:os" OR "type[eq]:editorial")</pre>
+     * Items with 'type' 'os' with director terms 'Martin Scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin Scorsese")</pre>
+     * Items with 'type' 'os' with director terms containing 'scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[regex]:scorsese")</pre>
+     * Either items with 'type' 'os' and whose title contain 'av' or 'editorial' items which belong to agency '150064': <pre>("type[eq]:os" AND "fields.title.value[regex]:av") OR ("type[eq]:editorial" AND "agency[eq]:150064")</pre>
+     * Items with the specific faust numbers belonging to agency '150027': <pre>("fields.field_faust_number.value[regex]:29056439|27415679" AND "agency[eq]:150027")</pre>
+     * </p>
+     *
+     * @ApiDoc(
+     *     description="Searches content entries by certain criteria(s).",
+     *     section="Content",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="q",
+     *             "dataType"="string",
+     *             "description"="Search query.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="amount",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to fetch. Defaults to 10.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="skip",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to skip. Defaults to 0.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="format",
+     *             "dataType"="string",
+     *             "description"="Use 'short' value to get a plain list of suggested titles.",
+     *             "required"=false
+     *         },
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ContentOutput"
+     *     },
+     * )
+     * @Route("/content/search-extended")
+     * @Method({"GET"})
+     *
+     * TODO: Too much is happening here.
+     * TODO: Test coverage.
+     */
+    public function searchExtendedAction(Request $request) {
+        $this->lastMethod = $request->getMethod();
+
+        $fields = [
+            'agency' => null,
+            'key' => null,
+            'q' => null,
+            'amount' => 10,
+            'skip' => 0,
+            'format' => null,
+        ];
+
+        foreach (array_keys($fields) as $field) {
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        $em = $this->get('doctrine_mongodb');
+        $restContentRequest = new RestContentRequest($em);
+
+        $hits = 0;
+
+        if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
+            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
+        } elseif (!empty($fields['q'])) {
+            unset($fields['agency'], $fields['key']);
+
+            try {
+                $q = $fields['q'];
+                // Remove the repeating spaces.
+                $q = preg_replace('~\s+~', ' ', $q);
+                // Split the string into an array of characters,
+                // since iterating char by char unicode strings is pain.
+                $q = preg_split('~~u', $q, -1, PREG_SPLIT_NO_EMPTY);
+
+                $ops = [];
+
+                $error = false;
+                $start = null;
+                $end = null;
+                $start_count = 0;
+                $end_count = 0;
+                // Cut the query chunks, encapsed by round brackets.
+                for ($i = 0; $i < count($q); $i++) {
+                    if ('(' == $q[$i]) {
+                        if (null !== $start) {
+                            $error = true;
+                            break;
+                        }
+                        $start_count++;
+                        $start = $i;
+                        continue;
+                    }
+
+                    if (')' == $q[$i]) {
+                        $end_count++;
+                        $end = $i;
+                    }
+
+                    if (null !== $start && null !== $end) {
+                        $op = '';
+                        for ($j = $start; $j <= $end; $j++) {
+                            $op .= $q[$j];
+                        }
+
+                        $start = null;
+                        $end = null;
+                        $ops[] = $op;
+                    }
+                }
+
+                if ($start_count != $end_count) {
+                    $error = true;
+                }
+
+                // Remove the leading/trailing brackets and non-printable characters, if any.
+                $ops = array_filter($ops, function ($v) {
+                    return !empty(trim(trim($v, '()')));
+                });
+
+                $tokens = [];
+                // Validate the query chunks.
+                foreach ($ops as $op) {
+                    if (!preg_match('~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu', $op)) {
+                        $error = true;
+                        break;
+                    }
+
+                    $tokens[sha1(microtime(TRUE) . $op)] = $op;
+                }
+
+                // Tokenize the query string to assemble the correct order of transformations.
+                $split_query = [];
+                $_q = str_replace(array_values($tokens), array_keys($tokens), implode('', $q));
+                foreach (explode(' ', $_q) as $tokenized_chunk) {
+                    foreach ($tokens as $token => $grouped_query) {
+                        if (FALSE !== strpos($tokenized_chunk, $token)) {
+                            $split_query[] = $token;
+                            break;
+                        }
+                    }
+
+                    if (in_array($tokenized_chunk, ['OR', 'AND'])) {
+                        $split_query[] = $tokenized_chunk;
+                    }
+                }
+
+                /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
+                $qb = $this
+                    ->get('doctrine_mongodb')
+                    ->getManager()
+                    ->createQueryBuilder(Content::class);
+
+                // If there is one query chunk directly apply it to the query builder.
+                // If not, use lately created tokenized query to know what goes where.
+                if (1 == count($tokens)) {
+                    $token = reset($tokens);
+                    $this->queryToExpression($token, $qb);
+                } else {
+                    $offset = 0;
+                    while ($split = array_slice($split_query, $offset, 3)) {
+                        // Every split chunk MUST contain two tokens - for left and right operands..
+                        if (count(array_intersect(array_keys($tokens), $split)) !== 2) {
+                            break;
+                        }
+
+                        // ... as well as the operator value.
+                        list($left, $operator, $right) = [
+                            $this->queryToExpression($tokens[$split[0]], null),
+                            $split[1],
+                            $this->queryToExpression($tokens[$split[2]], null),
+                        ];
+
+                        switch (strtolower($operator)) {
+                            case 'and':
+                                $qb->addAnd($left, $right);
+                                break;
+                            case 'or':
+                                $qb->addOr($left, $right);
+                            default:
+                        }
+
+                        // The tokenized query array size is expected to be a multiple of 3.
+                        // Hence two tokens and the operator between them.
+                        $offset += 3;
+                    }
+                }
+
+                $qbCount = clone($qb);
+                $hits = $qbCount->count()->getQuery()->execute();
+
+                $skip = $fields['skip'];
+                $amount = $fields['amount'] > 100 ? 100 : $fields['amount'];
+                $qb->skip($skip)->limit($amount);
+
+                $query = $qb->getQuery();
+                $suggestions = $query->execute();
+
+                $format = $fields['format'];
+
+                /** @var \AppBundle\Document\Content $suggestion */
+                foreach ($suggestions as $suggestion) {
+                    $suggestionFields = $suggestion->getFields();
+
+                    if ('short' == $format) {
+                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
+                    } else {
+                        $this->lastItems[] = [
+                            'id' => $suggestion->getId(),
+                            'nid' => $suggestion->getNid(),
+                            'agency' => $suggestion->getAgency(),
+                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
+                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                        ];
+                    }
+                }
+
+                $this->lastStatus = !$error;
+            } catch (RestException $e) {
+                // TODO: Log this instead.
+                $this->lastMessage = $e->getMessage();
+            }
+        }
+
+        return $this->setResponse(
+            $this->lastStatus,
+            $this->lastMessage,
+            $this->lastItems,
+            $hits
+        );
+    }
+
+    /**
+     * Converts a string query to odm expression.
+     *
+     * In case the query lacks AND/OR operations, directly assign
+     * the criteria to query builder. Therefore the last parameter
+     * should be passed from the main query builder.
+     *
+     * In case when there is an AND/OR operation(s), return an
+     * expression instead, which is assigned to main query builder
+     * outside the scope of this method.
+     *
+     * The reasons for all this is that query builder lacks methods
+     * to provide it's expression(s) for outside changes and odm specifics
+     * for nested and/or conditions.
+     *
+     * When builder is passed, the builder instance is returned,
+     * otherwise new expression is returned instead for later use.
+     *
+     * @param string $query
+     *   Raw query.
+     * @param \Doctrine\MongoDB\Query\Builder $qb
+     *   Query builder.
+     *
+     * @return \Doctrine\MongoDB\Query\Expr|\Doctrine\MongoDB\Query\Builder
+     *   Query builder, or new expression.
+     */
+    private function queryToExpression($query, $qb = null) {
+        $query = trim($query, '()');
+
+        // Find out the operator in the expression.
+        $matches = [];
+        preg_match('~"\s(or|and)\s"~i', $query, $matches);
+        $operator = !empty($matches[1]) ? $matches[1] : 'and';
+
+        // Get the left and right operands of the expression.
+        $operands = preg_split('~\s(or|and)\s~i', $query, -1,PREG_SPLIT_NO_EMPTY);
+
+        // If query builder is passed, assign the expression directly.
+        $expr = (null !== $qb) ? $qb : new Expr();
+        $operatorArgs = [];
+        foreach ($operands as $operand) {
+            // Three parts we need from the query - the field, comparison identifier and the value to compare.
+            // Normally should never fail, unless the query format is not validated
+            // earlier to match needed format.
+            preg_match('~"([a-z._]+)\[([a-z]+)\]:([0-9|\p{L}-_+\s]+)"~iu', $operand, $matches);
+            // We don't need the whole match.
+            array_shift($matches);
+            list($field, $comparison, $value) = $matches;
+
+            $exprMethod = null;
+            switch ($comparison) {
+                case 'regex':
+                    $value = new \MongoRegex('/' . $value . '/i');
+                case 'eq':
+                default:
+                    $exprMethod = 'equals';
+            }
+            $_expr = new Expr();
+            $operatorArgs[] = $_expr->field($field)->{$exprMethod}($value);
+        }
+
+        $operatorMethod = null;
+        switch (strtolower($operator)) {
+            case 'and':
+                $operatorMethod = 'addAnd';
+                break;
+            case 'or':
+            default:
+                $operatorMethod = 'addOr';
+        }
+
+        return call_user_func_array([$expr, $operatorMethod], $operatorArgs);
     }
 
     /**
@@ -1292,78 +1634,6 @@ final class RestController extends Controller
         );
 
         return $response;
-    }
-
-    /**
-     * Replaced by '/content/search' route.
-     *
-     * @ApiDoc(
-     *     description="Fetches content entries containing certain vocabulary terms.",
-     *     section="Content",
-     *     requirements={},
-     *     output={
-     *         "class": "AppBundle\IO\ContentOutput"
-     *     },
-     *     deprecated=true
-     * )
-     * @Route("/content/related")
-     * @Method({"GET"})
-     */
-    public function taxonomyRelatedContentAction(Request $request)
-    {
-        $this->lastMethod = $request->getMethod();
-
-        $fields = [
-            'agency' => null,
-            'key' => null,
-            'vocabulary' => null,
-            'terms' => null,
-        ];
-
-        foreach (array_keys($fields) as $field) {
-            $fields[$field] = $request->query->get($field);
-        }
-
-        $em = $this->get('doctrine_mongodb');
-        $rtr = new RestTaxonomyRequest($em);
-
-        if (!$rtr->isSignatureValid($fields['agency'], $fields['key'])) {
-            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
-        } else {
-            $this->lastItems = [];
-
-            try {
-                $items = $rtr->fetchRelatedContent(
-                    $fields['agency'],
-                    (array)$fields['vocabulary'],
-                    (array)$fields['terms']
-                );
-
-                if (!empty($items)) {
-                    foreach ($items as $item) {
-                        $this->lastItems[] = [
-                            'id' => $item->getId(),
-                            'nid' => $item->getNid(),
-                            'agency' => $item->getAgency(),
-                            'type' => $item->getType(),
-                            'fields' => $item->getFields(),
-                            'taxonomy' => $item->getTaxonomy(),
-                            'list' => $item->getList(),
-                        ];
-                    }
-                }
-
-                $this->lastStatus = true;
-            } catch (RestException $e) {
-                $this->lastMessage = $e->getMessage();
-            }
-        }
-
-        return $this->setResponse(
-            $this->lastStatus,
-            $this->lastMessage,
-            $this->lastItems
-        );
     }
 
     /**
