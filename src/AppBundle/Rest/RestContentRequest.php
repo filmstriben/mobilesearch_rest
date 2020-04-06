@@ -89,7 +89,8 @@ class RestContentRequest extends RestBaseRequest
      * @param bool $countOnly
      *   Get only the number of results.
      *
-     * @return \AppBundle\Document\Content[]     A set of entities.
+     * @return \AppBundle\Document\Content[]
+     *   A set of entities.
      */
     public function fetchFiltered(
         $id = null,
