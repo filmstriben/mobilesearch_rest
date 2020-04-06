@@ -248,7 +248,13 @@ class ImageController extends Controller
 
             $response->setStatusCode(Response::HTTP_OK);
             $response->setContent(file_get_contents($imagePath));
-            $response->headers->set('Content-Type', mime_content_type($imagePath));
+
+            // Webp images deliver a non-image mime type, so override this one.
+            $mime = mime_content_type($imagePath);
+            if ($mime === 'application/octet-stream' && 'webp' === $this->format) {
+                $mime = 'image/webp';
+            }
+            $response->headers->set('Content-Type', $mime);
         }
 
         return $response;
