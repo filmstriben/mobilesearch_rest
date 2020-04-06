@@ -248,7 +248,7 @@ class ImageController extends Controller
 
             $response->setStatusCode(Response::HTTP_OK);
             $response->setContent(file_get_contents($imagePath));
-            $response->headers->set('Content-Type', 'image/' . $this->format);
+            $response->headers->set('Content-Type', mime_content_type($imagePath));
         }
 
         return $response;
