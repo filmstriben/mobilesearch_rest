@@ -5,7 +5,7 @@ namespace AppBundle\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
 /**
- * @MongoDB\Document
+ * @MongoDB\Document(repositoryClass="AppBundle\Repositories\ContentRepository")
  */
 class Content
 {
@@ -43,6 +43,21 @@ class Content
      * @MongoDB\collection
      */
     protected $list;
+
+    /**
+     * @MongoDB\NotSaved()
+     */
+    public $score;
+
+    public function setScore($score) {
+        $this->score = $score;
+
+        return $this;
+    }
+
+    public function getScore() {
+        return $this->score;
+    }
 
     /**
      * Get id
@@ -196,5 +211,23 @@ class Content
     public function getAgency()
     {
         return $this->agency;
+    }
+
+    public function toArray($withScore = false) {
+        $return = [
+            'id' => $this->getId(),
+            'nid' => $this->getNid(),
+            'agency' => $this->getAgency(),
+            'type' => $this->getType(),
+            'fields' => $this->getFields(),
+            'taxonomy' => $this->getTaxonomy(),
+            'list' => $this->getList(),
+        ];
+
+        if ($withScore) {
+            $return['score'] = $this->getScore();
+        }
+
+        return $return;
     }
 }
