@@ -34,7 +34,7 @@ class ImageController extends Controller
 
     protected $sampleFilter = ImageInterface::FILTER_CATROM;
 
-    protected $format = 'webp';
+    protected $format = 'jpeg';
 
     protected $publicCache = 60 * 60 * 24 * 30;
 
@@ -85,7 +85,7 @@ class ImageController extends Controller
      * <p> Resample  - '<strong>r</strong>' - parameter can be one of following:
      * 'point', 'box', 'triangle', 'hermite', 'hanning', 'hamming', 'blackman', 'gaussian', 'quadratic', 'cubic', 'catrom',
      * 'mitchell', 'lanczos', 'bessel' or 'sinc'.<br />
-     * Various resampling algorithms would deliver slightly different results and will vary image size slightly.<br />
+     * Various re-sampling algorithms would deliver slightly different results and will vary image size slightly.<br />
      * To obtain sharper images, use 'point', 'lanczos' or 'sinc'. <br />
      * Softer or blurry images can be obtained by using 'cubic' or 'triangle' resampling.</p>
      *
@@ -129,7 +129,7 @@ class ImageController extends Controller
      *         {
      *             "name"="o",
      *             "dataType"="string",
-     *             "description"="Convert image format. Default - 'webp'.",
+     *             "description"="Convert image format. Default - 'jpeg'.",
      *             "required"=false
      *         },
      *         {
