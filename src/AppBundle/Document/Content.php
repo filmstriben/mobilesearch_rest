@@ -40,7 +40,7 @@ class Content
     protected $taxonomy;
 
     /**
-     * @MongoDB\collection
+     * @MongoDB\Hash
      */
     protected $list;
 
