@@ -11,6 +11,7 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Class ImageController.
@@ -231,8 +232,18 @@ class ImageController extends Controller
                 return $response;
             }
 
+            $response = new StreamedResponse();
+            $response->setCache([
+                'etag' => $eTag,
+                'last_modified' => $now,
+                'max_age' => $this->publicCache,
+                's_maxage' => $this->publicCache,
+                'public' => true,
+            ]);
             $response->setStatusCode(Response::HTTP_OK);
-            $response->setContent(file_get_contents($imagePath));
+            $response->setCallback(function () use ($imagePath) {
+                readfile($imagePath);
+            });
 
             // Webp images deliver a non-image mime type, so override this one.
             $mime = mime_content_type($imagePath);

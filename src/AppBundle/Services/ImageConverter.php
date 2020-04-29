@@ -29,7 +29,7 @@ class ImageConverter implements ImageConverterInterface {
      */
     public function __construct()
     {
-        $this->imagine = /*extension_loaded('imagick') ? new ImagickImagine() :*/ new GdImagine();
+        $this->imagine = extension_loaded('imagick') ? new ImagickImagine() : new GdImagine();
 
         $this->setSamplingFilter(ImageInterface::FILTER_CATROM);
         $this->setFormat('jpeg');
@@ -91,18 +91,23 @@ class ImageConverter implements ImageConverterInterface {
      */
     public function convert($source, $target, $width, $height, $sharpen = true, $strip = true)
     {
+        $image = null;
+        unset($image);
+
+        gc_collect_cycles();
+
         try {
             $image = $this->imagine->open($source);
         }
         catch (RuntimeException $exception) {
-            throw new ImageConverterException("Failed to open source image '{$source}' with exception: {$exception->getMessage()}");
+            throw new ImageConverterException("Failed to open source image '{$source}' with exception(s): {$exception->getMessage()}, {$exception->getPrevious()->getMessage()}");
         }
 
         try {
             $this->resizeImage($image, $width, $height);
         }
         catch (RuntimeException $exception) {
-            throw new ImageConverterException("Failed to resize image '{$source}' with exception: {$exception->getMessage()}");
+            throw new ImageConverterException("Failed to resize image '{$source}' with exception(s): {$exception->getMessage()}, {$exception->getPrevious()->getMessage()}");
         }
 
         if ($sharpen) {

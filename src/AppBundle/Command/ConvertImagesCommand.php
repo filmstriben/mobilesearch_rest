@@ -3,6 +3,7 @@
 namespace AppBundle\Command;
 
 use AppBundle\Controller\ImageController;
+use AppBundle\Document\Content;
 use AppBundle\Services\ImageConverterException;
 use Imagine\Exception\RuntimeException;
 use Imagine\Image\ImageInterface;
@@ -11,7 +12,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 
 /**
  * Class ConvertImagesCommand.
@@ -22,9 +22,9 @@ class ConvertImagesCommand extends ContainerAwareCommand {
 
     protected $agency = '150027';
 
-    protected $sizes = ['371x206', '742x412', '1920x1080', '3840x2160'];
+    protected $sizes = ['371x206'];//['1920x1080', '3840x2160'];
 
-    protected $formats = ['jpeg', 'webp'];
+    protected $formats = ['jpeg'];
 
     protected $quality = 75;
 
@@ -63,49 +63,65 @@ class ConvertImagesCommand extends ContainerAwareCommand {
             $this->prepareDirectory($resizedImageDirectory);
         }
 
-        $finder = new Finder();
-        $finder
-            ->name('/\.(jpg|jpeg|gif|png)$/')
-            ->in($baseImageDirectory)
-            ->depth('== 0');
+        $doctrine = $this->getContainer()->get('doctrine_mongodb');
+        $em = $doctrine->getManager();
+        /** @var \AppBundle\Document\Content[] $movies */
+        $movies = $em->getRepository(Content::class)
+            ->findBy([
+                'type' => 'os',
+            ]);
 
         /** @var \AppBundle\Services\ImageConverterInterface $imageConverter */
         $imageConverter = $this->getContainer()->get('image_converter');
 
         $progress = 0;
-        $total = $finder->count();
+        $total = count($movies);
+        foreach ($movies as $movie) {
+            $movieFields = $movie->getFields();
 
-        foreach ($finder as $file) {
-            $imagePath = $baseImageDirectory.'/'.$file->getFilename();
+            $output->writeln("Movie: " . $movieFields['title']['value']);
 
-            foreach ($this->sizes as $size) {
-                list($w, $h) = explode('x', $size);
+            $images = array_key_exists('field_images', $movieFields) ? $movieFields['field_images']['value'] : [];
 
-                foreach ($this->formats as $format) {
-                    $filename = $file->getBasename('.'.$file->getExtension()).'.'.$format;
-                    $resizedImageDirectory = $baseImageDirectory.'/'.$size;
-                    $imageResizedPath = $resizedImageDirectory.'/'.$this->quality.'_'.$filename;
+            foreach ($images as $image) {
+                $filename = explode('/', $image)[2];
+                $imagePath = $baseImageDirectory.'/'.$filename;
 
-                    if ($this->fileSystem->exists($imageResizedPath)) {
-                        continue;
-                    }
+                if (!$this->fileSystem->exists($imagePath)) {
+                    continue;
+                }
 
-                    try {
-                        $imageConverter
-                            ->setQuality($this->quality)
-                            ->setFormat($format)
-                            ->setSamplingFilter(ImageInterface::FILTER_CATROM)
-                            ->convert($imagePath, $imageResizedPath, $w, $h);
-                    }
-                    catch (ImageConverterException $exception) {
-                        $output->writeln("Error converting file '{$imagePath}' with exception: {$exception->getMessage()}");
-                        continue(3);
+                $output->writeln("Processing image: " . $imagePath);
+
+                $file = new \SplFileInfo($imagePath);
+                foreach ($this->sizes as $size) {
+                    list($w, $h) = explode('x', $size);
+
+                    foreach ($this->formats as $format) {
+                        $filename = $file->getBasename('.'.$file->getExtension()).'.'.$format;
+                        $resizedImageDirectory = $baseImageDirectory.'/'.$size;
+                        $imageResizedPath = $resizedImageDirectory.'/'.$this->quality.'_'.$filename;
+
+                        if ($this->fileSystem->exists($imageResizedPath)) {
+                            continue;
+                        }
+
+                        try {
+                            $imageConverter
+                                ->setQuality($this->quality)
+                                ->setFormat($format)
+                                ->setSamplingFilter(ImageInterface::FILTER_CATROM)
+                                ->convert($imagePath, $imageResizedPath, $w, $h);
+                        }
+                        catch (ImageConverterException $exception) {
+                            $output->writeln("Error converting file '{$imagePath}' with exception: {$exception->getMessage()}");
+                            exit(0);
+                        }
                     }
                 }
             }
 
             $progress++;
-            $output->writeln("Processing: " . $file);
             $output->writeln("Progress: " . number_format($progress / $total, 6) * 100 . '%');
         }
     }
