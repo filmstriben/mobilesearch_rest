@@ -355,6 +355,149 @@ final class RestController extends Controller
     }
 
     /**
+     * <p><strong>DEPRECATED<br /></strong>Consider <a href="#get--content-search-ranked">'/content/search-ranked'</a> and <a href="#get--content-search-extended">'/content/search-extended'</a> routes.</p>
+     * <p>'query' parameter can accept regular expressions, case insensitive, when searching within any content fields, unless
+     * the search is made within the 'taxonomy', where a direct match is performed.</p>
+     * <p>'query' and 'field' parameters must always match in count.<br />
+     * There might multiple pairs of 'query' and 'field' parameters. Multiple pairs of search conditions are
+     * treated as a logical AND.</p>
+     * <p>To use multiple conditions, add square brackets after the parameter in the query string.<br />
+     * 'query' parameter can receive multiple values, separated by comma. This would result for content that is
+     * searched, to contain at least one term from the comma separated list.
+     * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms</pre>
+     * This query string would fetch content with having 'editorial' value as 'type' and 'taxonomy.field_realm.terms'
+     * containing either 'Hjemmefra', or 'At home' terms.</p>
+     * <p>Add a 'format=short' pair to the query string to get a plain list of title suggestions.
+     * E.g.: <pre>query[]=editorial&field[]=type&query[]=Hjemmefra,At%20home&field[]=taxonomy.field_realm.terms&format=short</pre></p>
+     *
+     * @ApiDoc(
+     *     description="Searches content entries by certain criteria(s).",
+     *     section="Content",
+     *     requirements={
+     *         {
+     *             "name"="agency",
+     *             "dataType"="string",
+     *             "description"="Agency number."
+     *         },
+     *         {
+     *             "name"="key",
+     *             "dataType"="string",
+     *             "description"="Authentication key."
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="query",
+     *             "dataType"="string",
+     *             "description"="Search query.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="field",
+     *             "dataType"="string",
+     *             "description"="Content entity field to search in.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="amount",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to fetch. Defaults to 10.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="skip",
+     *             "dataType"="integer",
+     *             "description"="Specifies how many results to skip. Defaults to 0.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="format",
+     *             "dataType"="string",
+     *             "description"="Use 'short' value to get a plain list of suggested titles.",
+     *             "required"=false
+     *         },
+     *     },
+     *     output={
+     *         "class": "AppBundle\IO\ContentOutput"
+     *     },
+     *     deprecated=true
+     * )
+     * @Route("/content/search")
+     * @Method({"GET"})
+     */
+    public function contentSearchAction(Request $request)
+    {
+        $this->lastMethod = $request->getMethod();
+
+        $fields = [
+            'agency' => null,
+            'key' => null,
+            'query' => null,
+            'field' => null,
+            'amount' => 10,
+            'skip' => 0,
+            'format' => null,
+        ];
+
+        foreach (array_keys($fields) as $field) {
+            $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+
+            if (in_array($field, ['query', 'field'])) {
+                $fields[$field] = array_filter((array)$fields[$field]);
+            }
+        }
+
+        $em = $this->get('doctrine_mongodb');
+        $restContentRequest = new RestContentRequest($em);
+
+        $hits = 0;
+
+        if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
+            $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
+        } elseif (!empty($fields['query']) && !empty($fields['field'])) {
+            unset($fields['agency'], $fields['key']);
+
+            try {
+                $format = $fields['format'];
+                unset($fields['format']);
+                $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
+
+                /** @var \AppBundle\Document\Content $suggestion */
+                foreach ($suggestions as $suggestion) {
+                    $suggestionFields = $suggestion->getFields();
+
+                    if ('short' == $format) {
+                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
+                    } else {
+                        $this->lastItems[] = [
+                            'id' => $suggestion->getId(),
+                            'nid' => $suggestion->getNid(),
+                            'agency' => $suggestion->getAgency(),
+                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
+                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                        ];
+                    }
+                }
+
+                $fields['countOnly'] = true;
+                $hits = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
+
+                $this->lastStatus = true;
+            } catch (RestException $e) {
+                // TODO: Log this instead.
+                $this->lastMessage = $e->getMessage();
+            }
+        }
+
+        return $this->setResponse(
+            $this->lastStatus,
+            $this->lastMessage,
+            $this->lastItems,
+            $hits
+        );
+    }
+
+    /**
      * <p>This endpoint allows ranked searches.</p>
      * <p><strong>(q)</strong> is the query string to find matches on.<br />
      * A search query with punctuation or spaces tokenizes the search query and a search perform within all tokens using the OR operator.<br />
@@ -373,7 +516,7 @@ final class RestController extends Controller
      * <p>Each item contains a search score value and all items are ordered by their search score, descending.</p>
      *
      * @ApiDoc(
-     *     description="Searches content entries by certain criteria(s).",
+     *     description="Searches content entries by certain criteria(s) and ranks the results.",
      *     section="Content",
      *     requirements={
      *         {
@@ -418,12 +561,12 @@ final class RestController extends Controller
      *         "class": "AppBundle\IO\ContentOutput"
      *     }
      * )
-     * @Route("/content/search")
+     * @Route("/content/search-ranked")
      * @Method({"GET"})
      *
      * TODO: Test coverage.
      */
-    public function contentSearchAction(Request $request)
+    public function contentSearchRankedAction(Request $request)
     {
         $this->lastMethod = $request->getMethod();
 
