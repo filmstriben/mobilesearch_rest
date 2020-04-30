@@ -14,6 +14,7 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Class ImageController.
@@ -34,7 +35,7 @@ class ImageController extends Controller
 
     protected $sampleFilter = ImageInterface::FILTER_CATROM;
 
-    protected $format = 'webp';
+    protected $format = 'jpeg';
 
     protected $publicCache = 60 * 60 * 24 * 30;
 
@@ -85,7 +86,7 @@ class ImageController extends Controller
      * <p> Resample  - '<strong>r</strong>' - parameter can be one of following:
      * 'point', 'box', 'triangle', 'hermite', 'hanning', 'hamming', 'blackman', 'gaussian', 'quadratic', 'cubic', 'catrom',
      * 'mitchell', 'lanczos', 'bessel' or 'sinc'.<br />
-     * Various resampling algorithms would deliver slightly different results and will vary image size slightly.<br />
+     * Various re-sampling algorithms would deliver slightly different results and will vary image size slightly.<br />
      * To obtain sharper images, use 'point', 'lanczos' or 'sinc'. <br />
      * Softer or blurry images can be obtained by using 'cubic' or 'triangle' resampling.</p>
      *
@@ -129,7 +130,7 @@ class ImageController extends Controller
      *         {
      *             "name"="o",
      *             "dataType"="string",
-     *             "description"="Convert image format. Default - 'webp'.",
+     *             "description"="Convert image format. Default - 'jpeg'.",
      *             "required"=false
      *         },
      *         {
@@ -246,8 +247,18 @@ class ImageController extends Controller
                 return $response;
             }
 
+            $response = new StreamedResponse();
+            $response->setCache([
+                'etag' => $eTag,
+                'last_modified' => $now,
+                'max_age' => $this->publicCache,
+                's_maxage' => $this->publicCache,
+                'public' => true,
+            ]);
             $response->setStatusCode(Response::HTTP_OK);
-            $response->setContent(file_get_contents($imagePath));
+            $response->setCallback(function () use ($imagePath){
+                readfile($imagePath);
+            });
 
             // Webp images deliver a non-image mime type, so override this one.
             $mime = mime_content_type($imagePath);

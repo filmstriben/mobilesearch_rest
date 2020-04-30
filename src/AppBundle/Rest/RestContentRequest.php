@@ -145,6 +145,70 @@ class RestContentRequest extends RestBaseRequest
     }
 
     /**
+     * Searches content suggestions based on certain criteria.
+     *
+     * @param array $query
+     *   Search query.
+     * @param array $field
+     *   Field to search in.
+     * @param int $amount
+     *   Fetch this amount of suggestions.
+     * @param int $skip
+     *   Skip this amount of suggestions.
+     * @param bool $countOnly
+     *   Return only count of results.
+     *
+     * @return \AppBundle\Document\Content[]
+     *   A set of suggested entities.
+     *
+     * @throws RestException
+     * @throws \Doctrine\ODM\MongoDB\MongoDBException
+     *
+     * @deprecated
+     */
+    public function fetchSuggestions(array $query, array $field, $amount = 10, $skip = 0, $countOnly = FALSE)
+    {
+        if (count($query) != count($field)) {
+            throw new RestException('Query and fields parameters count mismatch.');
+        }
+
+        reset($query);
+        reset($field);
+
+        /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
+        $qb = $this
+            ->em
+            ->getManager()
+            ->createQueryBuilder(Content::class);
+
+        if ($countOnly) {
+            $qb->count();
+        }
+        else {
+            $qb->skip($skip)->limit($amount);
+        }
+
+        while ($currentQuery = current($query)) {
+            $currentField = current($field);
+
+            if (preg_match('/taxonomy\..*\.terms/', $currentField)) {
+                $qb
+                    ->field($currentField)
+                    ->in(explode(',', $currentQuery));
+            } else {
+                $qb
+                    ->field($currentField)
+                    ->equals(new \MongoRegex('/'.$currentQuery.'/i'));
+            }
+
+            next($query);
+            next($field);
+        }
+
+        return $qb->getQuery()->execute();
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function insert()
