@@ -2,8 +2,10 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Document\ServiceHit;
 use AppBundle\Services\ImageConverterException;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -11,6 +13,7 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Class ImageController.
@@ -82,7 +85,7 @@ class ImageController extends Controller
      * <p> Resample  - '<strong>r</strong>' - parameter can be one of following:
      * 'point', 'box', 'triangle', 'hermite', 'hanning', 'hamming', 'blackman', 'gaussian', 'quadratic', 'cubic', 'catrom',
      * 'mitchell', 'lanczos', 'bessel' or 'sinc'.<br />
-     * Various resampling algorithms would deliver slightly different results and will vary image size slightly.<br />
+     * Various re-sampling algorithms would deliver slightly different results and will vary image size slightly.<br />
      * To obtain sharper images, use 'point', 'lanczos' or 'sinc'. <br />
      * Softer or blurry images can be obtained by using 'cubic' or 'triangle' resampling.</p>
      *
@@ -126,7 +129,7 @@ class ImageController extends Controller
      *         {
      *             "name"="o",
      *             "dataType"="string",
-     *             "description"="Convert image format. Default - 'webp'.",
+     *             "description"="Convert image format. Default - 'jpeg'.",
      *             "required"=false
      *         },
      *         {
@@ -148,6 +151,11 @@ class ImageController extends Controller
      */
     public function imageNewAction(Request $request, $agency, $filename)
     {
+        $dm = $this->get('doctrine_mongodb')->getManager();
+        /** @var \AppBundle\Repositories\ServiceHitRepository $repository */
+        $repository = $dm->getRepository(ServiceHit::class);
+        $repository->trackHit('image_request');
+
         $quality = (int)$request->query->get('q', 75);
         $quality = ($quality > 1 && $quality < 101) ? $quality : 75;
 
@@ -155,15 +163,11 @@ class ImageController extends Controller
         $sharpen = filter_var($request->query->get('s'), FILTER_VALIDATE_BOOLEAN);
 
         $format = $request->query->get('o');
-        $format = in_array($format, ['jpeg','jpg','png','gif','webp']) ? $format : 'jpeg';
 
         $force = filter_var($request->query->get('f'), FILTER_VALIDATE_BOOLEAN);
 
         $targetWidth = (int)$request->query->get('w');
-        $targetWidth = ($targetWidth > -1 && $targetWidth < 3841) ? $targetWidth : 0;
-
         $targetHeight = (int)$request->query->get('h');
-        $targetHeight = ($targetHeight > -1 && $targetHeight < 3841) ? $targetHeight : 0;
 
         // Legacy support.
         $resize = $request->query->get('resize', $request->attributes->get('resize'));
@@ -171,76 +175,92 @@ class ImageController extends Controller
             list($targetWidth, $targetHeight) = explode('x', $resize);
         }
 
+        $targetWidth = ($targetWidth > -1 && $targetWidth < 3841) ? $targetWidth : 0;
+        $targetHeight = ($targetHeight > -1 && $targetHeight < 3841) ? $targetHeight : 0;
+
+        // Both sides are zero, the API would not return full-size images.
+        if ($targetWidth + $targetHeight === 0) {
+            return new Response('Both width and height cannot be zero.', Response::HTTP_BAD_REQUEST);
+        }
+
         $baseImageDirectory = $this->getParameter('web_dir').'/'.self::FILES_STORAGE_DIR.'/'.$agency;
 
         $imagePath = $baseImageDirectory.'/'.$filename;
-
         // Keep a separate directory for a specific size.
         $resizedImageDirectory = $baseImageDirectory.'/'.implode('x', [$targetWidth, $targetHeight]);
 
-        // Both sides are zero, therefore serve original image.
-        $serveOriginal = $targetWidth + $targetHeight === 0;
-        if (!$serveOriginal && $this->prepareDirectory($resizedImageDirectory)) {
-            list($baseName, $extension) = explode('.', $filename);
-            $filename = $baseName.'.'.$format;
-            $imageResizedPath = $resizedImageDirectory.'/'.$quality.'_'.$filename;
+        $splFile = new \SplFileInfo($baseImageDirectory.'/'.$filename);
+        // TODO: This replaces the query param format.
+        $format = $splFile->getExtension();
+        $baseName = $splFile->getBasename('.'.$format);
 
-            if ($this->fileSystem->exists($imageResizedPath) && FALSE === $force) {
+        $format = in_array($format, ['jpeg','jpg','png','gif','webp']) ? $format : 'jpeg';
+        $filename = $baseName.'.'.$format;
+        $imageResizedPath = $resizedImageDirectory.'/'.$filename;
+
+        if ($this->fileSystem->exists($imageResizedPath) && FALSE === $force) {
+            $imagePath = $imageResizedPath;
+        } elseif (false === ($imagePath = $this->tryImageFile($imagePath))) {
+            return new Response('File not found.', Response::HTTP_NOT_FOUND);
+        } elseif (!$this->prepareDirectory($resizedImageDirectory)) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error("Resized images path '{$resizedImageDirectory}' could not be created or is not writeable.");
+
+            return new Response('', Response::HTTP_SERVICE_UNAVAILABLE);
+        } else {
+            /** @var \AppBundle\Services\ImageConverterInterface $imageConverter */
+            $imageConverter = $this->get('image_converter');
+
+            $repository->trackHit('image_convert');
+
+            try {
+                $imageConverter
+                    ->setQuality($quality)
+                    ->setFormat($format)
+                    ->setSamplingFilter($sampleFilter)
+                    ->convert($imagePath, $imageResizedPath, $targetWidth, $targetHeight, $sharpen, true);
+
                 $imagePath = $imageResizedPath;
             }
-            else {
-                /** @var \AppBundle\Services\ImageConverterInterface $imageConverter */
-                $imageConverter = $this->get('image_converter');
+            catch (ImageConverterException $exception) {
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error($exception->getMessage());
 
-                try {
-                    $imageConverter
-                        ->setQuality($quality)
-                        ->setFormat($format)
-                        ->setSamplingFilter($sampleFilter)
-                        ->convert($imagePath, $imageResizedPath, $targetWidth, $targetHeight, $sharpen, true);
-
-                    $imagePath = $imageResizedPath;
-                }
-                catch (ImageConverterException $exception) {
-                    /** @var \Psr\Log\LoggerInterface $logger */
-                    $logger = $this->get('logger');
-                    $logger->error($exception->getMessage());
-                }
+                return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }
 
-        $response = new Response();
-        if (!$this->fileSystem->exists($imagePath)) {
-            $response->setStatusCode(Response::HTTP_NOT_FOUND);
-            $response->setContent('File not found.');
-        } else {
-            $eTag = $this->fileContentsHash($imagePath);
+        $eTag = $this->fileContentsHash($imagePath);
 
-            $now = new \DateTime();
-            $now->setTimestamp(filemtime($imagePath));
+        $now = new \DateTime();
+        $now->setTimestamp(filemtime($imagePath));
 
-            $response->setCache([
-                'etag' => $eTag,
-                'last_modified' => $now,
-                'max_age' => $this->publicCache,
-                's_maxage' => $this->publicCache,
-                'public' => true,
-            ]);
+        $response = new StreamedResponse();
+        $response->setCache([
+            'etag' => $eTag,
+            'last_modified' => $now,
+            'max_age' => $this->publicCache,
+            's_maxage' => $this->publicCache,
+            'public' => true,
+        ]);
+        $response->setStatusCode(Response::HTTP_OK);
+        $notModified = $response->isNotModified($request);
 
-            if ($response->isNotModified($request)) {
-                return $response;
+        $response->setCallback(function() use ($imagePath, $notModified) {
+            if (!$notModified) {
+                readfile($imagePath);
             }
+        });
 
-            $response->setStatusCode(Response::HTTP_OK);
-            $response->setContent(file_get_contents($imagePath));
-
-            // Webp images deliver a non-image mime type, so override this one.
-            $mime = mime_content_type($imagePath);
-            if ('application/octet-stream' === $mime && 'webp' === $format) {
-                $mime = 'image/webp';
-            }
-            $response->headers->set('Content-Type', $mime);
+        // Webp images deliver a non-image mime type, so override this one.
+        $mime = mime_content_type($imagePath);
+        if ('application/octet-stream' === $mime && 'webp' === $format) {
+            $mime = 'image/webp';
         }
+        $response->headers->set('Content-Type', $mime);
+
 
         return $response;
     }
@@ -258,12 +278,7 @@ class ImageController extends Controller
      */
     protected function fileContentsHash($path)
     {
-        $fs = new Filesystem();
-        if (!$fs->exists($path)) {
-            return false;
-        }
-
-        return sha1(file_get_contents($path));
+        return md5_file($path);
     }
 
     /**
@@ -294,6 +309,28 @@ class ImageController extends Controller
             }
         }
 
-        return $exists;
+        return $exists && is_writable($path);
     }
+
+    /**
+     * Attempts to find similar named images.
+     *
+     * This will seek images with same basenames in same directory,
+     * eventually returning first occurrence.
+     *
+     * @param $imageFile
+     *   Sample file path.
+     *
+     * @return bool|string
+     *   False if no match found, or path to first occurrence.
+     */
+    public function tryImageFile($imageFile) {
+        $splFile = new \SplFileInfo($imageFile);
+        $baseName = $splFile->getBasename('.'.$splFile->getExtension());
+
+        $matches = glob($splFile->getPath().'/'.$baseName.'.{jpeg,jpg,webp,gif,png}', GLOB_BRACE);
+
+        return !empty($matches) && is_readable($matches[0]) ? $matches[0] : false;
+    }
+
 }
