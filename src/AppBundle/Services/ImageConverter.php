@@ -29,7 +29,7 @@ class ImageConverter implements ImageConverterInterface {
      */
     public function __construct()
     {
-        $this->imagine = /*extension_loaded('imagick') ? new ImagickImagine() :*/ new GdImagine();
+        $this->imagine = extension_loaded('imagick') ? new ImagickImagine() : new GdImagine();
 
         $this->setSamplingFilter(ImageInterface::FILTER_CATROM);
         $this->setFormat('jpeg');
