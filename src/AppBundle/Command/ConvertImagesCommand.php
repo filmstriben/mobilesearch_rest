@@ -25,10 +25,15 @@ class ConvertImagesCommand extends ContainerAwareCommand {
     // TODO: Make a command argument.
     protected $sizes = ['371x206'];
 
+    // TODO: Make a command argument.
     protected $formats = ['jpeg'];
 
+    // TODO: Make a command argument.
     protected $quality = 75;
 
+    /**
+     * @var \Symfony\Component\Filesystem\Filesystem
+     */
     protected $fileSystem;
 
     /**
@@ -85,7 +90,8 @@ class ConvertImagesCommand extends ContainerAwareCommand {
             $images = array_key_exists('field_images', $movieFields) ? $movieFields['field_images']['value'] : [];
 
             foreach ($images as $image) {
-                $filename = explode('/', $image)[2];
+                $filename = explode('/', $image);
+                $filename = end($filename);
                 $imagePath = $baseImageDirectory.'/'.$filename;
 
                 if (!$this->fileSystem->exists($imagePath)) {
@@ -101,7 +107,8 @@ class ConvertImagesCommand extends ContainerAwareCommand {
                     foreach ($this->formats as $format) {
                         $filename = $file->getBasename('.'.$file->getExtension()).'.'.$format;
                         $resizedImageDirectory = $baseImageDirectory.'/'.$size;
-                        $imageResizedPath = $resizedImageDirectory.'/'.$this->quality.'_'.$filename;
+                        // This path should be taken from controller - ImageController::imageNewAction().
+                        $imageResizedPath = $resizedImageDirectory.'/'.$filename;
 
                         if ($this->fileSystem->exists($imageResizedPath)) {
                             continue;
