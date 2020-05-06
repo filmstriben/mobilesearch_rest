@@ -22,7 +22,8 @@ class ConvertImagesCommand extends ContainerAwareCommand {
 
     protected $agency = '150027';
 
-    protected $sizes = ['371x206'];//['1920x1080', '3840x2160'];
+    // TODO: Make a command argument.
+    protected $sizes = ['371x206'];
 
     protected $formats = ['jpeg'];
 
