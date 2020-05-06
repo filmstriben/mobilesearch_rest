@@ -30,6 +30,11 @@ class ServiceHit {
     protected $hits;
 
     /**
+     * @MongoDB\String()
+     */
+    protected $url;
+
+    /**
      * Gets object id.
      *
      * @return string
@@ -117,6 +122,32 @@ class ServiceHit {
     public function setHits($hits)
     {
         $this->hits = $hits;
+
+        return $this;
+    }
+
+    /**
+     * Gets request url.
+     *
+     * @return string
+     *   URL string.
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
+     * Sets request url.
+     *
+     * @param string $url
+     *   URL string.
+     *
+     * @return $this
+     *   This object.
+     */
+    public function setUrl($url) {
+        $this->url = $url;
 
         return $this;
     }

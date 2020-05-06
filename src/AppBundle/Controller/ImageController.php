@@ -151,6 +151,13 @@ class ImageController extends Controller
      */
     public function imageNewAction(Request $request, $agency, $filename)
     {
+        if ($this->getParameter('track_hits')) {
+            $dm = $this->get('doctrine_mongodb')->getManager();
+            /** @var \AppBundle\Repositories\ServiceHitRepository $repository */
+            $repository = $dm->getRepository(ServiceHit::class);
+            $repository->trackHit('image_request', $request->getRequestUri());
+        }
+
         $quality = (int)$request->query->get('q', 75);
         $quality = ($quality > 1 && $quality < 101) ? $quality : 75;
 
@@ -206,6 +213,13 @@ class ImageController extends Controller
         } else {
             /** @var \AppBundle\Services\ImageConverterInterface $imageConverter */
             $imageConverter = $this->get('image_converter');
+
+            if ($this->getParameter('track_hits')) {
+                $dm = $this->get('doctrine_mongodb')->getManager();
+                /** @var \AppBundle\Repositories\ServiceHitRepository $repository */
+                $repository = $dm->getRepository(ServiceHit::class);
+                $repository->trackHit('image_convert', $request->getRequestUri());
+            }
 
             try {
                 $imageConverter

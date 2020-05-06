@@ -11,39 +11,22 @@ use Doctrine\ODM\MongoDB\DocumentRepository;
 class ServiceHitRepository extends DocumentRepository
 {
     /**
-     * Tracks hits count for a certain type.
-     *
-     * Granularity is 1s.
+     * Tracks hits for a certain request type.
      *
      * @param string $type
      *   Hit type.
      */
-    public function trackHit($type) {
+    public function trackHit($type, $url) {
         $now = new \MongoDate(gmdate('U'));
 
-        /** @var \AppBundle\Document\ServiceHit $hit */
-        $hit = $this->findOneBy(
-            [
-                'type' => $type,
-                'time' => $now,
-            ]
-        );
+        $hit = new ServiceHit();
+        $hit
+            ->setType($type)
+            ->setHits(1)
+            ->setTime($now)
+            ->setUrl($url);
 
-        if (!$hit) {
-            $hit = new ServiceHit();
-            $hit
-                ->setType($type)
-                ->setHits(1)
-                ->setTime($now);
-
-            $this->getDocumentManager()->persist($hit);
-        }
-        else {
-            $hits = $hit->getHits();
-            $hits++;
-            $hit->setHits($hits);
-        }
-
+        $this->getDocumentManager()->persist($hit);
         $this->getDocumentManager()->flush();
     }
 }
