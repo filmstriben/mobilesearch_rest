@@ -200,7 +200,7 @@ class ImageController extends Controller
         $resizedFilename = $baseName.'.'.$format;
         $imageResizedPath = $resizedImageDirectory.'/'.$resizedFilename;
 
-        if ($this->fileSystem->exists($imageResizedPath) && FALSE === $force) {
+        if ($this->fileSystem->exists($imageResizedPath) && false === $force) {
             $imagePath = $imageResizedPath;
         } elseif (false === ($imagePath = $this->tryImageFile($imagePath))) {
             return new Response('File not found.', Response::HTTP_NOT_FOUND);
@@ -229,8 +229,7 @@ class ImageController extends Controller
                     ->convert($imagePath, $imageResizedPath, $targetWidth, $targetHeight, $sharpen, true);
 
                 $imagePath = $imageResizedPath;
-            }
-            catch (ImageConverterException $exception) {
+            } catch (ImageConverterException $exception) {
                 /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->get('logger');
                 $logger->error($exception->getMessage());
@@ -255,7 +254,7 @@ class ImageController extends Controller
         $response->setStatusCode(Response::HTTP_OK);
         $notModified = $response->isNotModified($request);
 
-        $response->setCallback(function() use ($imagePath, $notModified) {
+        $response->setCallback(function () use ($imagePath, $notModified) {
             if (!$notModified) {
                 readfile($imagePath);
             }
@@ -331,7 +330,8 @@ class ImageController extends Controller
      * @return bool|string
      *   False if no match found, or path to first occurrence.
      */
-    public function tryImageFile($imageFile) {
+    public function tryImageFile($imageFile)
+    {
         $splFile = new \SplFileInfo($imageFile);
         $baseName = $splFile->getBasename('.'.$splFile->getExtension());
 
@@ -349,8 +349,8 @@ class ImageController extends Controller
      * @return string
      *   Valid format.
      */
-    public function validateImageFormat($format) {
+    public function validateImageFormat($format)
+    {
         return in_array($format, ['jpeg','jpg','png','gif','webp']) ? $format : 'jpeg';
     }
-
 }
