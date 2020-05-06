@@ -2,11 +2,10 @@
 
 namespace AppBundle\Controller;
 
-use Imagine\Imagick\Imagine as ImagickImagine;
-use Imagine\Image\Box;
-use Imagine\Image\ImageInterface;
-use Imagine\Image\Point;
+use AppBundle\Document\ServiceHit;
+use AppBundle\Services\ImageConverterException;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -23,21 +22,21 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ImageController extends Controller
 {
-    const ASPECT_PRECISION = 3;
-
-    protected $filesStorageDir = '../web/storage/images';
+    const FILES_STORAGE_DIR = 'storage/images';
 
     protected $response;
 
-    protected $quality = 75;
-
-    protected $sharpen = true;
-
-    protected $sampleFilter = ImageInterface::FILTER_CATROM;
-
-    protected $format = 'jpeg';
-
     protected $publicCache = 60 * 60 * 24 * 30;
+
+    protected $fileSystem;
+
+    /**
+     * ImageController constructor.
+     */
+    public function __construct()
+    {
+        $this->fileSystem = new Filesystem();
+    }
 
     /**
      * Replaced by '/files/{agency}/{filename}' route.
@@ -152,121 +151,122 @@ class ImageController extends Controller
      */
     public function imageNewAction(Request $request, $agency, $filename)
     {
-        // TODO: Legacy support.
-        $resize = $request->query->get('resize', $request->attributes->get('resize'));
-
-        if ($quality = (int)$request->query->get('q')) {
-            $this->setQuality($quality);
+        if ($this->getParameter('track_hits')) {
+            $dm = $this->get('doctrine_mongodb')->getManager();
+            /** @var \AppBundle\Repositories\ServiceHitRepository $repository */
+            $repository = $dm->getRepository(ServiceHit::class);
+            $repository->trackHit('image_request', $request->getRequestUri());
         }
 
-        if ($sampleFilter = $request->query->get('r')) {
-            $this->setSamplingFilter($sampleFilter);
-        }
+        $quality = (int)$request->query->get('q', 75);
+        $quality = ($quality > 1 && $quality < 101) ? $quality : 75;
 
-        if ($sharpen = $request->query->get('s')) {
-            $this->setSharpen($sharpen);
-        }
+        $sampleFilter = $request->query->get('r');
+        $sharpen = filter_var($request->query->get('s'), FILTER_VALIDATE_BOOLEAN);
 
-        if ($output = $request->query->get('o')) {
-            $this->setFormat($output);
-        }
+        $format = $request->query->get('o');
 
-        if ($force = $request->query->get('f')) {
-            $force = filter_var($force, FILTER_VALIDATE_BOOLEAN);
-        }
+        $force = filter_var($request->query->get('f'), FILTER_VALIDATE_BOOLEAN);
 
         $targetWidth = (int)$request->query->get('w');
         $targetHeight = (int)$request->query->get('h');
-        // TODO: Legacy support.
+
+        // Legacy support.
+        $resize = $request->query->get('resize', $request->attributes->get('resize'));
         if (!empty($resize)) {
             list($targetWidth, $targetHeight) = explode('x', $resize);
         }
 
+        $targetWidth = ($targetWidth > -1 && $targetWidth < 3841) ? $targetWidth : 0;
+        $targetHeight = ($targetHeight > -1 && $targetHeight < 3841) ? $targetHeight : 0;
+
+        // Both sides are zero, the API would not return full-size images.
+        if ($targetWidth + $targetHeight === 0) {
+            return new Response('Both width and height can not be zero.', Response::HTTP_BAD_REQUEST);
+        }
+
+        $baseImageDirectory = $this->getParameter('web_dir').'/'.self::FILES_STORAGE_DIR.'/'.$agency;
+
+        $imagePath = $baseImageDirectory.'/'.$filename;
         // Keep a separate directory for a specific size.
-        $subDirectory = implode('x', [$targetWidth, $targetHeight]);
+        $resizedImageDirectory = $baseImageDirectory.'/'.implode('x', [$targetWidth, $targetHeight]);
 
-        $imagePath = $this->filesStorageDir.'/'.$agency.'/'.$filename;
+        $splFile = new \SplFileInfo($baseImageDirectory.'/'.$filename);
+        // TODO: This overrides the query param format.
+        $format = $splFile->getExtension();
+        $baseName = $splFile->getBasename('.'.$format);
 
-        $fs = new Filesystem();
+        $format = $this->validateImageFormat($format);
+        $resizedFilename = $baseName.'.'.$format;
+        $imageResizedPath = $resizedImageDirectory.'/'.$resizedFilename;
 
-        // Both sides are zero, therefore serve original image.
-        $serveOriginal = $targetWidth + $targetHeight === 0;
-        if (!$serveOriginal && $this->checkThumbnailSubdir($subDirectory, $agency) && $fs->exists($imagePath)) {
-            list($baseName, $extension) = explode('.', $filename);
-            $filename = $baseName.'.'.$this->format;
-            $imageResizedPath = $this->filesStorageDir.'/'.$agency.'/'.$subDirectory.'/'.$this->quality.'_'.$filename;
-
-            if (!$fs->exists($imageResizedPath) || true === $force) {
-                $imagineInstance = new ImagickImagine();
-                $image = $imagineInstance->open($imagePath);
-
-                $this->resizeImage($image, $targetWidth, $targetHeight);
-
-                if ($this->sharpen) {
-                    $image->effects()->sharpen();
-                }
-
-                // Clear meta-data to save bandwidth.
-                $image->strip();
-                // TODO: Preserve ICC profile, if any.
-
-                try {
-                    $image->save($imageResizedPath, [
-                        'quality' => $this->quality,
-                        'format' => $this->format,
-                    ]);
-                } catch (\Exception $exception) {
-                    /** @var \Psr\Log\LoggerInterface $logger */
-                    $logger = $this->container->get('logger');
-                    $logger->warning($imageResizedPath . ': ' . $exception->getMessage());
-                }
-            }
-
+        if ($this->fileSystem->exists($imageResizedPath) && false === $force) {
             $imagePath = $imageResizedPath;
-        }
+        } elseif (false === ($imagePath = $this->tryImageFile($imagePath))) {
+            return new Response('File not found.', Response::HTTP_NOT_FOUND);
+        } elseif (!$this->prepareDirectory($resizedImageDirectory)) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error("Resized images path '{$resizedImageDirectory}' could not be created or is not writeable.");
 
-        $response = new Response();
-        if (!$fs->exists($imagePath)) {
-            $response->setStatusCode(Response::HTTP_NOT_FOUND);
-            $response->setContent('File not found.');
+            return new Response('', Response::HTTP_SERVICE_UNAVAILABLE);
         } else {
-            $eTag = $this->fileContentsHash($imagePath);
+            /** @var \AppBundle\Services\ImageConverterInterface $imageConverter */
+            $imageConverter = $this->get('image_converter');
 
-            $now = new \DateTime();
-            $now->setTimestamp(filemtime($imagePath));
-
-            $response->setCache([
-                'etag' => $eTag,
-                'last_modified' => $now,
-                'max_age' => $this->publicCache,
-                's_maxage' => $this->publicCache,
-                'public' => true,
-            ]);
-
-            if ($response->isNotModified($request)) {
-                return $response;
+            if ($this->getParameter('track_hits')) {
+                $dm = $this->get('doctrine_mongodb')->getManager();
+                /** @var \AppBundle\Repositories\ServiceHitRepository $repository */
+                $repository = $dm->getRepository(ServiceHit::class);
+                $repository->trackHit('image_convert', $request->getRequestUri());
             }
 
-            $response = new StreamedResponse();
-            $response->setCache([
-                'etag' => $eTag,
-                'last_modified' => $now,
-                'max_age' => $this->publicCache,
-                's_maxage' => $this->publicCache,
-                'public' => true,
-            ]);
-            $response->setStatusCode(Response::HTTP_OK);
-            $response->setCallback(function () use ($imagePath){
-                readfile($imagePath);
-            });
+            try {
+                $imageConverter
+                    ->setQuality($quality)
+                    ->setFormat($format)
+                    ->setSamplingFilter($sampleFilter)
+                    ->convert($imagePath, $imageResizedPath, $targetWidth, $targetHeight, $sharpen, true);
 
-            // Webp images deliver a non-image mime type, so override this one.
-            $mime = mime_content_type($imagePath);
-            if ('application/octet-stream' === $mime && 'webp' === $this->format) {
-                $mime = 'image/webp';
+                $imagePath = $imageResizedPath;
+            } catch (ImageConverterException $exception) {
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error($exception->getMessage());
+
+                return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-            $response->headers->set('Content-Type', $mime);
         }
+
+        $eTag = $this->fileContentsHash($imagePath);
+
+        $now = new \DateTime();
+        $now->setTimestamp(filemtime($imagePath));
+
+        $response = new StreamedResponse();
+        $response->setCache([
+            'etag' => $eTag,
+            'last_modified' => $now,
+            'max_age' => $this->publicCache,
+            's_maxage' => $this->publicCache,
+            'public' => true,
+        ]);
+        $response->setStatusCode(Response::HTTP_OK);
+        $notModified = $response->isNotModified($request);
+
+        $response->setCallback(function () use ($imagePath, $notModified) {
+            if (!$notModified) {
+                readfile($imagePath);
+            }
+        });
+
+        // Webp images deliver a non-image mime type, so override this one.
+        $mime = mime_content_type($imagePath);
+        if ('application/octet-stream' === $mime && 'webp' === $format) {
+            $mime = 'image/webp';
+        }
+        $response->headers->set('Content-Type', $mime);
+
 
         return $response;
     }
@@ -284,236 +284,73 @@ class ImageController extends Controller
      */
     protected function fileContentsHash($path)
     {
-        $fs = new Filesystem();
-        if (!$fs->exists($path)) {
-            return false;
-        }
-
-        return sha1(file_get_contents($path));
-    }
-
-    /**
-     * Re-sizes and crops an image object.
-     *
-     * @param \Imagine\Image\ImageInterface $image
-     *   Image object.
-     * @param int $wantedWidth
-     *   Image target width.
-     * @param int $wantedHeight
-     *   Image target height.
-     *
-     * @return \Imagine\Image\ImageInterface
-     *   Imagine image object.
-     */
-    protected function resizeImage(ImageInterface $image, $wantedWidth = 0, $wantedHeight = 0)
-    {
-        $imageManipulations = $this->getResizeDimensions(
-            $image->getSize()->getWidth(),
-            $image->getSize()->getHeight(),
-            (int) $wantedWidth,
-            (int) $wantedHeight
-        );
-
-        $image->resize($imageManipulations['resize'], $this->sampleFilter);
-        $image->crop($imageManipulations['crop'], $imageManipulations['final_size']);
-
-        return $image;
-    }
-
-    /**
-     * Calculates the required sizes for image manipulations.
-     *
-     * This method will resize the image keeping the aspect ratio of the
-     * original image. If original and target ratio match, the image is scaled
-     * directly to requested sizes.
-     * If target ratio is different, the image is scaled to fit the smallest
-     * side and cropped from the center of the image.
-     *
-     * @param int $originalWidth
-     *   Original image width.
-     * @param int $originalHeight
-     *   Original image height.
-     * @param int $targetWidth
-     *   Target image width.
-     * @param int $targetHeight
-     *   Target image height.
-     *
-     * @return array
-     *   A set of instructions needed to be applied to original image.
-     *   - resize: size of the image to crop from (Box object).
-     *   - crop: coordinates where to crop the image (Point object).
-     *   - final_size: Requested image size dimensions.
-     */
-    protected function getResizeDimensions($originalWidth, $originalHeight, $targetWidth, $targetHeight)
-    {
-        // Calculate the aspect ratios of original and target sizes.
-        $originalAspect = round($originalWidth / $originalHeight, self::ASPECT_PRECISION);
-
-        if (!$targetHeight) {
-            $targetHeight = round($targetWidth / $originalAspect);
-        } elseif (!$targetWidth) {
-            $targetWidth = round($targetHeight * $originalAspect);
-        }
-
-        $targetAspect = round($targetWidth / $targetHeight, self::ASPECT_PRECISION);
-
-        // Store default values which will be used by default.
-        $resizeBox = new Box($targetWidth, $targetHeight);
-        $finalImageSize = clone $resizeBox;
-        $cropPoint = new Point(0, 0);
-
-        // If the aspect ratios do not match, means that
-        // the image must be adjusted to maintain adequate proportions.
-        if ($originalAspect != $targetAspect) {
-            // Get the smallest side of the image.
-            // This is required to calculate target resize of the
-            // image to crop from, so at least one side fits.
-            $_x = $originalWidth / $targetWidth;
-            $_y = $originalHeight / $targetHeight;
-            $min = min($_x, $_y);
-
-            $box_width = (int)round($originalWidth / $min);
-            $box_height = (int)round($originalHeight / $min);
-
-            $resizeBox = new Box($box_width, $box_height);
-
-            // Get the coordinates where from to crop the final portion.
-            // This one crops from the center of the resized image.
-            $crop_x = $box_width / 2 - $targetWidth / 2;
-            $crop_y = 0; // $box_height / 2 - $targetHeight / 2;
-
-            $cropPoint = new Point($crop_x, $crop_y);
-        }
-
-        return [
-            'resize' => $resizeBox,
-            'crop' => $cropPoint,
-            'final_size' => $finalImageSize,
-        ];
+        return md5_file($path);
     }
 
     /**
      * Checks and optionally prepares the directory where resized images
      * are stored.
      *
-     * @param string $name
-     *   File name.
-     * @param string $agency
-     *   Agency id.
+     * @param string $path
+     *   Directory path.
      * @param boolean $create
      *   Whether to create the directories.
      *
      * @return boolean
      */
-    protected function checkThumbnailSubdir($name, $agency, $create = true)
+    protected function prepareDirectory($path, $create = true)
     {
-        $fs = new Filesystem();
-        $path = $this->filesStorageDir.'/'.$agency.'/'.$name;
-        $exists = $fs->exists($path);
+        $exists = $this->fileSystem->exists($path);
 
         if (!$exists && $create) {
             try {
-                $fs->mkdir($path);
+                $this->fileSystem->mkdir($path);
                 $exists = true;
             } catch (IOException $exception) {
+                /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->container->get('logger');
-                $logger->warning($exception->getMessage());
+                $logger->error($exception->getMessage());
 
                 return false;
             }
         }
 
-        return $exists;
+        return $exists && is_writable($path);
     }
 
     /**
-     * Sets image output quality.
+     * Attempts to find similar named images.
      *
-     * Internal use only.
+     * This will seek images with same basenames in same directory,
+     * eventually returning first occurrence.
      *
-     * @param int $quality
-     *   Quality range, from 1 to 100.
+     * @param $imageFile
+     *   Sample file path.
+     *
+     * @return bool|string
+     *   False if no match found, or path to first occurrence.
      */
-    private function setQuality($quality = 90)
+    public function tryImageFile($imageFile)
     {
-        if (empty($quality)) {
-            $quality = 90;
-        } else {
-            $quality = $quality > 100 ? 100 : $quality;
-            $quality = $quality < 1 ? 1 : $quality;
-        }
+        $splFile = new \SplFileInfo($imageFile);
+        $baseName = $splFile->getBasename('.'.$splFile->getExtension());
 
-        $this->quality = $quality;
+        $matches = glob($splFile->getPath().'/'.$baseName.'.{jpeg,jpg,webp,gif,png}', GLOB_BRACE);
+
+        return !empty($matches) && is_readable($matches[0]) ? $matches[0] : false;
     }
 
     /**
-     * Sets sampling filter.
-     *
-     * Internal use only.
-     *
-     * @param string $sampleFilter
-     *   A filter name, as Imagine provides.
-     *
-     * @see \Imagine\Image\ImageInterface
-     */
-    private function setSamplingFilter($sampleFilter = ImageInterface::FILTER_UNDEFINED)
-    {
-        $supportedFilters = [
-            ImageInterface::FILTER_UNDEFINED,
-            ImageInterface::FILTER_BESSEL,
-            ImageInterface::FILTER_BLACKMAN,
-            ImageInterface::FILTER_BOX,
-            ImageInterface::FILTER_CATROM,
-            ImageInterface::FILTER_CUBIC,
-            ImageInterface::FILTER_GAUSSIAN,
-            ImageInterface::FILTER_HANNING,
-            ImageInterface::FILTER_HAMMING,
-            ImageInterface::FILTER_HERMITE,
-            ImageInterface::FILTER_LANCZOS,
-            ImageInterface::FILTER_MITCHELL,
-            ImageInterface::FILTER_POINT,
-            ImageInterface::FILTER_QUADRATIC,
-            ImageInterface::FILTER_SINC,
-            ImageInterface::FILTER_TRIANGLE,
-        ];
-
-        $sampleFilter = in_array($sampleFilter, $supportedFilters) ? $sampleFilter : ImageInterface::FILTER_UNDEFINED;
-
-        $this->sampleFilter = $sampleFilter;
-    }
-
-    /**
-     * Applies additional sharpening.
-     *
-     * Internal use only.
-     *
-     * @param bool $sharpen
-     *   TRUE to sharpen, FALSE to leave as is.
-     */
-    private function setSharpen($sharpen = false)
-    {
-        $this->sharpen = filter_var($sharpen, FILTER_VALIDATE_BOOLEAN);
-    }
-
-    /**
-     * Convert image to specific format.
-     *
-     * Internal use only.
+     * Validates image format.
      *
      * @param string $format
-     *   Desired image format.
+     *   Format to validate.
+     *
+     * @return string
+     *   Valid format.
      */
-    private function setFormat($format)
+    public function validateImageFormat($format)
     {
-        $allowedFormats = [
-            'jpeg',
-            'jpg',
-            'gif',
-            'png',
-            'webp',
-        ];
-        $format = in_array($format, $allowedFormats) ? $format : 'jpeg';
-
-        $this->format = $format;
+        return in_array($format, ['jpeg','jpg','png','gif','webp']) ? $format : 'jpeg';
     }
 }
