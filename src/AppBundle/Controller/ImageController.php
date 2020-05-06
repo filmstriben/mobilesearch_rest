@@ -162,7 +162,7 @@ class ImageController extends Controller
         $quality = ($quality > 1 && $quality < 101) ? $quality : 75;
 
         $sampleFilter = $request->query->get('r');
-        $sharpen = filter_var($request->query->get('s'), FILTER_VALIDATE_BOOLEAN);
+        $sharpen = filter_var($request->query->get('s', true), FILTER_VALIDATE_BOOLEAN);
 
         $format = $request->query->get('o');
 
