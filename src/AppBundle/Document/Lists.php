@@ -17,27 +17,12 @@ class Lists
     /**
      * @MongoDB\int
      */
-    protected $nid;
-
-    /**
-     * @MongoDB\string
-     */
-    protected $agency;
-
-    /**
-     * @MongoDB\string
-     */
-    protected $key;
+    protected $lid;
 
     /**
      * @MongoDB\string
      */
     protected $name;
-
-    /**
-     * @MongoDB\collection
-     */
-    protected $nids;
 
     /**
      * @MongoDB\string
@@ -55,7 +40,12 @@ class Lists
     protected $weight;
 
     /**
-     * Get id
+     * @MongoDB\Hash()
+     */
+    protected $criteria;
+
+    /**
+     * Gets internal id.
      *
      * @return id $id
      */
@@ -65,75 +55,27 @@ class Lists
     }
 
     /**
-     * Set nid
+     * Sets list id.
      *
-     * @param int $nid
+     * @param int $lid
      *
-     * @return self
+     * @return $this
      */
-    public function setNid($nid)
+    public function setLid($lid)
     {
-        $this->nid = $nid;
+        $this->lid = $lid;
 
         return $this;
     }
 
     /**
-     * Get nid
+     * Gets list id.
      *
-     * @return int $nid
+     * @return int
      */
-    public function getNid()
+    public function getLid()
     {
-        return $this->nid;
-    }
-
-    /**
-     * Set agency
-     *
-     * @param string $agency
-     *
-     * @return self
-     */
-    public function setAgency($agency)
-    {
-        $this->agency = $agency;
-
-        return $this;
-    }
-
-    /**
-     * Get agency
-     *
-     * @return string $agency
-     */
-    public function getAgency()
-    {
-        return $this->agency;
-    }
-
-    /**
-     * Set key
-     *
-     * @param string $key
-     *
-     * @return self
-     */
-    public function setKey($key)
-    {
-        $this->key = $key;
-
-        return $this;
-    }
-
-    /**
-     * Get key
-     *
-     * @return string $key
-     */
-    public function getKey()
-    {
-        return $this->key;
+        return $this->lid;
     }
 
     /**
@@ -141,7 +83,7 @@ class Lists
      *
      * @param string $name
      *
-     * @return self
+     * @return $this
      */
     public function setName($name)
     {
@@ -161,35 +103,11 @@ class Lists
     }
 
     /**
-     * Set nids
-     *
-     * @param collection $nids
-     *
-     * @return self
-     */
-    public function setNids($nids)
-    {
-        $this->nids = $nids;
-
-        return $this;
-    }
-
-    /**
-     * Get nids
-     *
-     * @return collection $nids
-     */
-    public function getNids()
-    {
-        return $this->nids;
-    }
-
-    /**
      * Set type
      *
      * @param string $type
      *
-     * @return self
+     * @return $this
      */
     public function setType($type)
     {
@@ -213,7 +131,7 @@ class Lists
      *
      * @param boolean $promoted
      *
-     * @return self
+     * @return $this
      */
     public function setPromoted($promoted)
     {
@@ -237,7 +155,7 @@ class Lists
      *
      * @param integer $weight
      *
-     * @return self
+     * @return $this
      */
     public function setWeight($weight)
     {
@@ -254,5 +172,29 @@ class Lists
     public function getWeight()
     {
         return $this->weight;
+    }
+
+    /**
+     * Sets list criteria.
+     *
+     * @param array $criteria
+     *
+     * @return $this
+     */
+    public function setCriteria(array $criteria)
+    {
+        $this->criteria = $criteria;
+
+        return $this;
+    }
+
+    /**
+     * Gets list criteria.
+     *
+     * @return array
+     */
+    public function getCriteria()
+    {
+        return $this->criteria;
     }
 }

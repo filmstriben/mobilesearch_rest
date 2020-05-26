@@ -92,7 +92,7 @@ abstract class RestBaseRequest
         $requestBody = $this->getParsedBody();
 
         $id = $requestBody[$this->primaryIdentifier];
-        $agency = $requestBody['agency'];
+        $agency = !empty($requestBody['agency']) ? $requestBody['agency'] : $this->getParsedCredentials()['agencyId'];
 
         switch ($method) {
             case 'POST':
