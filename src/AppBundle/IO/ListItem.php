@@ -9,13 +9,9 @@ namespace AppBundle\IO;
  */
 class ListItem
 {
-    private $agency;
-
-    private $key;
+    private $lid;
 
     private $name;
-
-    private $nids;
 
     private $type;
 
