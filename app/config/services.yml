@@ -1,7 +1,3 @@
 parameters:
 
 services:
-  mos.content_remove_listener:
-    class: AppBundle\EventListener\ContentRemoveListener
-    tags:
-      - { name: 'doctrine_mongodb.odm.event_listener', event: preRemove }
