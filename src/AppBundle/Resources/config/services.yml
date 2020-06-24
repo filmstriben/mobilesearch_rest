@@ -1,3 +1,5 @@
 services:
     fixture_loader:
         class: 'AppBundle\Services\FixtureLoader'
+    image_converter:
+        class: 'AppBundle\Services\ImageConverter'

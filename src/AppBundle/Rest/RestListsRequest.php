@@ -21,11 +21,9 @@ class RestListsRequest extends RestBaseRequest
     {
         parent::__construct($em);
 
-        $this->primaryIdentifier = 'key';
+        $this->primaryIdentifier = 'lid';
         $this->requiredFields = [
             $this->primaryIdentifier,
-            'agency',
-            'nid',
         ];
     }
 
@@ -45,8 +43,7 @@ class RestListsRequest extends RestBaseRequest
     protected function get($id, $agency)
     {
         $criteria = [
-            $this->primaryIdentifier => $id,
-            'agency' => $agency,
+            $this->primaryIdentifier => (int) $id,
         ];
 
         $entity = $this->em
@@ -76,12 +73,15 @@ class RestListsRequest extends RestBaseRequest
     protected function update($id, $agency)
     {
         $loadedEntity = $this->get($id, $agency);
-        $updatedEntity = $this->prepare($loadedEntity);
 
+        // Small hack that actually replaces the entity, instead of an update.
+        // Mongo lower than 3.6 fails to update and entity if it contains keys
+        // starting with $ sign.
         $dm = $this->em->getManager();
+        $dm->remove($loadedEntity);
         $dm->flush();
 
-        return $updatedEntity;
+        return $this->insert();
     }
 
     /**
@@ -110,19 +110,10 @@ class RestListsRequest extends RestBaseRequest
         $body = $this->getParsedBody();
 
         $key = !empty($body[$this->primaryIdentifier]) ? $body[$this->primaryIdentifier] : 0;
-        $list->setKey($key);
-
-        $nid = !empty($body['nid']) ? $body['nid'] : '0';
-        $list->setAgency($nid);
-
-        $agency = !empty($body['agency']) ? $body['agency'] : '000000';
-        $list->setAgency($agency);
+        $list->setLid((int) $key);
 
         $name = !empty($body['name']) ? $body['name'] : 'Undefined';
         $list->setName($name);
-
-        $nids = !empty($body['nids']) ? $body['nids'] : [];
-        $list->setNids($nids);
 
         $type = !empty($body['type']) ? $body['type'] : [];
         $list->setType($type);
@@ -133,13 +124,15 @@ class RestListsRequest extends RestBaseRequest
         $weight = !empty($body['weight']) ? $body['weight'] : 0;
         $list->setWeight($weight);
 
+        $criteria = !empty($body['criteria']) ? $body['criteria'] : [];
+        $list->setCriteria($criteria);
+
         return $list;
     }
 
     /**
      * Fetches list content.
      *
-     * @param string $agency    Agency identifier.
      * @param int $amount       Number of entries to fetch.
      * @param int $skip         Number of entries to skip.
      * @param int $promoted     Filter items by promoted value.
@@ -147,18 +140,15 @@ class RestListsRequest extends RestBaseRequest
      *
      * @return Lists[]
      */
-    public function fetchLists($agency, $amount = 10, $skip = 0, $promoted = 1, $countOnly = FALSE)
+    public function fetchLists($amount = 10, $skip = 0, $promoted = 1, $countOnly = false)
     {
         $qb = $this->em
             ->getManager()
             ->createQueryBuilder(Lists::class);
 
-        $qb->field('agency')->equals($agency);
-
         if ($countOnly) {
             $qb->count();
-        }
-        else {
+        } else {
             $qb->skip($skip)->limit($amount);
         }
 

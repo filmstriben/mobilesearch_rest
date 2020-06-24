@@ -729,7 +729,8 @@ final class RestController extends Controller
      * TODO: Too much is happening here.
      * TODO: Test coverage.
      */
-    public function searchExtendedAction(Request $request) {
+    public function searchExtendedAction(Request $request)
+    {
         $this->lastMethod = $request->getMethod();
 
         $fields = [
@@ -816,7 +817,7 @@ final class RestController extends Controller
                         break;
                     }
 
-                    $tokens[sha1(microtime(TRUE) . $op)] = $op;
+                    $tokens[sha1(microtime(true) . $op)] = $op;
                 }
 
                 // Tokenize the query string to assemble the correct order of transformations.
@@ -824,7 +825,7 @@ final class RestController extends Controller
                 $_q = str_replace(array_values($tokens), array_keys($tokens), implode('', $q));
                 foreach (explode(' ', $_q) as $tokenized_chunk) {
                     foreach ($tokens as $token => $grouped_query) {
-                        if (FALSE !== strpos($tokenized_chunk, $token)) {
+                        if (false !== strpos($tokenized_chunk, $token)) {
                             $split_query[] = $token;
                             break;
                         }
@@ -950,7 +951,8 @@ final class RestController extends Controller
      * @return \Doctrine\MongoDB\Query\Expr|\Doctrine\MongoDB\Query\Builder
      *   Query builder, or new expression.
      */
-    private function queryToExpression($query, $qb = null) {
+    private function queryToExpression($query, $qb = null)
+    {
         $query = trim($query, '()');
 
         // Find out the operator in the expression.
@@ -959,7 +961,7 @@ final class RestController extends Controller
         $operator = !empty($matches[1]) ? $matches[1] : 'and';
 
         // Get the left and right operands of the expression.
-        $operands = preg_split('~\s(or|and)\s~i', $query, -1,PREG_SPLIT_NO_EMPTY);
+        $operands = preg_split('~\s(or|and)\s~i', $query, -1, PREG_SPLIT_NO_EMPTY);
 
         // If query builder is passed, assign the expression directly.
         $expr = (null !== $qb) ? $qb : new Expr();
@@ -1477,7 +1479,6 @@ final class RestController extends Controller
             'amount' => 10,
             'skip' => 0,
             'promoted' => 1,
-            'itemType' => null,
         ];
 
         foreach (array_keys($fields) as $field) {
@@ -1492,31 +1493,21 @@ final class RestController extends Controller
         if (!$restListsRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } else {
+            unset($fields['agency']);
             unset($fields['key']);
 
             try {
-                $itemType = $fields['itemType'];
-                unset($fields['itemType']);
-
                 /** @var Lists[] $suggestions */
                 $suggestions = call_user_func_array([$restListsRequest, 'fetchLists'], $fields);
-                /** @var ListsRepository $listsRepository */
-                $listsRepository = $em->getRepository(Lists::class);
 
                 foreach ($suggestions as $suggestion) {
-                    // In case filtering node types is needed.
-                    if (count($suggestion->getNids()) > 0 && $itemType) {
-                        $suggestion = $listsRepository->filterAttachedItems($suggestion, $itemType);
-                    }
-
                     $this->lastItems[] = [
-                        'agency' => $suggestion->getAgency(),
-                        'key' => $suggestion->getKey(),
+                        'lid' => $suggestion->getLid(),
                         'name' => $suggestion->getName(),
-                        'nids' => $suggestion->getNids(),
                         'type' => $suggestion->getType(),
                         'promoted' => $suggestion->getPromoted(),
                         'weight' => $suggestion->getWeight(),
+                        'criteria' => $suggestion->getCriteria(),
                     ];
                 }
 
@@ -2043,9 +2034,9 @@ final class RestController extends Controller
             $this->lastMessage = $result;
             $this->lastStatus = true;
         } catch (RestException $exc) {
-            $this->lastMessage = 'Request fault: '.$exc->getMessage();
+            $this->lastMessage = "Request fault with exception '{$exc->getMessage()}', file '{$exc->getFile()}', line '{$exc->getLine()}'.";
         } catch (\Exception $exc) {
-            $this->lastMessage = 'Generic fault: '.$exc->getMessage();
+            $this->lastMessage = "Generic fault with exception '{$exc->getMessage()}', file '{$exc->getFile()}', line '{$exc->getLine()}'.";
         }
 
         return $this->setResponse($this->lastStatus, $this->lastMessage);
