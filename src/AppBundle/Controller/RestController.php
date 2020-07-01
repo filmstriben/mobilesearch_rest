@@ -984,6 +984,9 @@ final class RestController extends Controller
                     $exprMethod = 'equals';
             }
             $_expr = new Expr();
+            if ('nid' == $field) {
+                $value = (int) $value;
+             }
             $operatorArgs[] = $_expr->field($field)->{$exprMethod}($value);
         }
 
