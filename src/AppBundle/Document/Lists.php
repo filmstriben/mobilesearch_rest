@@ -20,6 +20,11 @@ class Lists
     protected $lid;
 
     /**
+     * @MongoDB\collection
+     */
+    protected $agency;
+
+    /**
      * @MongoDB\string
      */
     protected $name;
@@ -76,6 +81,30 @@ class Lists
     public function getLid()
     {
         return $this->lid;
+    }
+
+    /**
+     * Set agency
+     *
+     * @param array $agency
+     *
+     * @return $this
+     */
+    public function setAgency(array $agency)
+    {
+        $this->agency = $agency;
+
+        return $this;
+    }
+
+    /**
+     * Get agency
+     *
+     * @return array
+     */
+    public function getAgency()
+    {
+        return $this->agency;
     }
 
     /**

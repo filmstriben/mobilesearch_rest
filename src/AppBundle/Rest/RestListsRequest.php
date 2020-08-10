@@ -112,6 +112,9 @@ class RestListsRequest extends RestBaseRequest
         $key = !empty($body[$this->primaryIdentifier]) ? $body[$this->primaryIdentifier] : 0;
         $list->setLid((int) $key);
 
+        $agency = !empty($body['agency']) ? $body['agency']: [];
+        $list->setAgency((array) $agency);
+
         $name = !empty($body['name']) ? $body['name'] : 'Undefined';
         $list->setName($name);
 
