@@ -1506,6 +1506,7 @@ final class RestController extends Controller
                 foreach ($suggestions as $suggestion) {
                     $this->lastItems[] = [
                         'lid' => $suggestion->getLid(),
+                        'agency' => $suggestion->getAgency(),
                         'name' => $suggestion->getName(),
                         'type' => $suggestion->getType(),
                         'promoted' => $suggestion->getPromoted(),
@@ -2037,9 +2038,13 @@ final class RestController extends Controller
             $this->lastMessage = $result;
             $this->lastStatus = true;
         } catch (RestException $exc) {
-            $this->lastMessage = "Request fault with exception '{$exc->getMessage()}', file '{$exc->getFile()}', line '{$exc->getLine()}'.";
+            $this->lastMessage = "Request fault with exception: '{$exc->getMessage()}'";
         } catch (\Exception $exc) {
-            $this->lastMessage = "Generic fault with exception '{$exc->getMessage()}', file '{$exc->getFile()}', line '{$exc->getLine()}'.";
+            $this->lastMessage = "Generic fault with exception: '{$exc->getMessage()}'";
+
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error($exc->getMessage() . "|" . $exc->getFile() . "|" . $exc->getLine());
         }
 
         return $this->setResponse($this->lastStatus, $this->lastMessage);
