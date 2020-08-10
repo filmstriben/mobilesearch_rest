@@ -1506,6 +1506,7 @@ final class RestController extends Controller
                 foreach ($suggestions as $suggestion) {
                     $this->lastItems[] = [
                         'lid' => $suggestion->getLid(),
+                        'agency' => $suggestion->getAgency(),
                         'name' => $suggestion->getName(),
                         'type' => $suggestion->getType(),
                         'promoted' => $suggestion->getPromoted(),
