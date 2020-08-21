@@ -850,25 +850,40 @@ final class RestController extends Controller
                 } else {
                     $offset = 0;
                     while ($split = array_slice($split_query, $offset, 3)) {
-                        // Every split chunk MUST contain two tokens - for left and right operands..
-                        if (count(array_intersect(array_keys($tokens), $split)) !== 2) {
-                            break;
+                        $tokenCount = count(array_intersect(array_keys($tokens), $split));
+                        // X AND|OR Y case.
+                        if (2 === $tokenCount) {
+                            list($left, $operator, $right) = [
+                                $this->queryToExpression($tokens[$split[0]], null),
+                                $split[1],
+                                $this->queryToExpression($tokens[$split[2]], null),
+                            ];
+
+                            switch (strtolower($operator)) {
+                                case 'and':
+                                    $qb->addAnd($left, $right);
+                                    break;
+                                case 'or':
+                                    $qb->addOr($left, $right);
+                                default:
+                            }
                         }
+                        // AND|OR Z case
+                        // Happens when we reached end of the split.
+                        elseif (1 === $tokenCount) {
+                            list($operator, $right) = [
+                                $split[0],
+                                $this->queryToExpression($tokens[$split[1]], null),
+                            ];
 
-                        // ... as well as the operator value.
-                        list($left, $operator, $right) = [
-                            $this->queryToExpression($tokens[$split[0]], null),
-                            $split[1],
-                            $this->queryToExpression($tokens[$split[2]], null),
-                        ];
-
-                        switch (strtolower($operator)) {
-                            case 'and':
-                                $qb->addAnd($left, $right);
-                                break;
-                            case 'or':
-                                $qb->addOr($left, $right);
-                            default:
+                            switch (strtolower($operator)) {
+                                case 'and':
+                                    $qb->addAnd($right);
+                                    break;
+                                case 'or':
+                                    $qb->addOr($right);
+                                default:
+                            }
                         }
 
                         // The tokenized query array size is expected to be a multiple of 3.
