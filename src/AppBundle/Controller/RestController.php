@@ -648,6 +648,7 @@ final class RestController extends Controller
     /**
      * <p>This endpoint allows to search content within arbitrary fields and leverage usage of conditional operators.</p>
      * <p>Note that the results returned from such a search are not ranked in any way. Use <em>/search</em> endpoint to perform a ranked search.</p>
+     * <hr />
      * <p>
      * Query string <strong>(q)</strong> SHOULD comply with the following PCRE pattern:<br />
      * <em>~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu</em>
@@ -672,10 +673,14 @@ final class RestController extends Controller
      * Either items with 'type' 'os' and whose title contain 'av' or 'editorial' items which belong to agency '150064': <pre>("type[eq]:os" AND "fields.title.value[regex]:av") OR ("type[eq]:editorial" AND "agency[eq]:150064")</pre>
      * Items with the specific faust numbers belonging to agency '150027': <pre>("fields.field_faust_number.value[regex]:29056439|27415679" AND "agency[eq]:150027")</pre>
      * </p>
+     * <hr />
      * <p>Format parameter <strong>(format)</strong> can be either <em>'full'</em>, <em>'short'</em> or an empty value (default).<br />
      * <em>'full'</em> format result would return content in it's complete representation.<br />
      * <em>'short'</em> format returns only search results titles. <br />
      * Empty format parameter value (or skipped), returns a compact variant of search results. This is the default behavior.</p>
+     * <hr />
+     * <p>Sorting parameter <strong>(sort)</strong> is field to sort on. For nested fields use dot (.) as delimiter.</p>
+     * For example, to sort by 'title' value: <pre>sort=fields.title.value</pre>
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
@@ -718,6 +723,19 @@ final class RestController extends Controller
      *             "required"=false,
      *             "format"="short|full"
      *         },
+     *         {
+     *             "name"="sort",
+     *             "dataType"="string",
+     *             "description"="Sorts the results by specific field.",
+     *             "required"=false
+     *         },
+     *         {
+     *             "name"="order",
+     *             "dataType"="string",
+     *             "description"="Order of sorting.",
+     *             "required"=false,
+     *             "format"="asc|desc"
+     *         }
      *     },
      *     output={
      *         "class": "AppBundle\IO\ContentOutput"
@@ -740,10 +758,16 @@ final class RestController extends Controller
             'amount' => 10,
             'skip' => 0,
             'format' => null,
+            'sort' => null,
+            'order' => 'asc',
         ];
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        if (!in_array($fields['order'], ['asc', 'desc'])) {
+            $fields['order'] = 'asc';
         }
 
         $em = $this->get('doctrine_mongodb');
@@ -898,6 +922,10 @@ final class RestController extends Controller
                 $skip = $fields['skip'];
                 $amount = $fields['amount'] > 100 ? 100 : $fields['amount'];
                 $qb->skip($skip)->limit($amount);
+
+                if ($fields['sort']) {
+                    $qb->sort($fields['sort'], $fields['order']);
+                }
 
                 $query = $qb->getQuery();
                 $suggestions = $query->execute();
