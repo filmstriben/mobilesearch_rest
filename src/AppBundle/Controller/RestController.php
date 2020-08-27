@@ -661,12 +661,16 @@ final class RestController extends Controller
      * Whole query MUST be surrounded with round brackets.<br />
      * Query chunk has the following pattern: <pre>"FIELD[OPERATOR]:VALUE"</pre>
      * FIELD - any field found in the respective record. To descend into structure hierarchy, use dot '.' notation.<br />
-     * OPERATOR - Comparison operator. Can be either 'eq' or 'regex'. Use 'eq' for exact match and 'regex' for regular expression match.<br />
+     * OPERATOR - Comparison operator. Can be either 'eq', 'in' or 'regex'.<br />
      * VALUE - Value to compare against.
+     * </p>
+     * <p>
+     * As for OPERATOR use 'eq' for exact match, 'in' for subset match (use '|' as delimiter) and 'regex' for regular expression match.
      * </p>
      * <p>
      * Query <strong>(q)</strong> examples:
      * Items with 'type' 'os': <pre>("type[eq]:os")</pre>
+     * Items with 'type' 'os' and one of 'nid' id's: <pre>("type[eq]:os" AND "nid[in]:8925|14384")</pre>
      * Items with 'type' either 'os' or 'editorial': <pre>("type[eq]:os" OR "type[eq]:editorial")</pre>
      * Items with 'type' 'os' with director terms 'Martin Scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin Scorsese")</pre>
      * Items with 'type' 'os' with director terms containing 'scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[regex]:scorsese")</pre>
@@ -1020,6 +1024,10 @@ final class RestController extends Controller
 
             $exprMethod = null;
             switch ($comparison) {
+                case 'in':
+                    $value = explode('|', $value);
+                    $exprMethod = 'in';
+                    break;
                 case 'regex':
                     $value = new \MongoRegex('/' . $value . '/i');
                 case 'eq':
@@ -1027,9 +1035,18 @@ final class RestController extends Controller
                     $exprMethod = 'equals';
             }
             $_expr = new Expr();
-            if ('nid' == $field) {
-                $value = (int) $value;
-             }
+
+            if ('nid' == $field && 'regex' !== $comparison) {
+                if (is_array($value)) {
+                    $value = array_map(function ($v) {
+                        return (int) $v;
+                    }, $value);
+                }
+                else {
+                    $value = (int) $value;
+                }
+            }
+
             $operatorArgs[] = $_expr->field($field)->{$exprMethod}($value);
         }
 
