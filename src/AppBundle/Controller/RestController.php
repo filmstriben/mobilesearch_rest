@@ -664,8 +664,8 @@ final class RestController extends Controller
      * OPERATOR - Comparison operator. Can be either 'eq' or 'regex'. Use 'eq' for exact match and 'regex' for regular expression match.<br />
      * VALUE - Value to compare against.
      * </p>
+     * <p>Query <strong>(q)</strong> examples:</p>
      * <p>
-     * Query <strong>(q)</strong> examples:
      * Items with 'type' 'os': <pre>("type[eq]:os")</pre>
      * Items with 'type' either 'os' or 'editorial': <pre>("type[eq]:os" OR "type[eq]:editorial")</pre>
      * Items with 'type' 'os' with director terms 'Martin Scorsese': <pre>("type[eq]:os" AND "taxonomy.drt.terms[eq]:Martin Scorsese")</pre>
@@ -679,8 +679,11 @@ final class RestController extends Controller
      * <em>'short'</em> format returns only search results titles. <br />
      * Empty format parameter value (or skipped), returns a compact variant of search results. This is the default behavior.</p>
      * <hr />
-     * <p>Sorting parameter <strong>(sort)</strong> is field to sort on. For nested fields use dot (.) as delimiter.</p>
-     * For example, to sort by 'title' value: <pre>sort=fields.title.value</pre>
+     * <p>Sorting parameter <strong>(sort)</strong> is field to sort on. For nested fields use dot (.) as delimiter. Default order os 'asc' - ascending order.</p>
+     * <p>
+     * Sort by 'title': <pre>sort[fields.title.value]</pre>
+     * Sort by 'agency' ascending and 'nid' descending: <pre>sort[agency]=asc&sort[nid]=desc</pre>
+     * </p>
      *
      * @ApiDoc(
      *     description="Searches content entries by certain criteria(s).",
@@ -724,18 +727,11 @@ final class RestController extends Controller
      *             "format"="short|full"
      *         },
      *         {
-     *             "name"="sort",
+     *             "name"="sort[]",
      *             "dataType"="string",
-     *             "description"="Sorts the results by specific field.",
+     *             "description"="Sorts the results by specific field(s).",
      *             "required"=false
      *         },
-     *         {
-     *             "name"="order",
-     *             "dataType"="string",
-     *             "description"="Order of sorting.",
-     *             "required"=false,
-     *             "format"="asc|desc"
-     *         }
      *     },
      *     output={
      *         "class": "AppBundle\IO\ContentOutput"
@@ -758,17 +754,14 @@ final class RestController extends Controller
             'amount' => 10,
             'skip' => 0,
             'format' => null,
-            'sort' => null,
-            'order' => 'asc',
+            'sort' => [],
         ];
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        if (!in_array($fields['order'], ['asc', 'desc'])) {
-            $fields['order'] = 'asc';
-        }
+        $fields['sort'] = (array) $fields['sort'];
 
         $em = $this->get('doctrine_mongodb');
         $restContentRequest = new RestContentRequest($em);
@@ -923,8 +916,19 @@ final class RestController extends Controller
                 $amount = $fields['amount'] > 100 ? 100 : $fields['amount'];
                 $qb->skip($skip)->limit($amount);
 
-                if ($fields['sort']) {
-                    $qb->sort($fields['sort'], $fields['order']);
+                foreach ($fields['sort'] as $sortField => $sortOrder) {
+                    if (!$sortField) {
+                        unset($fields['sort'][$sortField]);
+                        continue;
+                    }
+
+                    if (!in_array($sortOrder, ['asc', 'desc'])) {
+                        $fields['sort'][$sortField] = 'asc';
+                    }
+                }
+
+                if (!empty($fields['sort'])) {
+                    $qb->sort($fields['sort']);
                 }
 
                 $query = $qb->getQuery();
