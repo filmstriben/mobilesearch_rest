@@ -1,114 +1,137 @@
 -
-    agency: '999999'
-    key: 054b00e5a2bed10a3852704a1384349b
+    agency:
+        - '999999'
+    lid: 1
     name: Nyeste film i samme genre
-    nids: []
     type: automatic
     promoted: false
     weight: 0
+    criteria:
+        rules:
+            "$and":
+                - type:
+                      "$eq": os
+                - taxonomy.field_genre.terms:
+                      "$in": [ ]
+        limit: 18
+        sort:
+            fields.publish_date.value: -1
 -
-    agency: '999999'
-    key: 89624d04647b8654c323299501f3e324
-    name: Inspiration
-    nids: []
-    type: recommendatory
-    promoted: false
-    weight: 0
--
-    agency: '999999'
-    key: 90a742936fc9d285cc6f30620e44a538
+    agency:
+        - '999999'
+    lid: 3
     name: Filmklassikere
-    nids: []
     type: dynamic
     promoted: false
     weight: 5
+    criteria:
+        rules:
+            "$and":
+                - type:
+                      "$eq": os
+                - taxonomy.field_genre.terms:
+                      "$in":
+                          - actionfilm
+        limit: 25
+        sort:
+            fields.publish_date.value: -1
 -
-    agency: '999999'
-    key: 01e88311fc8c4b0ded74a01c5b077da0
+    agency:
+        - '999999'
+    lid: 4
     name: Oscar film
-    nids: []
     type: manual
     promoted: false
     weight: 12
+    criteria:
+        rules:
+            "$and":
+                - type:
+                      "$eq": os
+                - nid:
+                      "$in":
+                          - 8430
+                          - 8896
+        limit: 0
+        sort: [ ]
 -
-    agency: '999999'
-    key: 27c05851b493c36efed3f0985e615559
+    agency:
+        - '999999'
+    lid: 5
     name: Film om fotografi og fotografer
-    nids: []
     type: manual
     promoted: false
     weight: 6
 -
-    agency: '999999'
-    key: 6e950370ca2d974696c6f9c51dd34370
+    agency:
+        - '999999'
+    lid: 6
     name: Dansefilm
-    nids: []
     type: dynamic
     promoted: false
     weight: 7
 -
-    agency: '999999'
-    key: fcd972d0e311ad22b2fd133c69fe244a
+    agency:
+        - '999999'
+    lid: 7
     name: Bryllupsfilm
-    nids: []
     type: manual
     promoted: false
     weight: 1
 -
-    agency: '999999'
-    key: b2873309338aa4d1f337c2e878bfc4a0
+    agency:
+        - '999999'
+    lid: 8
     name: Den store dag
-    nids: []
     type: manual
     promoted: false
     weight: 2
 -
-    agency: '999999'
-    key: 87d9b9b911847ef07f171c8bdf145f76
+    agency:
+        - '999999'
+    lid: 9
     name: Fodbold
-    nids: []
     type: dynamic
     promoted: false
     weight: 0
 -
-    agency: '999999'
-    key: 00a62554b6988fb818bfe3869bcee253
+    agency:
+        - '999999'
+    lid: 10
     name: Julefilm
-    nids: []
     type: dynamic
     promoted: false
     weight: 17
 -
-    agency: '999999'
-    key: 53682b3723199805275b69cd76d10243
+    agency:
+        - '999999'
+    lid: 11
     name: Copenhagen Pride Week
-    nids: []
     type: dynamic
     promoted: false
     weight: 16
 -
-    agency: '999999'
-    key: e8f4968d03451d25fdb14d2eb790c556
+    agency:
+        - '999999'
+    lid: 12
     name: Information fra Redaktionen
-    nids: []
     type: dynamic
     promoted: true
     weight: -50
 -
-    agency: '999999'
-    key: 9a0c659775a300f9e677e373857d9f2e
+    agency:
+        - '999999'
+    lid: 13
     name: Top 10 mest sete børnefilm i juni 2018
-    nids: []
     type: manual
     promoted: true
     weight: 2
 
 -
-    agency: '999999'
-    key: 9a0c659775a300f9e677e373857d9f2a
+    agency:
+        - '999999'
+    lid: 14
     name: Some list of mixed content
-    nids: [1000,1001,2000]
     type: manual
     promoted: true
     weight: 2
-
