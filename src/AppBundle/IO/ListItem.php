@@ -18,4 +18,6 @@ class ListItem
     private $promoted;
 
     private $weight;
+
+    private $criteria;
 }

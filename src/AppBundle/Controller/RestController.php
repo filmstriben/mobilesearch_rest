@@ -1519,12 +1519,6 @@ final class RestController extends Controller
      *             "dataType"="integer",
      *             "description"="Filter items by promoted value. Defaults to 1 - promoted only.",
      *             "required"=false
-     *         },
-     *         {
-     *              "name"="itemType",
-     *              "dataType"="string",
-     *              "description"="Lists should contain items only if this content type.",
-     *              "required"=false
      *         }
      *     },
      *     output={
@@ -1548,6 +1542,10 @@ final class RestController extends Controller
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        if (-1 !== $fields['promoted']) {
+            $fields['promoted'] = filter_var($fields['promoted'], FILTER_VALIDATE_BOOLEAN);
         }
 
         $em = $this->get('doctrine_mongodb');
