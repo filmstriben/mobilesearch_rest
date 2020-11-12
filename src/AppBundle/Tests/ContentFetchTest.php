@@ -35,6 +35,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $this->assertFalse($result['status']);
         $this->assertEmpty($result['items']);
         $this->assertEquals($result['message'], 'Failed validating request. Check your credentials (agency & key).');
+        $this->assertArrayHasKey('hits', $result);
         $this->assertEquals(0, $result['hits']);
     }
 
@@ -55,6 +56,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $this->assertFalse($result['status']);
         $this->assertEmpty($result['items']);
         $this->assertEquals($result['message'], 'Failed validating request. Check your credentials (agency & key).');
+        $this->assertArrayHasKey('hits', $result);
         $this->assertEquals(0, $result['hits']);
     }
 
@@ -79,6 +81,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $this->assertCount(1, $result['items']);
         $this->assertEquals($nid, $result['items'][0]['nid']);
         $this->assertEquals(self::AGENCY, $result['items'][0]['agency']);
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -110,6 +113,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $this->assertEquals(self::AGENCY, $item['agency']);
         }
 
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -137,6 +141,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $this->assertEquals(self::AGENCY, $item['agency']);
         }
 
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -163,6 +168,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $this->assertEquals(self::AGENCY, $item['agency']);
         }
 
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -185,6 +191,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 
         $this->assertNotEmpty($result['items']);
         $this->assertCount($amount, $result['items']);
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -229,7 +236,8 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $parameters['skip'] = $skip;
         }
 
-        $this->assertCount(22, $node_ids);
+        $this->assertArrayHasKey('hits', $result);
+        $this->assertCount($result['hits'], $node_ids);
         // Expect zero, since we reached end of the list.
         $this->assertCount(0, $result['items']);
     }
@@ -273,6 +281,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $this->assertLessThan($result['items'][$i - 1][$sort], $result['items'][$i][$sort]);
         }
 
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -321,6 +330,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $this->assertLessThan(0, $comparison);
         }
 
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -363,6 +373,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             $this->assertLessThan(0, $comparison);
         }
 
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -395,6 +406,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             );
         }
 
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 
@@ -455,6 +467,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
 
         $this->assertNotEmpty($result['items']);
         $this->assertCount($publishedCount + $unpublishedCount, $result['items']);
+        $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
     }
 

@@ -151,7 +151,6 @@ class ListsFetchTest extends AbstractFixtureAwareTest
 
         // Fetch all.
         $parameters['promoted'] = -1;
-        var_dump($parameters);
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
