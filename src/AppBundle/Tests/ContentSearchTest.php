@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
  * TODO: Should be adapted to new search controller.
  *
  * @see \AppBundle\Controller\RestController::contentSearchAction()
+ *
+ * @deprecated
  */
 class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemStructureInterface
 {
@@ -237,7 +239,7 @@ class ContentSearchTest extends AbstractFixtureAwareTest implements AssertItemSt
             $parameters['skip'] = $skip;
         }
 
-        $this->assertCount(22, $results);
+        $this->assertCount($result['hits'], $results);
         // Expect zero, since we reached end of the list.
         $this->assertCount(0, $result['items']);
     }

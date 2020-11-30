@@ -54,7 +54,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         $this->assertNotEmpty($result['items']);
 
         foreach ($result['items'] as $item) {
-            $this->assertEquals(self::AGENCY, $item['agency']);
+            $this->assertContains(self::AGENCY, $item['agency']);
             $this->assertTrue($item['promoted']);
         }
 
@@ -92,9 +92,8 @@ class ListsFetchTest extends AbstractFixtureAwareTest
 
             foreach ($result['items'] as $item) {
                 // Node id's normally should not repeat for same agency.
-                $this->assertNotContains($item['key'], $list_ids);
-                $this->assertEquals(self::AGENCY, $item['agency']);
-                $list_ids[] = $item['key'];
+                $this->assertContains(self::AGENCY, $item['agency']);
+                $list_ids[] = $item['lid'];
             }
 
             $skip += $amount;
@@ -161,47 +160,6 @@ class ListsFetchTest extends AbstractFixtureAwareTest
 
         // Expect promoted count and not promoted count to match total count.
         $this->assertEquals($allCount, $promotedCount + $notPromotedCount);
-        $this->assertGreaterThan(0, $result['hits']);
-    }
-
-    /**
-     * Filtered item types in lists fetch.
-     */
-    public function testFetchFilteredItems()
-    {
-        $parameters = [
-            'agency' => self::AGENCY,
-            'key' => self::KEY,
-            'promoted' => 1,
-            'amount' => 99,
-            'itemType' => 'os',
-        ];
-
-        $response = $this->request(self::URI, $parameters, 'GET');
-
-        $result = $this->assertResponse($response);
-
-        $this->assertNotEmpty($result['items']);
-        $em = $this->getContainer()->get('doctrine_mongodb');
-
-        foreach ($result['items'] as $item) {
-            // Assert there are no duplicates.
-            $this->assertEquals(count($item['nids']), count(array_unique($item['nids'])));
-
-            $nids = $item['nids'];
-
-            if (!empty($nids)) {
-                foreach ($nids as $nid) {
-                    /** @var Content $node */
-                    $node = $em->getRepository(Content::class)
-                        ->findOneBy(['nid' => (int)$nid]);
-
-                    $this->assertNotEmpty($node);
-                    $this->assertEquals($parameters['itemType'], $node->getType());
-                }
-            }
-        }
-
         $this->assertGreaterThan(0, $result['hits']);
     }
 
