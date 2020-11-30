@@ -1520,3 +1520,172 @@
                 - Ari Cohen
                 - Lynn Dell
     list: []
+-
+    nid: 1011
+    agency: '999999'
+    type: os
+    fields:
+        title:
+            name: Titel
+            value: Fear and desire
+            attr: [ ]
+        status: # Not pushed atm.
+            name: Status
+            value: '1'
+            attr: [ ]
+        field_weight:
+            name: Vægt
+            value: '0'
+            attr: [ ]
+        field_movie_id:
+            name: Movie ID
+            value: '9000001272'
+            attr: [ ]
+        url:
+            name: Url
+            value: "/film/9000001272/fear-and-desire"
+            attr: [ ]
+        publish_date:
+            name: Publish date
+            value: '2014-05-20T00:00:00+0200'
+            attr: [ ]
+        field_background:
+            name: Backgound color
+            value: '454545'
+            attr: [ ]
+        field_images:
+            name: Images
+            value:
+                - files/150027/3da86b9c5e4cdf633f2eed35118a7e42bc1268a4.jpeg
+                - files/150027/8ce6f07c3bc4f7757c86f67209b2fc8457c01b73.jpeg
+            attr:
+                - image/jpeg
+                - image/jpeg
+        field_age_restriction:
+            name: Age restriction
+            value: '15'
+            attr:
+                - 15
+        field_faust_number:
+            name: FAUST number
+            value: '51117786'
+            attr: [ ]
+        field_age_recomendation:
+            name: Age recomendation
+            value: ''
+            attr: [ ]
+        field_alternative_title:
+            name: Alternative title
+            value: ''
+            attr: [ ]
+        field_based_on:
+            name: Based on
+            value: ''
+            attr: [ ]
+        field_descriptive_title:
+            name: Descriptive title
+            value: Fear and desire
+            attr: [ ]
+        field_original_title:
+            name: Original title
+            value: ''
+            attr: [ ]
+        field_sound:
+            name: Sound
+            value: ''
+            attr: [ ]
+        field_year:
+            name: Year
+            value: '1952'
+            attr: [ ]
+        field_color:
+            name: Color
+            value: sort-hvid
+            attr: [ ]
+        field_text_warning:
+            name: Text warning
+            value: ''
+            attr: [ ]
+        field_imdb_id:
+            name: IMDB id
+            value: tt0045758
+            attr: [ ]
+        field_length_hours:
+            name: Length hours
+            value: '0'
+            attr: [ ]
+        field_length_minutes:
+            name: Length minutes
+            value: '59'
+            attr: [ ]
+        field_movie_description:
+            name: Movie description
+            value: >
+                I en unavngiven krig havner fire soldater 10 km bag fjendens linier og
+                kæmper for at nå i sikkerhed ved at bygge en tømmerflåde og sejle ned ad floden.
+                Da en ung kvinde opdager dem konfronteres de med personlig frygt og håb.
+            attr: [ ]
+        field_show_recommendations:
+            name: Show recommendations
+            value: '1'
+            attr: [ ]
+    taxonomy:
+        field_category:
+            name: Category
+            terms:
+                - Kortfilm
+        field_realm:
+            name: Realm
+            terms:
+                - Hjemmefra
+                - Sofarækken
+        field_country:
+            name: Country
+            terms:
+                - USA
+        field_production:
+            name: Production company
+            terms:
+                - Stanley Kubrick
+        field_genre:
+            name: Genre
+            terms:
+                - drama
+        field_language:
+            name: Language
+            terms:
+                - Engelsk
+        field_subject:
+            name: Subject
+            terms:
+                - krige
+                - amerikanske film
+                - kortfilm
+        field_subtitles:
+            name: Subtitles
+            terms:
+                - Dansk
+        act:
+            name: Actor
+            terms:
+                - Frank Silvera
+                - Paul Mazursky
+                - Kenneth Harp
+                - Steve Coit
+                - Virginia Leith
+        aus:
+            name: Author of screenplay
+            terms:
+                - Howard Sackler
+        cng:
+            name: Cinematographer
+            terms:
+                - Stanley Kubrick
+        drt:
+            name: Director
+            terms:
+                - Stanley Kubrick
+    list:
+        '1':
+            title: Nyeste film i samme genre
+            weight: 0

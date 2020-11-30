@@ -840,7 +840,7 @@ final class RestController extends Controller
                 $tokens = [];
                 // Validate the query chunks.
                 foreach ($ops as $op) {
-                    if (!preg_match('~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s]+")*\)~iu', $op)) {
+                    if (!preg_match('~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s\|]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s\|]+")*\)~iu', $op)) {
                         $error = true;
                         break;
                     }
@@ -859,7 +859,7 @@ final class RestController extends Controller
                         }
                     }
 
-                    if (in_array($tokenized_chunk, ['OR', 'AND'])) {
+                    if (in_array(strtolower($tokenized_chunk), ['or', 'and'])) {
                         $split_query[] = $tokenized_chunk;
                     }
                 }
@@ -1004,24 +1004,26 @@ final class RestController extends Controller
 
         // Find out the operator in the expression.
         $matches = [];
-        preg_match('~"\s(or|and)\s"~i', $query, $matches);
-        $operator = !empty($matches[1]) ? $matches[1] : 'and';
+        preg_match('~"\sor|and\s"~i', $query, $matches);
+        $operator = !empty($matches[1]) ? trim(trim($matches[1], '()"')) : 'and';
 
         // Get the left and right operands of the expression.
-        $operands = preg_split('~\s(or|and)\s~i', $query, -1, PREG_SPLIT_NO_EMPTY);
+        $operands = preg_split('~("\sor|and\s")~i', $query, -1, PREG_SPLIT_NO_EMPTY);
 
         // If query builder is passed, assign the expression directly.
         $expr = (null !== $qb) ? $qb : new Expr();
         $operatorArgs = [];
         foreach ($operands as $operand) {
+            $operand = trim(trim($operand, '()"'));
             // Three parts we need from the query - the field, comparison identifier and the value to compare.
             // Normally should never fail, unless the query format is not validated
             // earlier to match needed format.
-            preg_match('~"([a-z._]+)\[([a-z]+)\]:([0-9|\p{L}-_+\s]+)"~iu', $operand, $matches);
+            preg_match('~([a-z._]+)\[([a-z]+)\]:([0-9|\p{L}-_+\s\|]+)~iu', $operand, $matches);
             // We don't need the whole match.
             array_shift($matches);
             list($field, $comparison, $value) = $matches;
 
+            $value = trim($value);
             $exprMethod = null;
             switch ($comparison) {
                 case 'in':
@@ -1517,12 +1519,6 @@ final class RestController extends Controller
      *             "dataType"="integer",
      *             "description"="Filter items by promoted value. Defaults to 1 - promoted only.",
      *             "required"=false
-     *         },
-     *         {
-     *              "name"="itemType",
-     *              "dataType"="string",
-     *              "description"="Lists should contain items only if this content type.",
-     *              "required"=false
      *         }
      *     },
      *     output={
@@ -1546,6 +1542,10 @@ final class RestController extends Controller
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        if (-1 !== $fields['promoted']) {
+            $fields['promoted'] = filter_var($fields['promoted'], FILTER_VALIDATE_BOOLEAN);
         }
 
         $em = $this->get('doctrine_mongodb');

@@ -29,13 +29,13 @@ class ListsFixtures extends Fixture
         foreach ($listsDefinitions as $fixture) {
             $list = new Lists();
 
-            $list->setAgency(!empty($fixture['agency']) ? $fixture['agency'] : mt_rand(100000, 999999));
-            $list->setKey(!empty($fixture['key']) ? $fixture['key'] : md5(mt_rand()));
+            $list->setAgency(!empty($fixture['agency']) ? $fixture['agency'] : [mt_rand(100000, 999999)]);
+            $list->setLid(!empty($fixture['lid']) ? $fixture['lid'] : mt_rand());
             $list->setName(!empty($fixture['name']) ? $fixture['name'] : $faker->title);
-            $list->setNids(!empty($fixture['nids']) ? $fixture['nids'] : range(mt_rand(1000, 1005), mt_rand(1006, 1010)));
             $list->setType(!empty($fixture['type']) ? $fixture['type'] : $faker->word);
             $list->setPromoted(isset($fixture['promoted']) ? (bool)$fixture['promoted'] : $faker->boolean);
             $list->setWeight(isset($fixture['weight']) ? $fixture['weight'] : mt_rand(-50, 50));
+            $list->setCriteria(isset($fixture['criteria']) ? $fixture['criteria'] : []);
 
             $entityManager->persist($list);
         }
