@@ -9,10 +9,20 @@ use Doctrine\Common\Lexer\AbstractLexer;
 
 /**
  * Class SearchQueryParser.
+ *
+ * This one parses query string of the following forms:
+ * ("FIELD_IDENTIFIER[OPERATOR_IDENTIFIER]:VALUE")
+ * ("FIELD_IDENTIFIER[OPERATOR_IDENTIFIER]:VALUE" AND|OR "FIELD_IDENTIFIER[OPERATOR_IDENTIFIER]:VALUE")
+ * ("FIELD_IDENTIFIER[OPERATOR_IDENTIFIER]:VALUE" AND|OR "FIELD_IDENTIFIER[OPERATOR_IDENTIFIER]:VALUE") AND|OR (...)
+ *
+ * The contents wrapped in brackets is referred to as an "expression".
+ * The contents wrapped in quotes is referred to as a "clause".
  */
 class SearchQueryParser
 {
     /**
+     * Lexing instance.
+     *
      * @var \Doctrine\Common\Lexer\AbstractLexer
      */
     private $lexer;
@@ -28,9 +38,13 @@ class SearchQueryParser
     }
 
     /**
-     * @param $input
+     * Parses an input string into an abstract syntax tree (AST) structure.
+     *
+     * @param string $input
+     *   Query string.
      *
      * @return \AppBundle\Ast\Node
+     *   Tree structure.
      */
     public function parse($input)
     {
@@ -41,13 +55,19 @@ class SearchQueryParser
     }
 
     /**
+     * Builds the abstract syntax tree.
+     *
+     * Parses the contents of one or more expressions.
+     *
      * @return \AppBundle\Ast\Node
+     *   Syntax tree root node.
      */
     private function buildAst()
     {
         $operator = null;
         $childNodes[] = $this->buildExpression();
 
+        // We simply keep building expressions if we encounter an operator at the end.
         while ($this->lexer->lookahead && $this->lexer->isNextToken(SearchQueryLexer::IDENTIFIER) && $_operator = $this->buildOperator()) {
             if (!$operator) {
                 $operator = $_operator;
@@ -60,6 +80,10 @@ class SearchQueryParser
     }
 
     /**
+     * Converts a certain expression into a abstract syntax tree.
+     *
+     * Parses the contents of one or more clauses.
+     *
      * @return \AppBundle\Ast\Node
      */
     private function buildExpression()
@@ -69,6 +93,7 @@ class SearchQueryParser
         $operator = null;
         $childNodes[] = $this->buildClause();
 
+        // We simply keep building clauses if we encounter an operator at the end.
         while ($this->lexer->lookahead && $this->lexer->isNextToken(SearchQueryLexer::IDENTIFIER) && $_operator = $this->buildOperator()) {
             if (!$operator) {
                 $operator = $_operator;
@@ -82,7 +107,10 @@ class SearchQueryParser
     }
 
     /**
+     * Builds a single clause instance.
+     *
      * @return \AppBundle\Query\Clause
+     *   Clause instance.
      */
     private function buildClause()
     {
@@ -105,7 +133,10 @@ class SearchQueryParser
     }
 
     /**
+     * Reads the comparison operator.
+     *
      * @return string
+     *   Comparison operator.
      */
     private function buildOperator()
     {
@@ -125,9 +156,12 @@ class SearchQueryParser
     }
 
     /**
-     * Checks whether next token matches the type and moves the pointer.
+     * Checks whether next token matches the type and moves the lexer pointer ahead.
      *
-     * @param $tokenType
+     * @param string $tokenType
+     *   Token type to check against.
+     *
+     * @see \AppBundle\Services\SearchQueryLexer
      */
     private function tokenMatches($tokenType)
     {

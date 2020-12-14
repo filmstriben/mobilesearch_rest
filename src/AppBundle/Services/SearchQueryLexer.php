@@ -6,6 +6,8 @@ use Doctrine\Common\Lexer\AbstractLexer;
 
 /**
  * Class SearchQueryLexer.
+ *
+ * This one parses a query string into a set of lexical values.
  */
 class SearchQueryLexer extends AbstractLexer
 {
