@@ -13,7 +13,9 @@ class Node extends AbstractNode implements TransformableNodeInterface
      * Node constructor.
      *
      * @param string $operator
+     *   Node children operator.
      * @param array $childNodes
+     *   Child nodes.
      */
     public function __construct($operator, array $childNodes)
     {
@@ -26,6 +28,6 @@ class Node extends AbstractNode implements TransformableNodeInterface
      */
     public function transform(TreeWalkerInterface $walker)
     {
-        return $walker->transform($this);
+        $walker->transform($this);
     }
 }

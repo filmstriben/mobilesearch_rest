@@ -10,11 +10,9 @@ use AppBundle\Ast\NodeInterface;
 interface TreeWalkerInterface
 {
     /**
-     * Transforms an AST node into a query-like construct.
+     * Transforms an AST into a query-like construct.
      *
      * @param \AppBundle\Ast\NodeInterface $node
-     *
-     * @return mixed
      */
     public function transform(NodeInterface $node);
 }

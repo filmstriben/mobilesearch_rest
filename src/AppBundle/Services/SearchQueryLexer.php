@@ -19,11 +19,7 @@ class SearchQueryLexer extends AbstractLexer
 
     const EQUALS = 21;
 
-    const OPERATOR = 50;
-
     const IDENTIFIER = 100;
-
-    const UNDEFINED = -1;
 
     /**
      * {@inheritDoc}
@@ -32,7 +28,7 @@ class SearchQueryLexer extends AbstractLexer
     {
         return [
             '\[[a-z]+\]',
-            '[a-z._0-9 |]+'
+            '[\^\$a-z._0-9 |]+',
         ];
     }
 
@@ -66,10 +62,6 @@ class SearchQueryLexer extends AbstractLexer
                 break;
             case ':':
                 $type = self::EQUALS;
-                break;
-            case 'and':
-            case 'or':
-                $type = self::OPERATOR;
                 break;
             default:
                 $type = self::IDENTIFIER;

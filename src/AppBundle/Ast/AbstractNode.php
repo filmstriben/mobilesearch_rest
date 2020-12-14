@@ -15,16 +15,25 @@ abstract class AbstractNode implements NodeInterface
 
     protected $nodes;
 
+    /**
+     * {@inheritDoc}
+     */
     public function getNodes()
     {
         return $this->nodes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getOperator()
     {
         return $this->operator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function appendChild($child)
     {
         $this->nodes[] = $child;

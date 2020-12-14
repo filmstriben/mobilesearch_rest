@@ -803,7 +803,7 @@ final class RestController extends Controller
                 $logger = $this->get('logger');
                 $logger->error($exception->getMessage());
 
-                $this->lastMessage = 'Search query syntax error.';
+                $this->lastMessage = $exception->getMessage();
 
                 return $this->setResponse(
                     $this->lastStatus,

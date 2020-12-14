@@ -13,8 +13,7 @@ interface TransformableNodeInterface
      * Gets the query-like representation of this node using a given tree walker.
      *
      * @param \AppBundle\Ast\Walker\TreeWalkerInterface $walker
-     *
-     * @return mixed
+     *   Tree walker instance.
      */
     public function transform(TreeWalkerInterface $walker);
 }

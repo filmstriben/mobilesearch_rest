@@ -2,6 +2,7 @@
 
 namespace AppBundle\Services;
 
+use AppBundle\Ast\AbstractNode;
 use AppBundle\Ast\Node;
 use AppBundle\Query\Clause;
 use Doctrine\Common\Lexer\AbstractLexer;
@@ -47,17 +48,12 @@ class SearchQueryParser
         $operator = null;
         $childNodes[] = $this->buildExpression();
 
-        while ($this->lexer->isNextToken(SearchQueryLexer::OPERATOR)) {
-            $_operator = $this->buildOperator();
+        while ($this->lexer->lookahead && $this->lexer->isNextToken(SearchQueryLexer::IDENTIFIER) && $_operator = $this->buildOperator()) {
             if (!$operator) {
                 $operator = $_operator;
             }
 
             $childNodes[] = $this->buildExpression();
-        }
-
-        if ($this->lexer->lookahead) {
-            $this->tokenMatches(SearchQueryLexer::OPERATOR);
         }
 
         return new Node($operator, $childNodes);
@@ -73,8 +69,7 @@ class SearchQueryParser
         $operator = null;
         $childNodes[] = $this->buildClause();
 
-        while ($this->lexer->isNextToken(SearchQueryLexer::OPERATOR)) {
-            $_operator = $this->buildOperator();
+        while ($this->lexer->lookahead && $this->lexer->isNextToken(SearchQueryLexer::IDENTIFIER) && $_operator = $this->buildOperator()) {
             if (!$operator) {
                 $operator = $_operator;
             }
@@ -114,12 +109,24 @@ class SearchQueryParser
      */
     private function buildOperator()
     {
-        $this->tokenMatches(SearchQueryLexer::OPERATOR);
+        $this->tokenMatches(SearchQueryLexer::IDENTIFIER);
 
-        return trim(strtolower($this->lexer->token['value']));
+        $token = $this->lexer->token;
+        $operatorValue = trim(strtolower($token['value']));
+        if (!in_array($operatorValue, [AbstractNode::OPERATOR_OR, AbstractNode::OPERATOR_AND])) {
+            $position = isset($token['position']) ? $token['position'] : -1;
+            $error = 'Expected a valid operator, found "' . $operatorValue . '"';
+            $error .= ' at position "' . $position . '".';
+
+            throw new \RuntimeException($error);
+        }
+
+        return $operatorValue;
     }
 
     /**
+     * Checks whether next token matches the type and moves the pointer.
+     *
      * @param $tokenType
      */
     private function tokenMatches($tokenType)
@@ -127,8 +134,9 @@ class SearchQueryParser
         $aheadToken = $this->lexer->lookahead;
         $position = isset($aheadToken['position']) ? $aheadToken['position'] : -1;
         if (!$aheadToken || $aheadToken['type'] !== $tokenType) {
-            $error = 'Expected a valid token of type "' . $this->lexer->getLiteral($tokenType) . '"';
+            $error = 'Expected a valid token of type "' . $this->lexer->getLiteral($tokenType) . '", found "' . $aheadToken['value'] . '"';
             $error .= ' at position "' . $position . '"';
+
             throw new \RuntimeException($error);
         }
 
