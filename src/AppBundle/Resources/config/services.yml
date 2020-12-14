@@ -1,5 +1,10 @@
 services:
     fixture_loader:
-        class: 'AppBundle\Services\FixtureLoader'
+        class: AppBundle\Services\FixtureLoader
     image_converter:
-        class: 'AppBundle\Services\ImageConverter'
+        class: AppBundle\Services\ImageConverter
+    query_lexer:
+        class: AppBundle\Services\SearchQueryLexer
+    query_parser:
+        class: AppBundle\Services\SearchQueryParser
+        arguments: ['@query_lexer']
