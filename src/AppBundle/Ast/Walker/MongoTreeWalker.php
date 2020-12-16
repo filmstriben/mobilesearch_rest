@@ -54,15 +54,24 @@ class MongoTreeWalker implements TreeWalkerInterface
             } elseif ($childNode instanceof Clause) {
                 $expression = new Expr();
                 $expression->field($childNode->getField());
+                $value = $childNode->getValue();
+
+                // TODO: 'nid' is hardcoded, find a way to read this dynamically from entity class metadata.
+                if ('nid' == $expression->getCurrentField()) {
+                    $value = ('in' == $childNode->getOperator()) ? array_map(function ($v) {
+                        return (int) $v;
+                    }, explode('|', $value)) : (int) $value;
+                }
+
                 switch ($childNode->getOperator()) {
                     case 'in':
-                        $expression->in(explode('|', $childNode->getValue()));
+                        $expression->in($value);
                         break;
                     case 'eq':
-                        $expression->equals($childNode->getValue());
+                        $expression->equals($value);
                         break;
                     case 'regex':
-                        $expression->equals(new \MongoRegex("/{$childNode->getValue()}/i"));
+                        $expression->equals(new \MongoRegex("/{$value}/i"));
                         break;
                 }
 
