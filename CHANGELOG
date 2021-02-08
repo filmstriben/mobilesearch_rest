@@ -1,9 +1,0 @@
-05-05-2016
-- Added possibility to fetch of multiple nodes via comma separator.
-  e.g.: ...&node=8,9,34
-- Added search suggestions. Ability to define search string and field where
-  search is to be made. Also support for regular expressions in 'query' parameter.
-  e.g.: ...&query=ding_*&field=type
-        ...&query=ding_page&field=type
-        ...&query=^alpha&field=fields.title.value
-
