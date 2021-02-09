@@ -31,7 +31,7 @@ class MenuOutput
      * A set of response items, if any.
      *
      * @var array
-     * @JMS\Type("array<AppBundle\IO\MenuItem>")
+     * @JMS\Type("array<App\IO\MenuItem>")
      */
     private $items;
 

@@ -31,7 +31,7 @@ class ListOutput
      * A set of response items, if any.
      *
      * @var array
-     * @JMS\Type("array<AppBundle\IO\ListItem>")
+     * @JMS\Type("array<App\IO\ListItem>")
      */
     private $items;
 

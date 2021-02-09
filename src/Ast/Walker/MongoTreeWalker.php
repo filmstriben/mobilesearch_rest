@@ -4,8 +4,12 @@ namespace App\Ast\Walker;
 
 use App\Ast\NodeInterface;
 use App\Query\Clause;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
-use Doctrine\MongoDB\Query\Expr;
+use Doctrine\ODM\MongoDB\Query\Expr;
+use Doctrine\Persistence\ManagerRegistry;
+use MongoDB\BSON\Regex as MongoRegex;
+
 
 /**
  * Class MongoTreeWalker.
@@ -30,19 +34,19 @@ class MongoTreeWalker implements TreeWalkerInterface
      */
     public function transform(NodeInterface $node)
     {
-        $expr = $this->walkTree($node, new Expr());
+        $expr = $this->walkTree($node, $this->queryBuilder->expr());
         $this->queryBuilder->addAnd($expr);
     }
 
     /**
      * Walks the AST tree recursively to build a mongo query expression.
      *
-     * @param \AppBundle\Ast\NodeInterface $node
+     * @param \App\Ast\NodeInterface $node
      *   Root node.
-     * @param \Doctrine\MongoDB\Query\Expr $expr
+     * @param \Doctrine\ODM\MongoDB\Query\Expr $expr
      *   Expression to build.
      *
-     * @return \Doctrine\MongoDB\Query\Expr
+     * @return \Doctrine\ODM\MongoDB\Query\Expr
      *   Result expression.
      */
     private function walkTree(NodeInterface $node, Expr $expr)
@@ -50,9 +54,9 @@ class MongoTreeWalker implements TreeWalkerInterface
         $expressions = [];
         foreach ($node->getNodes() as $childNode) {
             if ($childNode instanceof NodeInterface) {
-                $expressions[] = $this->walkTree($childNode, new Expr());
+                $expressions[] = $this->walkTree($childNode, $this->queryBuilder->expr());
             } elseif ($childNode instanceof Clause) {
-                $expression = new Expr();
+                $expression = $this->queryBuilder->expr();
                 $expression->field($childNode->getField());
                 $value = $childNode->getValue();
 
@@ -71,7 +75,7 @@ class MongoTreeWalker implements TreeWalkerInterface
                         $expression->equals($value);
                         break;
                     case 'regex':
-                        $expression->equals(new \MongoRegex("/{$value}/i"));
+                        $expression->equals(new MongoRegex($value, 'i'));
                         break;
                 }
 

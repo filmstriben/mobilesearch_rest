@@ -33,7 +33,7 @@ class RestMenuRequest extends RestBaseRequest
         ];
 
         $entity = $this->em
-            ->getRepository('AppBundle:Menu')
+            ->getRepository('App:Menu')
             ->findOneBy($criteria);
 
         return $entity;

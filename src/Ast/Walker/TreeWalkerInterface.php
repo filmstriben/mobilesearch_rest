@@ -12,7 +12,7 @@ interface TreeWalkerInterface
     /**
      * Transforms an AST into a query-like construct.
      *
-     * @param \AppBundle\Ast\NodeInterface $node
+     * @param \App\Ast\NodeInterface $node
      */
     public function transform(NodeInterface $node);
 }

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use Ast\AbstractNode;
-use Ast\Node;
-use Query\Clause;
+use App\Ast\AbstractNode;
+use App\Ast\Node;
+use App\Query\Clause;
 use Doctrine\Common\Lexer\AbstractLexer;
 
 /**
@@ -43,7 +43,7 @@ class SearchQueryParser
      * @param string $input
      *   Query string.
      *
-     * @return \AppBundle\Ast\Node
+     * @return \App\Ast\Node
      *   Tree structure.
      */
     public function parse($input)
@@ -59,7 +59,7 @@ class SearchQueryParser
      *
      * Parses the contents of one or more expressions.
      *
-     * @return \AppBundle\Ast\Node
+     * @return \App\Ast\Node
      *   Syntax tree root node.
      */
     private function buildAst()
@@ -84,7 +84,7 @@ class SearchQueryParser
      *
      * Parses the contents of one or more clauses.
      *
-     * @return \AppBundle\Ast\Node
+     * @return \App\Ast\Node
      */
     private function buildExpression()
     {
@@ -109,7 +109,7 @@ class SearchQueryParser
     /**
      * Builds a single clause instance.
      *
-     * @return \AppBundle\Query\Clause
+     * @return \App\Query\Clause
      *   Clause instance.
      */
     private function buildClause()
@@ -161,7 +161,7 @@ class SearchQueryParser
      * @param string $tokenType
      *   Token type to check against.
      *
-     * @see \AppBundle\Services\SearchQueryLexer
+     * @see \App\Services\SearchQueryLexer
      */
     private function tokenMatches($tokenType)
     {

@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * TODO: Should be adapted to new search controller.
  *
- * @see \AppBundle\Controller\RestController::searchExtendedAction()
+ * @see \App\Controller\RestController::searchExtendedAction()
  */
 class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements AssertItemStructureInterface
 {

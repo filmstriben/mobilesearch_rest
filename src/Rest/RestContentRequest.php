@@ -4,7 +4,7 @@ namespace App\Rest;
 
 use App\Document\Content;
 use App\Exception\RestException;
-use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
+use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Query\Expr\Comparison;
 use Symfony\Component\Filesystem\Filesystem as FSys;
@@ -27,9 +27,9 @@ class RestContentRequest extends RestBaseRequest
     /**
      * RestContentRequest constructor.
      *
-     * @param MongoEM $em Entity manager.
+     * @param \Doctrine\Persistence\ManagerRegistry $em Entity manager.
      */
-    public function __construct(MongoEM $em)
+    public function __construct(ManagerRegistry $em)
     {
         parent::__construct($em);
 
@@ -61,7 +61,7 @@ class RestContentRequest extends RestBaseRequest
         ];
 
         $content = $this->em
-            ->getRepository('AppBundle:Content')
+            ->getRepository('App:Content')
             ->findOneBy($criteria);
 
         return $content;
@@ -89,7 +89,7 @@ class RestContentRequest extends RestBaseRequest
      * @param bool $countOnly
      *   Get only the number of results.
      *
-     * @return \AppBundle\Document\Content[]
+     * @return \App\Document\Content[]
      *   A set of entities.
      */
     public function fetchFiltered(
@@ -158,7 +158,7 @@ class RestContentRequest extends RestBaseRequest
      * @param bool $countOnly
      *   Return only count of results.
      *
-     * @return \AppBundle\Document\Content[]
+     * @return \App\Document\Content[]
      *   A set of suggested entities.
      *
      * @throws RestException

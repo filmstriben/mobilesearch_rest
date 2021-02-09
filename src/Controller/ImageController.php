@@ -58,7 +58,7 @@ class ImageController extends AbstractController
     {
         if ($this->getParameter('track_hits')) {
             $dm = $this->get('doctrine_mongodb')->getManager();
-            /** @var \AppBundle\Repositories\ServiceHitRepository $repository */
+            /** @var \App\Repositories\ServiceHitRepository $repository */
             $repository = $dm->getRepository(ServiceHit::class);
             $repository->trackHit('image_request', $request->getRequestUri());
         }
@@ -116,12 +116,12 @@ class ImageController extends AbstractController
 
             return new Response('', Response::HTTP_SERVICE_UNAVAILABLE);
         } else {
-            /** @var \AppBundle\Services\ImageConverterInterface $imageConverter */
+            /** @var \App\Services\ImageConverterInterface $imageConverter */
             $imageConverter = $this->get('image_converter');
 
             if ($this->getParameter('track_hits')) {
                 $dm = $this->get('doctrine_mongodb')->getManager();
-                /** @var \AppBundle\Repositories\ServiceHitRepository $repository */
+                /** @var \App\Repositories\ServiceHitRepository $repository */
                 $repository = $dm->getRepository(ServiceHit::class);
                 $repository->trackHit('image_convert', $request->getRequestUri());
             }

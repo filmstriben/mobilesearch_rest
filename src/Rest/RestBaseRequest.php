@@ -4,7 +4,7 @@ namespace App\Rest;
 
 use App\Document\Agency;
 use App\Exception\RestException;
-use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * Class RestBaseRequest
@@ -70,9 +70,9 @@ abstract class RestBaseRequest
     /**
      * RestBaseRequest constructor.
      *
-     * @param MongoEM $em
+     * @param \Doctrine\Persistence\ManagerRegistry $em
      */
-    public function __construct(MongoEM $em)
+    public function __construct(ManagerRegistry $em)
     {
         $this->em = $em;
     }
@@ -257,7 +257,7 @@ abstract class RestBaseRequest
     public function getAgencyById($agencyId)
     {
         $agency = $this->em
-            ->getRepository('AppBundle:Agency')
+            ->getRepository('App:Agency')
             ->findOneBy(['agencyId' => $agencyId]);
 
         return $agency;

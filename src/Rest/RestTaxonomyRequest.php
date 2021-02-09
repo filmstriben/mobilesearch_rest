@@ -46,7 +46,7 @@ class RestTaxonomyRequest extends RestBaseRequest
     public function fetchVocabularies($agency, $contentType)
     {
         $content = $this->em
-            ->getRepository('AppBundle:Content')
+            ->getRepository('App:Content')
             ->findBy(
                 [
                     'agency' => $agency,
@@ -76,7 +76,7 @@ class RestTaxonomyRequest extends RestBaseRequest
         $field = 'taxonomy.'.$vocabulary.'.terms';
         $pattern = '/'.$query.'/i';
 
-        $result = $this->em->getRepository('AppBundle:Content')->findBy(
+        $result = $this->em->getRepository('App:Content')->findBy(
             [
                 'agency' => $agency,
                 'type' => $contentType,
@@ -117,7 +117,7 @@ class RestTaxonomyRequest extends RestBaseRequest
             $criteria[$field] = ['$in' => explode(',', $terms[$k])];
         }
 
-        $content = $this->em->getRepository('AppBundle:Content')->findBy($criteria);
+        $content = $this->em->getRepository('App:Content')->findBy($criteria);
 
         return $content;
     }

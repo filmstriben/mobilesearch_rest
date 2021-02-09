@@ -24,7 +24,7 @@ interface ImageConverterInterface {
      * @param bool $strip
      *   Strip metadata.
      *
-     * @throws \AppBundle\Services\ImageConverterException
+     * @throws \App\Services\ImageConverterException
      *
      * @return void
      */

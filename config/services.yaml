@@ -31,3 +31,22 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    fixture_loader:
+        class: App\Services\FixtureLoader
+        public: true
+    image_converter:
+        class: App\Services\ImageConverter
+        public: true
+    query_lexer:
+        class: App\Services\SearchQueryLexer
+        autowire: false
+    query_parser:
+        class: App\Services\SearchQueryParser
+        arguments: [ '@query_lexer' ]
+        public: true
+        autowire: false
+
+    App\Services\SearchQueryLexer: '@query_lexer'
+    App\Services\SearchQueryParser: '@query_parser'
+

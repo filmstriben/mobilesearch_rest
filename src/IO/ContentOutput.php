@@ -31,7 +31,7 @@ class ContentOutput
      * A set of response items, if any.
      *
      * @var array
-     * @JMS\Type("array<AppBundle\IO\ContentItem>")
+     * @JMS\Type("array<App\IO\ContentItem>")
      */
     private $items;
 

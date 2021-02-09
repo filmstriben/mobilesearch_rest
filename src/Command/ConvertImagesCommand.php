@@ -71,13 +71,13 @@ class ConvertImagesCommand extends ContainerAwareCommand {
 
         $doctrine = $this->getContainer()->get('doctrine_mongodb');
         $em = $doctrine->getManager();
-        /** @var \AppBundle\Document\Content[] $movies */
+        /** @var \App\Document\Content[] $movies */
         $movies = $em->getRepository(Content::class)
             ->findBy([
                 'type' => 'os',
             ]);
 
-        /** @var \AppBundle\Services\ImageConverterInterface $imageConverter */
+        /** @var \App\Services\ImageConverterInterface $imageConverter */
         $imageConverter = $this->getContainer()->get('image_converter');
 
         $progress = 0;

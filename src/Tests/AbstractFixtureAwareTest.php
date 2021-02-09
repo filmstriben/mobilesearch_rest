@@ -22,7 +22,7 @@ abstract class AbstractFixtureAwareTest extends AbstractBaseTest
     /**
      * {@inheritdoc}
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -46,7 +46,7 @@ abstract class AbstractFixtureAwareTest extends AbstractBaseTest
     /**
      * {@inheritdoc}
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
     }

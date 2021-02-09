@@ -16,7 +16,10 @@ use App\Rest\RestListsRequest;
 use App\Rest\RestMenuRequest;
 use App\Rest\RestTaxonomyRequest;
 //use Doctrine\MongoDB\Query\Expr;
+use App\Services\SearchQueryParser;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Nelmio\ApiDocBundle\Annotation\Model as ApiDoc;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -62,21 +65,20 @@ final class RestController extends AbstractController
      *
      * @return Response        Outgoing Response object.
      */
-    public function contentDispatcher(Request $request)
+    public function contentDispatcher(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
 
-        $em = $this->get('doctrine_mongodb');
-        $restContentRequest = new RestContentRequest($em);
+        $restContentRequest = new RestContentRequest($dm);
 
-        return $this->relay($restContentRequest);
+        return $this->relay($restContentRequest, $logger);
     }
 
     /**
      * @Route("/content/fetch", methods={"GET"})
      */
-    public function contentFetchAction(Request $request)
+    public function contentFetchAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -97,8 +99,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        $em = $this->get('doctrine_mongodb');
-        $restContentRequest = new RestContentRequest($em);
+        $restContentRequest = new RestContentRequest($dm);
 
         $hits = 0;
 
@@ -132,7 +133,7 @@ final class RestController extends AbstractController
     /**
      * @Route("/content/search", methods={"GET"})
      */
-    public function contentSearchAction(Request $request)
+    public function contentSearchAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -154,8 +155,7 @@ final class RestController extends AbstractController
             }
         }
 
-        $em = $this->get('doctrine_mongodb');
-        $restContentRequest = new RestContentRequest($em);
+        $restContentRequest = new RestContentRequest($dm);
 
         $hits = 0;
 
@@ -169,7 +169,7 @@ final class RestController extends AbstractController
                 unset($fields['format']);
                 $suggestions = call_user_func_array([$restContentRequest, 'fetchSuggestions'], $fields);
 
-                /** @var \AppBundle\Document\Content $suggestion */
+                /** @var \App\Document\Content $suggestion */
                 foreach ($suggestions as $suggestion) {
                     $suggestionFields = $suggestion->getFields();
 
@@ -209,7 +209,7 @@ final class RestController extends AbstractController
      *
      * TODO: Test coverage.
      */
-    public function contentSearchRankedAction(Request $request)
+    public function contentSearchRankedAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -229,24 +229,22 @@ final class RestController extends AbstractController
         // Hard upper limit to 100 items per request.
         $fields['amount'] = $fields['amount'] > 100 ? 100 : $fields['amount'];
 
-        $em = $this->get('doctrine_mongodb');
-        $restContentRequest = new RestContentRequest($em);
+        $restContentRequest = new RestContentRequest($dm);
 
         $hits = 0;
 
         if (!$restContentRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
         } elseif (!empty($fields['q'])) {
-            $em = $this->get('doctrine_mongodb');
-            /** @var \AppBundle\Repositories\ContentRepository $contentRepository */
-            $contentRepository = $em->getRepository(Content::class);
+            /** @var \App\Repositories\ContentRepository $contentRepository */
+            $contentRepository = $dm->getRepository(Content::class);
             $suggestions = $contentRepository->fetchSuggestions(
                 $fields['q'],
                 $fields['amount'],
                 $fields['skip']
             );
 
-            /** @var \AppBundle\Document\Content $suggestion */
+            /** @var \App\Document\Content $suggestion */
             foreach ($suggestions as $suggestion) {
                 $suggestionFields = $suggestion->getFields();
 
@@ -293,7 +291,7 @@ final class RestController extends AbstractController
      *
      * TODO: Test coverage.
      */
-    public function searchExtendedAction(Request $request)
+    public function searchExtendedAction(Request $request, ManagerRegistry $dm, SearchQueryParser $queryParser, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -316,8 +314,7 @@ final class RestController extends AbstractController
             $fields['order'] = 'asc';
         }
 
-        $em = $this->get('doctrine_mongodb');
-        $restContentRequest = new RestContentRequest($em);
+        $restContentRequest = new RestContentRequest($dm);
 
         $hits = 0;
 
@@ -327,21 +324,17 @@ final class RestController extends AbstractController
             unset($fields['agency'], $fields['key']);
 
             /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
-            $qb = $this
-                ->get('doctrine_mongodb')
+            $qb = $dm
                 ->getManager()
                 ->createQueryBuilder(Content::class);
 
             $query = $fields['q'];
-            $parser = $this->get('query_parser');
 
             try {
-                $ast = $parser->parse($query);
+                $ast = $queryParser->parse($query);
                 $treeWalker = new MongoTreeWalker($qb);
                 $ast->transform($treeWalker);
             } catch (\RuntimeException $exception) {
-                /** @var \Psr\Log\LoggerInterface $logger */
-                $logger = $this->get('logger');
                 $logger->error($exception->getMessage());
 
                 $this->lastMessage = $exception->getMessage();
@@ -369,7 +362,7 @@ final class RestController extends AbstractController
             $suggestions = $query->execute();
 
 
-            /** @var \AppBundle\Document\Content $suggestion */
+            /** @var \App\Document\Content $suggestion */
             foreach ($suggestions as $suggestion) {
                 $suggestionFields = $suggestion->getFields();
 
@@ -431,13 +424,12 @@ final class RestController extends AbstractController
      *
      * @return Response        Outgoing Response object.
      */
-    public function menuDispatcher(Request $request)
+    public function menuDispatcher(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
 
-        $em = $this->get('doctrine_mongodb');
-        $rmr = new RestMenuRequest($em);
+        $rmr = new RestMenuRequest($dm);
 
         return $this->relay($rmr);
     }
@@ -445,7 +437,7 @@ final class RestController extends AbstractController
     /**
      * @Route("/menu/fetch", methods={"GET"})
      */
-    public function menuFetchAction(Request $request)
+    public function menuFetchAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -460,8 +452,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        $em = $this->get('doctrine_mongodb');
-        $restMenuRequest = new RestMenuRequest($em);
+        $restMenuRequest = new RestMenuRequest($dm);
 
         $hits = 0;
 
@@ -536,13 +527,12 @@ final class RestController extends AbstractController
      *
      * @return Response        Outgoing Response object.
      */
-    public function listDispatcher(Request $request)
+    public function listDispatcher(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
 
-        $em = $this->get('doctrine_mongodb');
-        $rlr = new RestListsRequest($em);
+        $rlr = new RestListsRequest($dm);
 
         return $this->relay($rlr);
     }
@@ -550,7 +540,7 @@ final class RestController extends AbstractController
     /**
      * @Route("/list/fetch", methods={"GET"})
      */
-    public function listFetchAction(Request $request)
+    public function listFetchAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -570,8 +560,7 @@ final class RestController extends AbstractController
             $fields['promoted'] = filter_var($fields['promoted'], FILTER_VALIDATE_BOOLEAN);
         }
 
-        $em = $this->get('doctrine_mongodb');
-        $restListsRequest = new RestListsRequest($em);
+        $restListsRequest = new RestListsRequest($dm);
 
         $hits = 0;
 
@@ -618,7 +607,7 @@ final class RestController extends AbstractController
     /**
      * @Route("/taxonomy/vocabularies/{contentType}", methods={"GET"})
      */
-    public function taxonomyAction(Request $request, $contentType)
+    public function taxonomyAction(Request $request, $contentType, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -631,8 +620,7 @@ final class RestController extends AbstractController
             $fields[$field] = $request->query->get($field);
         }
 
-        $em = $this->get('doctrine_mongodb');
-        $rtr = new RestTaxonomyRequest($em);
+        $rtr = new RestTaxonomyRequest($dm);
 
         if (!$rtr->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
@@ -656,7 +644,7 @@ final class RestController extends AbstractController
     public function taxonomyNewAction(Request $request)
     {
         $response = $this->forward(
-            'AppBundle:Rest:taxonomy',
+            'App:Rest:taxonomy',
             [
                 'request' => $request,
                 'contentType' => $request->query->get('contentType'),
@@ -669,7 +657,7 @@ final class RestController extends AbstractController
     /**
      * @Route("/taxonomy/terms/{vocabulary}/{contentType}/{query}", methods={"GET"})
      */
-    public function taxonomySearchAction(Request $request, $vocabulary, $contentType, $query)
+    public function taxonomySearchAction(Request $request, $vocabulary, $contentType, $query, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -682,8 +670,7 @@ final class RestController extends AbstractController
             $fields[$field] = $request->query->get($field);
         }
 
-        $em = $this->get('doctrine_mongodb');
-        $rtr = new RestTaxonomyRequest($em);
+        $rtr = new RestTaxonomyRequest($dm);
 
         if (!$rtr->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
@@ -707,7 +694,7 @@ final class RestController extends AbstractController
     public function taxonomySearchNewAction(Request $request)
     {
         $response = $this->forward(
-            'AppBundle:Rest:taxonomySearch',
+            'App:Rest:taxonomySearch',
             [
                 'request' => $request,
                 'vocabulary' => $request->query->get('vocabulary'),
@@ -746,7 +733,7 @@ final class RestController extends AbstractController
     /**
      * @Route("/configuration", methods={"GET"})
      */
-    public function configurationFetchAction(Request $request)
+    public function configurationFetchAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -759,8 +746,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        $em = $this->get('doctrine_mongodb');
-        $restConfigurationRequest = new RestConfigurationRequest($em);
+        $restConfigurationRequest = new RestConfigurationRequest($dm);
 
         if (!$restConfigurationRequest->isSignatureValid($fields['agency'], $fields['key'])) {
             $this->lastMessage = 'Failed validating request. Check your credentials (agency & key).';
@@ -792,13 +778,12 @@ final class RestController extends AbstractController
      *
      * @return Response        Outgoing Response object.
      */
-    public function configurationDispatcher(Request $request)
+    public function configurationDispatcher(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
 
-        $em = $this->get('doctrine_mongodb');
-        $restContentRequest = new RestConfigurationRequest($em);
+        $restContentRequest = new RestConfigurationRequest($dm);
 
         return $this->relay($restContentRequest);
     }
@@ -810,7 +795,7 @@ final class RestController extends AbstractController
      *
      * @return Response                       Outgoing Response object.
      */
-    private function relay(RestBaseRequest $genericRequest)
+    private function relay(RestBaseRequest $genericRequest, LoggerInterface $logger)
     {
         try {
             $genericRequest->setRequestBody($this->rawContent);
@@ -822,8 +807,6 @@ final class RestController extends AbstractController
         } catch (\Exception $exc) {
             $this->lastMessage = "Generic fault with exception: '{$exc->getMessage()}'";
 
-            /** @var \Psr\Log\LoggerInterface $logger */
-            $logger = $this->get('logger');
             $logger->error($exc->getMessage() . "|" . $exc->getFile() . "|" . $exc->getLine());
         }
 

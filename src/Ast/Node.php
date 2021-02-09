@@ -2,7 +2,7 @@
 
 namespace App\Ast;
 
-use Ast\Walker\TreeWalkerInterface;
+use App\Ast\Walker\TreeWalkerInterface;
 
 /**
  * Class Node.

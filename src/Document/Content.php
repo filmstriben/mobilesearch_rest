@@ -5,7 +5,7 @@ namespace App\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
 /**
- * @MongoDB\Document(repositoryClass="AppBundle\Repositories\ContentRepository")
+ * @MongoDB\Document(repositoryClass="App\Repositories\ContentRepository")
  */
 class Content
 {
