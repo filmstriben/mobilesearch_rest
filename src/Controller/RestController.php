@@ -8,24 +8,24 @@ use App\Document\Content;
 use App\Document\Lists;
 use App\Document\Menu;
 use App\Exception\RestException;
-use App\Repositories\ListsRepository;
 use App\Rest\RestBaseRequest;
 use App\Rest\RestConfigurationRequest;
 use App\Rest\RestContentRequest;
 use App\Rest\RestListsRequest;
 use App\Rest\RestMenuRequest;
 use App\Rest\RestTaxonomyRequest;
-//use Doctrine\MongoDB\Query\Expr;
 use App\Services\SearchQueryParser;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
-use Nelmio\ApiDocBundle\Annotation\Model as ApiDoc;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use OpenApi\Annotations as OA;
 
-
+/**
+ * Class RestController.
+ */
 final class RestController extends AbstractController
 {
     private $lastStatus = false;
@@ -35,7 +35,13 @@ final class RestController extends AbstractController
     private $rawContent;
 
     /**
+     * Insert new content entry.
+     *
      * @Route("/content", methods={"PUT"})
+     * @OA\Put(
+     *     description="",
+     *     tags={"Content"}
+     * )
      */
     public function contentCreateAction(Request $request)
     {
@@ -43,7 +49,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Update a content entry.
+     *
      * @Route("/content", methods={"POST"})
+     * @OA\Post(
+     *     description="",
+     *     tags={"Content"}
+     * )
      */
     public function contentUpdateAction(Request $request)
     {
@@ -51,7 +63,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Deletes a content entry.
+     *
      * @Route("/content", methods={"DELETE"})
+     * @OA\Delete(
+     *     description="",
+     *     tags={"Content"}
+     * )
      */
     public function contentDeleteAction(Request $request)
     {
@@ -61,9 +79,9 @@ final class RestController extends AbstractController
     /**
      * Dispatches content related requests.
      *
-     * @param Request $request Incoming Request object.
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
-     * @return Response        Outgoing Response object.
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function contentDispatcher(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
@@ -76,7 +94,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Fetches a specific set of content.
+     *
      * @Route("/content/fetch", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Content"}
+     * )
      */
     public function contentFetchAction(Request $request, ManagerRegistry $dm)
     {
@@ -131,7 +155,14 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Searches content by matching values for specific fields.
+     *
      * @Route("/content/search", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Content"},
+     *     deprecated=true
+     * )
      */
     public function contentSearchAction(Request $request, ManagerRegistry $dm)
     {
@@ -205,7 +236,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Searches content by specific phrase and ranks the results.
+     *
      * @Route("/content/search-ranked", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Content"}
+     * )
      *
      * TODO: Test coverage.
      */
@@ -287,8 +324,13 @@ final class RestController extends AbstractController
     }
 
     /**
-     * @Route("/content/search-extended", methods={"GET"})
+     * Searches content using compound and/or rules.
      *
+     * @Route("/content/search-extended", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Content"}
+     * )
      * TODO: Test coverage.
      */
     public function searchExtendedAction(Request $request, ManagerRegistry $dm, SearchQueryParser $queryParser, LoggerInterface $logger)
@@ -394,7 +436,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Insert a new menu entry.
+     *
      * @Route("/menu", methods={"PUT"})
+     * @OA\Put(
+     *     description="",
+     *     tags={"Menu"}
+     * )
      */
     public function menuCreateAction(Request $request)
     {
@@ -402,7 +450,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Update a menu entry.
+     *
      * @Route("/menu", methods={"POST"})
+     * @OA\Post(
+     *     description="",
+     *     tags={"Menu"}
+     * )
      */
     public function menuUpdateAction(Request $request)
     {
@@ -410,7 +464,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Delete a menu entry.
+     *
      * @Route("/menu", methods={"DELETE"})
+     * @OA\Delete(
+     *     description="",
+     *     tags={"Menu"}
+     * )
      */
     public function menuDeleteAction(Request $request)
     {
@@ -420,9 +480,9 @@ final class RestController extends AbstractController
     /**
      * Dispatcher menu related requests.
      *
-     * @param Request $request Incoming Request object.
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
-     * @return Response        Outgoing Response object.
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function menuDispatcher(Request $request, ManagerRegistry $dm)
     {
@@ -435,7 +495,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Fetch menu items.
+     *
      * @Route("/menu/fetch", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Menu"}
+     * )
      */
     public function menuFetchAction(Request $request, ManagerRegistry $dm)
     {
@@ -497,7 +563,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Create a new list entry.
+     *
      * @Route("/list", methods={"PUT"})
+     * @OA\Put(
+     *     description="",
+     *     tags={"List"}
+     * )
      */
     public function listCreateAction(Request $request)
     {
@@ -505,7 +577,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Update a list entry,
+     *
      * @Route("/list", methods={"POST"})
+     * @OA\Post(
+     *     description="",
+     *     tags={"List"}
+     * )
      */
     public function listUpdateAction(Request $request)
     {
@@ -513,7 +591,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Delete a list entry.
+     *
      * @Route("/list", methods={"DELETE"})
+     * @OA\Delete(
+     *     description="",
+     *     tags={"List"}
+     * )
      */
     public function listDeleteAction(Request $request)
     {
@@ -523,9 +607,9 @@ final class RestController extends AbstractController
     /**
      * Dispatcher list related requests.
      *
-     * @param Request $request Incoming Request object.
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
-     * @return Response        Outgoing Response object.
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function listDispatcher(Request $request, ManagerRegistry $dm)
     {
@@ -538,7 +622,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Fetch list entries.
+     *
      * @Route("/list/fetch", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"List"}
+     * )
      */
     public function listFetchAction(Request $request, ManagerRegistry $dm)
     {
@@ -605,7 +695,14 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Fetch vocabularies for a certain content type.
+     *
      * @Route("/taxonomy/vocabularies/{contentType}", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Taxonomy"},
+     *     deprecated=true
+     * )
      */
     public function taxonomyAction(Request $request, $contentType, ManagerRegistry $dm)
     {
@@ -639,7 +736,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Fetch vocabularies for a certain content type.
+     *
      * @Route("/taxonomy/vocabularies", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Taxonomy"}
+     * )
      */
     public function taxonomyNewAction(Request $request)
     {
@@ -655,7 +758,14 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Fetch terms for a certain vocabulary and content type.
+     *
      * @Route("/taxonomy/terms/{vocabulary}/{contentType}/{query}", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Taxonomy"},
+     *     deprecated=true
+     * )
      */
     public function taxonomySearchAction(Request $request, $vocabulary, $contentType, $query, ManagerRegistry $dm)
     {
@@ -689,7 +799,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Fetch terms for a certain vocabulary and content type.
+     *
      * @Route("/taxonomy/terms", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Taxonomy"}
+     * )
      */
     public function taxonomySearchNewAction(Request $request)
     {
@@ -707,7 +823,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Insert a new configuration entry.
+     *
      * @Route("/configuration", methods={"PUT"})
+     * @OA\Put(
+     *     description="",
+     *     tags={"Configuration"}
+     * )
      */
     public function configurationCreateAction(Request $request)
     {
@@ -715,7 +837,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Update a configuration entry.
+     *
      * @Route("/configuration", methods={"POST"})
+     * @OA\Post(
+     *     description="",
+     *     tags={"Configuration"}
+     * )
      */
     public function configurationUpdateAction(Request $request)
     {
@@ -723,7 +851,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Delete a configuration entry.
+     *
      * @Route("/configuration", methods={"DELETE"})
+     * @OA\Delete(
+     *     description="",
+     *     tags={"Configuration"}
+     * )
      */
     public function configurationDeleteAction(Request $request)
     {
@@ -731,7 +865,13 @@ final class RestController extends AbstractController
     }
 
     /**
+     * Fetch a configuration entry.
+     *
      * @Route("/configuration", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Configuration"}
+     * )
      */
     public function configurationFetchAction(Request $request, ManagerRegistry $dm)
     {
@@ -774,9 +914,9 @@ final class RestController extends AbstractController
     /**
      * Dispatches configuration related requests.
      *
-     * @param Request $request Incoming Request object.
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
-     * @return Response        Outgoing Response object.
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function configurationDispatcher(Request $request, ManagerRegistry $dm)
     {
@@ -791,9 +931,9 @@ final class RestController extends AbstractController
     /**
      * Processes incoming requests, except for the ones sent with GET method.
      *
-     * @param RestBaseRequest $genericRequest Generic request object wrapper.
+     * @param \App\Rest\RestBaseRequest $genericRequest
      *
-     * @return Response                       Outgoing Response object.
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     private function relay(RestBaseRequest $genericRequest, LoggerInterface $logger)
     {
@@ -816,12 +956,16 @@ final class RestController extends AbstractController
     /**
      * Prepares an http response.
      *
-     * @param bool $status    Request processed status.
-     * @param string $message Debug message, if any.
-     * @param array $items    Response items, if any.
-     * @param int $hits       Number of available items.
+     * @param bool $status
+     *   Request processed status.
+     * @param string $message
+     *   Debug message, if any.
+     * @param array $items
+     *   Response items, if any.
+     * @param int $hits
+     *   Number of available items.
      *
-     * @return Response       Outgoing Response object.
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     private function setResponse($status = true, $message = '', $items = [], $hits = null)
     {

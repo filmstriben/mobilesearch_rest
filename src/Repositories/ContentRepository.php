@@ -3,7 +3,8 @@
 namespace App\Repositories;
 
 use App\Document\Content;
-use Doctrine\ODM\MongoDB\DocumentRepository;
+use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
+
 
 /**
  * Class ContentRepository.

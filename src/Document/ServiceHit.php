@@ -74,7 +74,7 @@ class ServiceHit {
     /**
      * Gets hit time.
      *
-     * @return \MongoDate
+     * @return \MongoDB\BSON\UTCDateTime
      *   Hit timestamp.
      */
     public function getTime()
@@ -85,7 +85,7 @@ class ServiceHit {
     /**
      * Sets hit time.
      *
-     * @param \MongoDate $time
+     * @param \MongoDB\BSON\UTCDateTime $time
      *   Hit timestamp.
      *
      * @return $this

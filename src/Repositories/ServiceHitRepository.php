@@ -3,7 +3,8 @@
 namespace App\Repositories;
 
 use App\Document\ServiceHit;
-use Doctrine\ODM\MongoDB\DocumentRepository;
+use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
+use MongoDB\BSON\UTCDateTime;
 
 /**
  * Class ContentRepository.
@@ -17,7 +18,7 @@ class ServiceHitRepository extends DocumentRepository
      *   Hit type.
      */
     public function trackHit($type, $url) {
-        $now = new \MongoDate(gmdate('U'));
+        $now = new UTCDateTime(gmdate('U'));
 
         $hit = new ServiceHit();
         $hit

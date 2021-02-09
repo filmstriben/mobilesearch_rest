@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Document\ServiceHit;
 use App\Services\ImageConverterException;
-use Nelmio\ApiDocBundle\Annotation\Model as ApiDoc;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -12,6 +11,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use OpenApi\Annotations as OA;
 
 
 /**
@@ -38,9 +38,16 @@ class ImageController extends AbstractController
     }
 
     /**
+     * Fetch an image.
+     *
      * @Route("/files/{agency}/{resize}/{filename}", defaults={"resize":"0x0"}, requirements={
      *      "resize":"\d{1,4}x\d{1,4}"
      * }, methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Image"},
+     *     deprecated=true
+     * )
      */
     public function imageAction(Request $request, $agency, $resize, $filename)
     {
@@ -52,7 +59,13 @@ class ImageController extends AbstractController
     }
 
     /**
+     * Fetch an image.
+     *
      * @Route("/files/{agency}/{filename}", methods={"GET"})
+     * @OA\Get(
+     *     description="",
+     *     tags={"Image"}
+     * )
      */
     public function imageNewAction(Request $request, $agency, $filename)
     {
