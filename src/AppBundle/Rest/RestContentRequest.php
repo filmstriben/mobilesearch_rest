@@ -144,7 +144,7 @@ class RestContentRequest extends RestBaseRequest
             $qb->field('fields.status.value')->equals($status);
         }
 
-        if ($external != '' && self::STATUS_ALL != $external && in_array($status, $possibleStatuses)) {
+        if ($external != '' && self::STATUS_ALL != $external && in_array($external, $possibleStatuses)) {
             $qb->field('fields.field_external.value')->equals($external);
         }
 
