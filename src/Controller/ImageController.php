@@ -4,6 +4,9 @@ namespace App\Controller;
 
 use App\Document\ServiceHit;
 use App\Services\ImageConverterException;
+use App\Services\ImageConverterInterface;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -51,7 +54,7 @@ class ImageController extends AbstractController
      */
     public function imageAction(Request $request, $agency, $resize, $filename)
     {
-        return $this->forward('App:Image:imageNew', [
+        return $this->forward('App\Controller\ImageController:imageNewAction', [
             'request' => $request,
             'agency' => $agency,
             'filename' => $filename,
@@ -67,10 +70,15 @@ class ImageController extends AbstractController
      *     tags={"Image"}
      * )
      */
-    public function imageNewAction(Request $request, $agency, $filename)
-    {
+    public function imageNewAction(
+        Request $request,
+        $agency,
+        $filename,
+        ManagerRegistry $dm,
+        LoggerInterface $logger,
+        ImageConverterInterface $imageConverter
+    ) {
         if ($this->getParameter('track_hits')) {
-            $dm = $this->get('doctrine_mongodb')->getManager();
             /** @var \App\Repositories\ServiceHitRepository $repository */
             $repository = $dm->getRepository(ServiceHit::class);
             $repository->trackHit('image_request', $request->getRequestUri());
@@ -92,7 +100,7 @@ class ImageController extends AbstractController
         // Legacy support.
         $resize = $request->query->get('resize', $request->attributes->get('resize'));
         if (!empty($resize)) {
-            list($targetWidth, $targetHeight) = explode('x', $resize);
+            [$targetWidth, $targetHeight] = explode('x', $resize);
         }
 
         $targetWidth = ($targetWidth > -1 && $targetWidth < 3841) ? $targetWidth : 0;
@@ -123,17 +131,11 @@ class ImageController extends AbstractController
         } elseif (false === ($imagePath = $this->tryImageFile($imagePath))) {
             return new Response('File not found.', Response::HTTP_NOT_FOUND);
         } elseif (!$this->prepareDirectory($resizedImageDirectory)) {
-            /** @var \Psr\Log\LoggerInterface $logger */
-            $logger = $this->get('logger');
             $logger->error("Resized images path '{$resizedImageDirectory}' could not be created or is not writeable.");
 
             return new Response('', Response::HTTP_SERVICE_UNAVAILABLE);
         } else {
-            /** @var \App\Services\ImageConverterInterface $imageConverter */
-            $imageConverter = $this->get('image_converter');
-
             if ($this->getParameter('track_hits')) {
-                $dm = $this->get('doctrine_mongodb')->getManager();
                 /** @var \App\Repositories\ServiceHitRepository $repository */
                 $repository = $dm->getRepository(ServiceHit::class);
                 $repository->trackHit('image_convert', $request->getRequestUri());
@@ -148,8 +150,6 @@ class ImageController extends AbstractController
 
                 $imagePath = $imageResizedPath;
             } catch (ImageConverterException $exception) {
-                /** @var \Psr\Log\LoggerInterface $logger */
-                $logger = $this->get('logger');
                 $logger->error($exception->getMessage());
 
                 return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);

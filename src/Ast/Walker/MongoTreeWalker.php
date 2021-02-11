@@ -4,10 +4,8 @@ namespace App\Ast\Walker;
 
 use App\Ast\NodeInterface;
 use App\Query\Clause;
-use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Expr;
-use Doctrine\Persistence\ManagerRegistry;
 use MongoDB\BSON\Regex as MongoRegex;
 
 

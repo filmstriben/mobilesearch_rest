@@ -6,6 +6,8 @@
 parameters:
     env(MONGODB_URL): ''
     env(MONGODB_DB): ''
+    web_dir: "%kernel.root_dir%/../web"
+    track_hits: false
 
 services:
     # default configuration for services in *this* file

@@ -43,9 +43,9 @@ final class RestController extends AbstractController
      *     tags={"Content"}
      * )
      */
-    public function contentCreateAction(Request $request)
+    public function contentCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->contentDispatcher($request);
+        return $this->contentDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -57,9 +57,9 @@ final class RestController extends AbstractController
      *     tags={"Content"}
      * )
      */
-    public function contentUpdateAction(Request $request)
+    public function contentUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->contentDispatcher($request);
+        return $this->contentDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -71,9 +71,9 @@ final class RestController extends AbstractController
      *     tags={"Content"}
      * )
      */
-    public function contentDeleteAction(Request $request)
+    public function contentDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->contentDispatcher($request);
+        return $this->contentDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -445,9 +445,9 @@ final class RestController extends AbstractController
      *     tags={"Menu"}
      * )
      */
-    public function menuCreateAction(Request $request)
+    public function menuCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->menuDispatcher($request);
+        return $this->menuDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -459,9 +459,9 @@ final class RestController extends AbstractController
      *     tags={"Menu"}
      * )
      */
-    public function menuUpdateAction(Request $request)
+    public function menuUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->menuDispatcher($request);
+        return $this->menuDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -473,9 +473,9 @@ final class RestController extends AbstractController
      *     tags={"Menu"}
      * )
      */
-    public function menuDeleteAction(Request $request)
+    public function menuDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->menuDispatcher($request);
+        return $this->menuDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -485,14 +485,14 @@ final class RestController extends AbstractController
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function menuDispatcher(Request $request, ManagerRegistry $dm)
+    public function menuDispatcher(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
 
         $rmr = new RestMenuRequest($dm);
 
-        return $this->relay($rmr);
+        return $this->relay($rmr, $logger);
     }
 
     /**
@@ -572,9 +572,9 @@ final class RestController extends AbstractController
      *     tags={"List"}
      * )
      */
-    public function listCreateAction(Request $request)
+    public function listCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->listDispatcher($request);
+        return $this->listDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -586,9 +586,9 @@ final class RestController extends AbstractController
      *     tags={"List"}
      * )
      */
-    public function listUpdateAction(Request $request)
+    public function listUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->listDispatcher($request);
+        return $this->listDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -600,9 +600,9 @@ final class RestController extends AbstractController
      *     tags={"List"}
      * )
      */
-    public function listDeleteAction(Request $request)
+    public function listDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->listDispatcher($request);
+        return $this->listDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -612,14 +612,14 @@ final class RestController extends AbstractController
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function listDispatcher(Request $request, ManagerRegistry $dm)
+    public function listDispatcher(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
 
         $rlr = new RestListsRequest($dm);
 
-        return $this->relay($rlr);
+        return $this->relay($rlr, $logger);
     }
 
     /**
@@ -748,7 +748,7 @@ final class RestController extends AbstractController
     public function taxonomyNewAction(Request $request)
     {
         $response = $this->forward(
-            'App:Rest:taxonomy',
+            'App\Controller\RestController:taxonomyAction',
             [
                 'request' => $request,
                 'contentType' => $request->query->get('contentType'),
@@ -811,7 +811,7 @@ final class RestController extends AbstractController
     public function taxonomySearchNewAction(Request $request)
     {
         $response = $this->forward(
-            'App:Rest:taxonomySearch',
+            'App\Controller\RestController:taxonomySearchAction',
             [
                 'request' => $request,
                 'vocabulary' => $request->query->get('vocabulary'),
@@ -832,9 +832,9 @@ final class RestController extends AbstractController
      *     tags={"Configuration"}
      * )
      */
-    public function configurationCreateAction(Request $request)
+    public function configurationCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->configurationDispatcher($request);
+        return $this->configurationDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -846,9 +846,9 @@ final class RestController extends AbstractController
      *     tags={"Configuration"}
      * )
      */
-    public function configurationUpdateAction(Request $request)
+    public function configurationUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->configurationDispatcher($request);
+        return $this->configurationDispatcher($request, $dm, $logger);
     }
 
     /**
@@ -860,9 +860,26 @@ final class RestController extends AbstractController
      *     tags={"Configuration"}
      * )
      */
-    public function configurationDeleteAction(Request $request)
+    public function configurationDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
-        return $this->configurationDispatcher($request);
+        return $this->configurationDispatcher($request, $dm, $logger);
+    }
+
+    /**
+     * Dispatches configuration related requests.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function configurationDispatcher(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
+    {
+        $this->lastMethod = $request->getMethod();
+        $this->rawContent = $request->getContent();
+
+        $restContentRequest = new RestConfigurationRequest($dm);
+
+        return $this->relay($restContentRequest, $logger);
     }
 
     /**
@@ -910,23 +927,6 @@ final class RestController extends AbstractController
         }
 
         return $this->setResponse($this->lastStatus, $this->lastMessage, $this->lastItems);
-    }
-
-    /**
-     * Dispatches configuration related requests.
-     *
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function configurationDispatcher(Request $request, ManagerRegistry $dm)
-    {
-        $this->lastMethod = $request->getMethod();
-        $this->rawContent = $request->getContent();
-
-        $restContentRequest = new RestConfigurationRequest($dm);
-
-        return $this->relay($restContentRequest);
     }
 
     /**

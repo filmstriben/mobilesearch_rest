@@ -2,8 +2,10 @@
 
 namespace App\Rest;
 
+use App\Document\Content;
 use App\Exception\RestException;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
+use MongoDB\BSON\Regex as MongoRegex;
 
 /**
  * @deprecated
@@ -18,35 +20,65 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry as MongoEM;
 class RestTaxonomyRequest extends RestBaseRequest
 {
 
+    /**
+     * RestTaxonomyRequest constructor.
+     *
+     * @param \Doctrine\Bundle\MongoDBBundle\ManagerRegistry $em
+     */
     public function __construct(MongoEM $em)
     {
         parent::__construct($em);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function get($id, $agency)
     {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function exists($id, $agency)
     {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function insert()
     {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function update($id, $agency)
     {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function delete($id, $agency)
     {
     }
 
+    /**
+     * Fetches a list of vocabularies.
+     *
+     * @param string $agency
+     *   Agency identifier.
+     * @param string $contentType
+     *   Node type.
+     *
+     * @return array
+     */
     public function fetchVocabularies($agency, $contentType)
     {
         $content = $this->em
-            ->getRepository('App:Content')
+            ->getRepository(Content::class)
             ->findBy(
                 [
                     'agency' => $agency,
@@ -59,11 +91,6 @@ class RestTaxonomyRequest extends RestBaseRequest
             foreach ($node->getTaxonomy() as $vocabularyName => $vocabulary) {
                 if (!empty($vocabulary['terms']) && is_array($vocabulary['terms'])) {
                     $vocabularies[$vocabularyName] = $vocabulary['name'];
-//                     foreach ($vocabulary['terms'] as $term) {
-//                         $vocabularies[$vocabularyName]['terms'][] = $term;
-//                     }
-
-//                     $vocabularies[$vocabularyName]['terms'] = array_values(array_unique($vocabularies[$vocabularyName]['terms']));
                 }
             }
         }
@@ -71,16 +98,29 @@ class RestTaxonomyRequest extends RestBaseRequest
         return $vocabularies;
     }
 
+    /**
+     * Fetches term suggestions for a certain vocabulary of a certain node type.
+     *
+     * @param string $agency
+     *   Agency identifier.
+     * @param string $vocabulary
+     *   Vocabulary name.
+     * @param string $contentType
+     *   Node type.
+     * @param string $query
+     *   Search query.
+     *
+     * @return array
+     */
     public function fetchTermSuggestions($agency, $vocabulary, $contentType, $query)
     {
         $field = 'taxonomy.'.$vocabulary.'.terms';
-        $pattern = '/'.$query.'/i';
 
-        $result = $this->em->getRepository('App:Content')->findBy(
+        $result = $this->em->getRepository(Content::class)->findBy(
             [
                 'agency' => $agency,
                 'type' => $contentType,
-                $field => ['$in' => [new \MongoRegex($pattern)]],
+                $field => ['$in' => [new MongoRegex($query, 'i')]],
             ]
         );
 
@@ -100,25 +140,5 @@ class RestTaxonomyRequest extends RestBaseRequest
         $terms = array_values(array_unique($terms));
 
         return $terms;
-    }
-
-    public function fetchRelatedContent($agency, array $vocabulary, array $terms)
-    {
-        if (count($vocabulary) != count($terms)) {
-            throw new RestException('Number of vocabulary and terms count mismatch.');
-        }
-
-        $criteria = [
-            'agency' => $agency,
-        ];
-
-        foreach ($vocabulary as $k => $item) {
-            $field = 'taxonomy.'.$item.'.terms';
-            $criteria[$field] = ['$in' => explode(',', $terms[$k])];
-        }
-
-        $content = $this->em->getRepository('App:Content')->findBy($criteria);
-
-        return $content;
     }
 }
