@@ -86,6 +86,8 @@ class RestContentRequest extends RestBaseRequest
      *   Entry type (type field).
      * @param string $status
      *   Entry status (fields.status.value field).
+     * @param string $external
+     *   Entry external status.
      * @param bool $countOnly
      *   Get only the number of results.
      *
@@ -101,6 +103,7 @@ class RestContentRequest extends RestBaseRequest
         $dir = '',
         $type = null,
         $status = self::STATUS_PUBLISHED,
+        $external = 0,
         $countOnly = FALSE
     ) {
         if (!empty($id)) {
@@ -137,8 +140,12 @@ class RestContentRequest extends RestBaseRequest
             self::STATUS_UNPUBLISHED,
         ];
         // Set a status filter only if it differs from the default one.
-        if (self::STATUS_ALL != $status && in_array($status, $possibleStatuses)) {
+        if ($status != '' && self::STATUS_ALL != $status && in_array($status, $possibleStatuses)) {
             $qb->field('fields.status.value')->equals($status);
+        }
+
+        if ($external != '' && self::STATUS_ALL != $external && in_array($status, $possibleStatuses)) {
+            $qb->field('fields.field_external.value')->equals($external);
         }
 
         return $qb->getQuery()->execute();

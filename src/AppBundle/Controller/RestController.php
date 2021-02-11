@@ -292,6 +292,13 @@ final class RestController extends Controller
      *             "description"="Filters the entities by the value stored in 'fields.status.value' field. Defaults to -1.",
      *             "required"=false,
      *             "format"="-1|0|1"
+     *         },
+     *         {
+     *             "name"="external",
+     *             "dataType"="integer",
+     *             "description"="Filters the entities by the value stored in 'fields.external.value' field. Defaults to -1.",
+     *             "required"=false,
+     *             "format"="-1|0|1"
      *         }
      *     },
      *     output={
@@ -317,6 +324,7 @@ final class RestController extends Controller
             'order' => 'ASC',
             'type' => null,
             'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         foreach (array_keys($fields) as $field) {
