@@ -2,6 +2,7 @@
 
 namespace App\Document;
 
+use App\Exception\RestException;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
 /**
@@ -45,7 +46,7 @@ class Lists
     protected $weight;
 
     /**
-     * @MongoDB\Field(type="hash")
+     * @MongoDB\Field(type="string")
      */
     protected $criteria;
 
@@ -212,6 +213,11 @@ class Lists
      */
     public function setCriteria(array $criteria)
     {
+        $criteria = json_encode($criteria);
+        if (!$criteria) {
+            throw new RestException('Could not encode list criteria.');
+        }
+
         $this->criteria = $criteria;
 
         return $this;
@@ -224,6 +230,11 @@ class Lists
      */
     public function getCriteria()
     {
-        return $this->criteria;
+        $criteria = json_decode($this->criteria);
+        if(!$criteria) {
+            throw new RestException('Could not decode list criteria.');
+        }
+
+        return $criteria;
     }
 }
