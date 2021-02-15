@@ -117,7 +117,7 @@ final class RestController extends AbstractController
             'order' => 'ASC',
             'type' => null,
             'status' => RestContentRequest::STATUS_ALL,
-            'external' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_UNPUBLISHED,
         ];
 
         foreach (array_keys($fields) as $field) {
