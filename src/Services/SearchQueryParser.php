@@ -167,9 +167,16 @@ class SearchQueryParser
     {
         $aheadToken = $this->lexer->lookahead;
         $position = isset($aheadToken['position']) ? $aheadToken['position'] : -1;
+
         if (!$aheadToken || $aheadToken['type'] !== $tokenType) {
-            $error = 'Expected a valid token of type "' . $this->lexer->getLiteral($tokenType) . '", found "' . $aheadToken['value'] . '"';
-            $error .= ' at position "' . $position . '"';
+            $error = 'Expected a valid token of type "' . $this->lexer->getLiteral($tokenType) . '"';
+            if (!$aheadToken) {
+                $error .= ', none found';
+            }
+            else {
+                $error .= ', found "' . $aheadToken['value'] . '"';
+            }
+            $error .= ' at position "' . $position . '".';
 
             throw new \RuntimeException($error);
         }
