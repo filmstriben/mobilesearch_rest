@@ -3,6 +3,7 @@
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use OpenApi\Annotations as OA;
 
 /**
  * @MongoDB\Document(repositoryClass="App\Repositories\ContentRepository")
@@ -10,42 +11,50 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 class Content
 {
     /**
-     * @MongoDB\id
+     * @MongoDB\Id()
+     * @OA\Property(type="string")
      */
     protected $id;
 
     /**
      * @MongoDB\Field(type="int")
+     * @OA\Property(type="integer")
      */
     protected $nid;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
      */
     protected $agency;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
      */
     protected $type;
 
     /**
      * @MongoDB\Field(type="hash")
+     * @OA\Property(type="array", @OA\Items(type="object"))
      */
     protected $fields;
 
     /**
      * @MongoDB\Field(type="hash")
+     * @OA\Property(type="array", @OA\Items(type="object"))
      */
     protected $taxonomy;
 
     /**
      * @MongoDB\Field(type="hash")
+     * @OA\Property(type="array", @OA\Items(type="object"))
      */
     protected $list;
 
     /**
      * @MongoDB\Field(type="float", notSaved=true)
+     * @OA\Property(type="number")
      */
     public $score;
 

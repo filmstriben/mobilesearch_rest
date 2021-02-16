@@ -16,6 +16,7 @@ use App\Rest\RestMenuRequest;
 use App\Rest\RestTaxonomyRequest;
 use App\Services\SearchQueryParser;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -98,8 +99,132 @@ final class RestController extends AbstractController
      *
      * @Route("/content/fetch", methods={"GET"})
      * @OA\Get(
-     *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="id",
+     *         description="Content internal id. Fetches only a specific content entity with specific id. Discards any other query parameter.",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="node",
+     *         description="Content external id. Fetches only a specific content entity with specific external id. Discards any other query parameter.",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="sort",
+     *         description="Sort the entities in response by a specific field.",
+     *         @OA\Schema(
+     *             type="string",
+     *             default="fields.title.value"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="order",
+     *         description="Sorting order. ASC - ascending order, DESC - descending order.",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"ASC", "DESC"},
+     *             default="ASC"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="type",
+     *         description="Filter entities to a specific type. Type is taken from 'type' field.",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="status",
+     *         description="Filter entities with a specific status. Status is taken from 'fields.status.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="-1"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="external",
+     *         description="Filter entities with a specific external status. External status is taken from 'fields.external.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic content respose.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                      ref=@Model(type=App\Document\Content::class)
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="hits",
+     *                 type="integer"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function contentFetchAction(Request $request, ManagerRegistry $dm)
