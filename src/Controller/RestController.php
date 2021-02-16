@@ -367,7 +367,76 @@ final class RestController extends AbstractController
      * @Route("/content/search-ranked", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="q",
+     *         description="Search query.",
+     *         @OA\Schema(
+     *             type="string",
+     *         ),
+     *         @OA\Examples(
+     *              summary="Simple word",
+     *              value="harry"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Any word",
+     *              value="harry potter"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Exact match",
+     *              value="""harry potter"""
+     *         ),
+     *         @OA\Examples(
+     *              summary="Exclude word",
+     *              value="harry potter -150064"
+     *         ),
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="format",
+     *         description="Search result format.",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"short","full"}
+     *         )
+     *     ),
      * )
      *
      * TODO: Test coverage.
@@ -389,7 +458,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        // Hard upper limit to 100 items per request.
+        // Set upper amount limit to 100 items per request.
         $fields['amount'] = $fields['amount'] > 100 ? 100 : $fields['amount'];
 
         $restContentRequest = new RestContentRequest($dm);
