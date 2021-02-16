@@ -164,11 +164,11 @@ final class RestController extends AbstractController
      *     @OA\Parameter(
      *         in="query",
      *         name="order",
-     *         description="Sorting order. ASC - ascending order, DESC - descending order.",
+     *         description="Sorting order. asc - ascending order, desc - descending order.",
      *         @OA\Schema(
      *             type="string",
-     *             enum={"ASC", "DESC"},
-     *             default="ASC"
+     *             enum={"asc", "desc"},
+     *             default="asc"
      *         )
      *     ),
      *     @OA\Parameter(
@@ -247,6 +247,10 @@ final class RestController extends AbstractController
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
+            $fields['order'] = 'asc';
         }
 
         $restContentRequest = new RestContentRequest($dm);
@@ -437,6 +441,10 @@ final class RestController extends AbstractController
      *             enum={"short","full"}
      *         )
      *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Search result response."
+     *     )
      * )
      *
      * TODO: Test coverage.
@@ -524,7 +532,111 @@ final class RestController extends AbstractController
      * @Route("/content/search-extended", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="q",
+     *         description="Search query.",
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os'",
+     *              value="(""type[eq]:os"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os' with id either '8925' or '14384'",
+     *              value="(""type[eq]:os"" AND ""nid[in]:8925|14384"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type within 'os' or 'editorial'",
+     *              value="(""type[eq]:os"" OR ""type[eq]:editorial"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os' and director 'Martin Scorsese'",
+     *              value="(""type[eq]:os"" AND ""taxonomy.drt.terms[eq]:Martin Scorsese"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os' and director containing 'scorsese'",
+     *              value="(""type[eq]:os"" AND ""taxonomy.drt.terms[regex]:scorsese"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os' with title containing 'av' or type 'editorial' with agency '150064'",
+     *              value="(""type[eq]:os"" AND ""fields.title.value[regex]:av"") OR (""type[eq]:editorial"" AND ""agency[eq]:150064"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Faust numbers '29056439' or '27415679' with agency '150027'",
+     *              value="(""fields.field_faust_number.value[regex]:29056439|27415679"" AND ""agency[eq]:150027"")"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="format",
+     *         description="Search result format.",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"short","full"}
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="sort",
+     *         description="Sort the entities in response by a specific field.",
+     *         @OA\Schema(
+     *             type="string",
+     *             default="fields.title.value"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="order",
+     *         description="Sorting order. asc - ascending order, desc - descending order.",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"asc", "desc"},
+     *             default="asc"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Search result response."
+     *     )
      * )
      * TODO: Test coverage.
      */
@@ -547,7 +659,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        if (!in_array($fields['order'], ['asc', 'desc'])) {
+        if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
             $fields['order'] = 'asc';
         }
 
@@ -598,7 +710,6 @@ final class RestController extends AbstractController
             $query = $qb->getQuery();
             $suggestions = $query->execute();
 
-
             /** @var \App\Document\Content $suggestion */
             foreach ($suggestions as $suggestion) {
                 $suggestionFields = $suggestion->getFields();
@@ -620,6 +731,8 @@ final class RestController extends AbstractController
                         ];
                 }
             }
+
+            $this->lastStatus = true;
         }
 
         return $this->setResponse(
