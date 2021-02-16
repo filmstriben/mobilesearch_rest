@@ -2,9 +2,11 @@
 
 namespace App\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -12,7 +14,31 @@ use Symfony\Component\Finder\Finder;
  *
  * Command to create default db index.
  */
-class EnsureIndexCommand extends ContainerAwareCommand {
+class EnsureIndexCommand extends Command {
+    /**
+     * @var \Doctrine\Bundle\MongoDBBundle\ManagerRegistry
+     */
+    protected $doctrine;
+
+    /**
+     * @var \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface
+     */
+    protected $parameterBag;
+
+    /**
+     * EnsureIndexCommand constructor.
+     *
+     * @param \Doctrine\Bundle\MongoDBBundle\ManagerRegistry $doctrine
+     * @param \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface $parameterBag
+     */
+    public function __construct(ManagerRegistry $doctrine, ParameterBagInterface $parameterBag)
+    {
+        $this->doctrine = $doctrine;
+        $this->parameterBag = $parameterBag;
+
+        parent::__construct();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -30,7 +56,7 @@ class EnsureIndexCommand extends ContainerAwareCommand {
     {
         $finder = new Finder();
         $finder
-            ->in('app/Resources')
+            ->in('config')
             ->name('content_index.json');
 
         foreach ($finder as $file) {
@@ -42,18 +68,13 @@ class EnsureIndexCommand extends ContainerAwareCommand {
                 break;
             }
 
-            $connection = $this->getContainer()->get('doctrine_mongodb')->getConnection();
-            /** @var \MongoClient $mongo */
-            $mongo = $connection->getMongo();
-            /** @var \MongoDB $db */
-            $db = $mongo->selectDB($this->getContainer()->getParameter('mongo_db'));
-            /** @var \MongoCollection $collection */
-            $collection = $db->selectCollection('Content');
+            /** @var \MongoDB\Client $connection */
+            $connection = $this->doctrine->getConnection();
 
-            $createIndexResult = $collection->createIndex($indexDefinition[0], $indexDefinition[1]);
-            if (array_key_exists('note', $createIndexResult)) {
-                $output->writeln($createIndexResult['note']);
-            }
+            $database = $connection->selectDatabase($this->parameterBag->get('mongodb_database'));
+            $collection = $database->selectCollection('Content');
+
+            $collection->createIndex($indexDefinition[0], $indexDefinition[1]);
         }
     }
 }
