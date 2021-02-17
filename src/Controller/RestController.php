@@ -1507,7 +1507,44 @@ final class RestController extends AbstractController
      * @Route("/configuration", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Configuration"}
+     *     tags={"Configuration"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic configuration response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="object"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function configurationFetchAction(Request $request, ManagerRegistry $dm)
