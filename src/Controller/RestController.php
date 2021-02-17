@@ -1299,7 +1299,132 @@ final class RestController extends AbstractController
      * @Route("/taxonomy/terms", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Taxonomy"}
+     *     tags={"Taxonomy"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="vocabulary",
+     *         description="Vocabulary identifier. The possible values are taken from the 'taxonomy' section of a certian content entity.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Country vocabulary",
+     *              value="field_country"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Language vocabulary",
+     *              value="field_language"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Director vocabulary",
+     *              value="drt"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Creator vocabulary",
+     *              value="cre"
+     *         ),
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="contentType",
+     *         description="Content type. The 'type' value found in content entities.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabularies from content of type 'os'",
+     *              value="os"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabularies from content of type 'editorial'",
+     *              value="editorial"
+     *         ),
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="query",
+     *         description="Use 'q' instead.",
+     *         deprecated=true,
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="q",
+     *         description="Search query. Accepts regex pattern.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabulary terms containing 'scorsese'.",
+     *              value="scorsese"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabulary terms containing 'Tom'.",
+     *              value="Tom"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabulary terms starting with 'Tom'.",
+     *              value="^Tom"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabulary terms ending with 'Tom'.",
+     *              value="Tom$"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Absolute match.",
+     *              value="^Tom Tykwer$"
+     *         ),
+     *         @OA\Examples(
+     *              summary="All terms.",
+     *              value="."
+     *         ),
+     *         @OA\Examples(
+     *              summary="Custom regex.",
+     *              value="Tom|Carl"
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic vocabularies response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="string"
+     *                 )
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function taxonomySearchNewAction(Request $request)
@@ -1310,7 +1435,7 @@ final class RestController extends AbstractController
                 'request' => $request,
                 'vocabulary' => $request->query->get('vocabulary'),
                 'contentType' => $request->query->get('contentType'),
-                'query' => $request->query->get('query'),
+                'query' => $request->query->get('q', $request->query->get('query', '')),
             ]
         );
 
