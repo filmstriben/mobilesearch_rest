@@ -62,12 +62,126 @@ class ImageController extends AbstractController
     }
 
     /**
-     * Fetch an image.
+     * Fetch an image. To convert between formats (jpeg|png|gif|webp), change the request filename extension.
      *
      * @Route("/files/{agency}/{filename}", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Image"}
+     *     tags={"Image"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="w",
+     *         description="Target width. Min - 0, Max - 3840.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             minimum=0,
+     *             maximum=3840
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="h",
+     *         description="Target height. Min - 0, Max - 3840.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             minimum=0,
+     *             maximum=3840
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="q",
+     *         description="Quality. Min - 2, Max - 100",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default=75,
+     *             minimum=2,
+     *             maximum=100
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="s",
+     *         description="Sharpen.",
+     *         @OA\Schema(
+     *             type="boolean",
+     *             default=true
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="r",
+     *         description="Sampling filter.",
+     *         @OA\Schema(
+     *             type="string",
+     *             default="undefined"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Undefined",
+     *              value="undefined"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Point",
+     *              value="point"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Box",
+     *              value="box"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Triangle",
+     *              value="triangle"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Hermite",
+     *              value="hermite"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Hamming",
+     *              value="hamming"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Hanning",
+     *              value="hanning"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Blackman",
+     *              value="blackman"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Gaussian",
+     *              value="gaussian"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Quadratic",
+     *              value="quadratic"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Cubic",
+     *              value="cubic"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Catrom",
+     *              value="catrom"
+     *         ),
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="f",
+     *         description="Force reload.",
+     *         @OA\Schema(
+     *             type="boolean",
+     *             default=false
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Result image.",
+     *         @OA\Schema(
+     *             type="string",
+     *             format="binary"
+     *         )
+     *     )
      * )
      */
     public function imageNewAction(

@@ -3,6 +3,7 @@
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use OpenApi\Annotations as OA;
 
 /**
  * @MongoDB\Document
@@ -11,41 +12,52 @@ class Menu
 {
     /**
      * @MongoDB\id
+     * @OA\Property(type="string")
      */
     protected $id;
 
     /**
      * @MongoDB\Field(type="int")
+     * @OA\Property(type="integer")
      */
     protected $mlid;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
      */
     protected $agency;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
      */
     protected $type;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
      */
     protected $name;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
      */
     protected $url;
 
     /**
      * @MongoDB\Field(type="int")
+     * @OA\Property(
+     *     type="integer",
+     *     property="weight"
+     * )
      */
     protected $order;
 
     /**
      * @MongoDB\Field(type="int")
+     * @OA\Property(type="boolean")
      */
     protected $enabled;
 

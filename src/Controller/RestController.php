@@ -16,6 +16,7 @@ use App\Rest\RestMenuRequest;
 use App\Rest\RestTaxonomyRequest;
 use App\Services\SearchQueryParser;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -98,8 +99,132 @@ final class RestController extends AbstractController
      *
      * @Route("/content/fetch", methods={"GET"})
      * @OA\Get(
-     *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="id",
+     *         description="Content internal id. Fetches only a specific content entity with specific id. Discards any other query parameter.",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="node",
+     *         description="Content external id. Fetches only a specific content entity with specific external id. Discards any other query parameter.",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="sort",
+     *         description="Sort the entities in response by a specific field.",
+     *         @OA\Schema(
+     *             type="string",
+     *             default="fields.title.value"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="order",
+     *         description="Sorting order. asc - ascending order, desc - descending order.",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"asc", "desc"},
+     *             default="asc"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="type",
+     *         description="Filter entities to a specific type. Type is taken from 'type' field.",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="status",
+     *         description="Filter entities with a specific status. Status is taken from 'fields.status.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="-1"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="external",
+     *         description="Filter entities with a specific external status. External status is taken from 'fields.external.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic content response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                      ref=@Model(type=App\Document\Content::class)
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="hits",
+     *                 type="integer"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function contentFetchAction(Request $request, ManagerRegistry $dm)
@@ -122,6 +247,10 @@ final class RestController extends AbstractController
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
+            $fields['order'] = 'asc';
         }
 
         $restContentRequest = new RestContentRequest($dm);
@@ -242,7 +371,80 @@ final class RestController extends AbstractController
      * @Route("/content/search-ranked", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="q",
+     *         description="Search query.",
+     *         @OA\Schema(
+     *             type="string",
+     *         ),
+     *         @OA\Examples(
+     *              summary="Simple word",
+     *              value="harry"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Any word",
+     *              value="harry potter"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Exact match",
+     *              value="""harry potter"""
+     *         ),
+     *         @OA\Examples(
+     *              summary="Exclude word",
+     *              value="harry potter -150064"
+     *         ),
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="format",
+     *         description="Search result format.",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"short","full"}
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Search result response."
+     *     )
      * )
      *
      * TODO: Test coverage.
@@ -264,7 +466,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        // Hard upper limit to 100 items per request.
+        // Set upper amount limit to 100 items per request.
         $fields['amount'] = $fields['amount'] > 100 ? 100 : $fields['amount'];
 
         $restContentRequest = new RestContentRequest($dm);
@@ -330,7 +532,112 @@ final class RestController extends AbstractController
      * @Route("/content/search-extended", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="q",
+     *         description="Search query.",
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os'",
+     *              value="(""type[eq]:os"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os' with id either '8925' or '14384'",
+     *              value="(""type[eq]:os"" AND ""nid[in]:8925|14384"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type within 'os' or 'editorial'",
+     *              value="(""type[eq]:os"" OR ""type[eq]:editorial"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os' and director 'Martin Scorsese'",
+     *              value="(""type[eq]:os"" AND ""taxonomy.drt.terms[eq]:Martin Scorsese"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os' and director containing 'scorsese'",
+     *              value="(""type[eq]:os"" AND ""taxonomy.drt.terms[regex]:scorsese"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Type 'os' with title containing 'av' or type 'editorial' with agency '150064'",
+     *              value="(""type[eq]:os"" AND ""fields.title.value[regex]:av"") OR (""type[eq]:editorial"" AND ""agency[eq]:150064"")"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Faust numbers '29056439' or '27415679' with agency '150027'",
+     *              value="(""fields.field_faust_number.value[regex]:29056439|27415679"" AND ""agency[eq]:150027"")"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="format",
+     *         description="Search result format.",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"short","full"}
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="sort",
+     *         description="Sort the entities in response by a specific field.",
+     *         @OA\Schema(
+     *             type="string",
+     *             default="fields.title.value"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="order",
+     *         description="Sorting order. asc - ascending order, desc - descending order.",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"asc", "desc"},
+     *             default="asc"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Search result response.",
+     *         @OA\JsonContent()
+     *     )
      * )
      * TODO: Test coverage.
      */
@@ -353,7 +660,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        if (!in_array($fields['order'], ['asc', 'desc'])) {
+        if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
             $fields['order'] = 'asc';
         }
 
@@ -404,7 +711,6 @@ final class RestController extends AbstractController
             $query = $qb->getQuery();
             $suggestions = $query->execute();
 
-
             /** @var \App\Document\Content $suggestion */
             foreach ($suggestions as $suggestion) {
                 $suggestionFields = $suggestion->getFields();
@@ -426,6 +732,8 @@ final class RestController extends AbstractController
                         ];
                 }
             }
+
+            $this->lastStatus = true;
         }
 
         return $this->setResponse(
@@ -501,7 +809,69 @@ final class RestController extends AbstractController
      * @Route("/menu/fetch", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Menu"}
+     *     tags={"Menu"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic menu response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                      ref=@Model(type=App\Document\Menu::class)
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="hits",
+     *                 type="integer"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function menuFetchAction(Request $request, ManagerRegistry $dm)
@@ -628,7 +998,79 @@ final class RestController extends AbstractController
      * @Route("/list/fetch", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"List"}
+     *     tags={"List"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="promoted",
+     *         description="Filter lists by 'promoted' status. '-1' - all, '0' - not promoted 0, '1' - promoted",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="1"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic lists response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                      ref=@Model(type=App\Document\Lists::class)
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="hits",
+     *                 type="integer"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function listFetchAction(Request $request, ManagerRegistry $dm)
@@ -647,9 +1089,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        if (-1 !== $fields['promoted']) {
-            $fields['promoted'] = filter_var($fields['promoted'], FILTER_VALIDATE_BOOLEAN);
-        }
+        $fields['promoted'] = RestContentRequest::STATUS_ALL !== $fields['promoted'] ? filter_var($fields['promoted'], FILTER_VALIDATE_BOOLEAN) : null;
 
         $restListsRequest = new RestListsRequest($dm);
 
@@ -742,7 +1182,61 @@ final class RestController extends AbstractController
      * @Route("/taxonomy/vocabularies", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Taxonomy"}
+     *     tags={"Taxonomy"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="contentType",
+     *         description="Content type. The 'type' value found in content entities.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabularies from content of type 'os'",
+     *              value="os"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabularies from content of type 'editorial'",
+     *              value="editorial"
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic vocabularies response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="object"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function taxonomyNewAction(Request $request)
@@ -805,7 +1299,132 @@ final class RestController extends AbstractController
      * @Route("/taxonomy/terms", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Taxonomy"}
+     *     tags={"Taxonomy"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="vocabulary",
+     *         description="Vocabulary identifier. The possible values are taken from the 'taxonomy' section of a certian content entity.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Country vocabulary",
+     *              value="field_country"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Language vocabulary",
+     *              value="field_language"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Director vocabulary",
+     *              value="drt"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Creator vocabulary",
+     *              value="cre"
+     *         ),
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="contentType",
+     *         description="Content type. The 'type' value found in content entities.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabularies from content of type 'os'",
+     *              value="os"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabularies from content of type 'editorial'",
+     *              value="editorial"
+     *         ),
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="query",
+     *         description="Use 'q' instead.",
+     *         deprecated=true,
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="q",
+     *         description="Search query. Accepts regex pattern.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabulary terms containing 'scorsese'.",
+     *              value="scorsese"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabulary terms containing 'Tom'.",
+     *              value="Tom"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabulary terms starting with 'Tom'.",
+     *              value="^Tom"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabulary terms ending with 'Tom'.",
+     *              value="Tom$"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Absolute match.",
+     *              value="^Tom Tykwer$"
+     *         ),
+     *         @OA\Examples(
+     *              summary="All terms.",
+     *              value="."
+     *         ),
+     *         @OA\Examples(
+     *              summary="Custom regex.",
+     *              value="Tom|Carl"
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic vocabularies response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="string"
+     *                 )
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function taxonomySearchNewAction(Request $request)
@@ -816,7 +1435,7 @@ final class RestController extends AbstractController
                 'request' => $request,
                 'vocabulary' => $request->query->get('vocabulary'),
                 'contentType' => $request->query->get('contentType'),
-                'query' => $request->query->get('query'),
+                'query' => $request->query->get('q', $request->query->get('query', '')),
             ]
         );
 
@@ -888,7 +1507,44 @@ final class RestController extends AbstractController
      * @Route("/configuration", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Configuration"}
+     *     tags={"Configuration"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic configuration response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="object"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function configurationFetchAction(Request $request, ManagerRegistry $dm)

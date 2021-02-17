@@ -101,9 +101,9 @@ class RestListsRequest extends RestBaseRequest
     /**
      * Prepares the list entry structure.
      *
-     * @param Lists $list
+     * @param \App\Document\Lists $list
      *
-     * @return Lists
+     * @return \App\Document\Lists
      */
     public function prepare(Lists $list)
     {
@@ -134,16 +134,20 @@ class RestListsRequest extends RestBaseRequest
     }
 
     /**
-     * Fetches list content.
+     * Fetches a set of lists.
      *
-     * @param int $amount       Number of entries to fetch.
-     * @param int $skip         Number of entries to skip.
-     * @param int $promoted     Filter items by promoted value.
-     * @param bool $countOnly   Fetch only number of entries.
+     * @param int $amount
+     *   Number of entries to fetch.
+     * @param int $skip
+     *   Number of entries to skip.
+     * @param bool $promoted
+     *   Filter items by promoted value.
+     * @param bool $countOnly
+     *   Fetch only the count of entries.
      *
-     * @return Lists[]
+     * @return \App\Document\Lists[]
      */
-    public function fetchLists($amount = 10, $skip = 0, $promoted = 1, $countOnly = false)
+    public function fetchLists(int $amount = 10, int $skip = 0, bool $promoted = null, bool $countOnly = null)
     {
         $qb = $this->em
             ->getManager()
@@ -155,7 +159,7 @@ class RestListsRequest extends RestBaseRequest
             $qb->skip($skip)->limit($amount);
         }
 
-        if (-1 !== (int)$promoted) {
+        if (null !== $promoted) {
             $qb->field('promoted')->equals((boolean)$promoted);
         }
 

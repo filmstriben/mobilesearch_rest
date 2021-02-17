@@ -4,6 +4,7 @@ namespace App\Document;
 
 use App\Exception\RestException;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use OpenApi\Annotations as OA;
 
 /**
  * @MongoDB\Document(repositoryClass="App\Repositories\ListsRepository")
@@ -12,41 +13,54 @@ class Lists
 {
     /**
      * @MongoDB\id
+     * @OA\Property(type="string")
      */
     protected $id;
 
     /**
      * @MongoDB\Field(type="int")
+     * @OA\Property(type="integer")
      */
     protected $lid;
 
     /**
      * @MongoDB\Field(type="collection")
+     * @OA\Property(
+     *     type="array",
+     *     @OA\Items(
+     *         type="string"
+     *     )
+     * )
      */
     protected $agency;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
      */
     protected $name;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
      */
     protected $type;
 
     /**
      * @MongoDB\Field(type="boolean")
+     * @OA\Property(type="boolean")
      */
     protected $promoted;
 
     /**
      * @MongoDB\Field(type="int")
+     * @OA\Property(type="integer")
      */
     protected $weight;
 
     /**
      * @MongoDB\Field(type="string")
+     * @OA\Property(type="object")
      */
     protected $criteria;
 
