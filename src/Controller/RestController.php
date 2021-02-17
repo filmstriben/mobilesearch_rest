@@ -201,7 +201,7 @@ final class RestController extends AbstractController
      *     ),
      *     @OA\Response(
      *         response="200",
-     *         description="Generic content respose.",
+     *         description="Generic content response.",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(
@@ -635,7 +635,8 @@ final class RestController extends AbstractController
      *     ),
      *     @OA\Response(
      *         response="200",
-     *         description="Search result response."
+     *         description="Search result response.",
+     *         @OA\JsonContent()
      *     )
      * )
      * TODO: Test coverage.
@@ -808,7 +809,69 @@ final class RestController extends AbstractController
      * @Route("/menu/fetch", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Menu"}
+     *     tags={"Menu"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic menu response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                      ref=@Model(type=App\Document\Menu::class)
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="hits",
+     *                 type="integer"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function menuFetchAction(Request $request, ManagerRegistry $dm)
