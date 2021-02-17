@@ -1182,7 +1182,61 @@ final class RestController extends AbstractController
      * @Route("/taxonomy/vocabularies", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"Taxonomy"}
+     *     tags={"Taxonomy"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="contentType",
+     *         description="Content type. The 'type' value found in content entities.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabularies from content of type 'os'",
+     *              value="os"
+     *         ),
+     *         @OA\Examples(
+     *              summary="Vocabularies from content of type 'editorial'",
+     *              value="editorial"
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic vocabularies response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="object"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function taxonomyNewAction(Request $request)
