@@ -48,7 +48,10 @@ class Menu
 
     /**
      * @MongoDB\Field(type="int")
-     * @OA\Property(type="integer")
+     * @OA\Property(
+     *     type="integer",
+     *     property="weight"
+     * )
      */
     protected $order;
 

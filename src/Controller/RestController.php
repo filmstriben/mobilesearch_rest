@@ -998,7 +998,79 @@ final class RestController extends AbstractController
      * @Route("/list/fetch", methods={"GET"})
      * @OA\Get(
      *     description="",
-     *     tags={"List"}
+     *     tags={"List"},
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="agency",
+     *         description="Agency identifier.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="key",
+     *         description="Access key.",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="amount",
+     *         description="Amount of items to return.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="10"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="skip",
+     *         description="Skip this amount of items from the result.",
+     *         @OA\Schema(
+     *             type="integer",
+     *             default="0"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="promoted",
+     *         description="Filter lists by 'promoted' status. '-1' - all, '0' - not promoted 0, '1' - promoted",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="1"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic lists response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items(
+     *                      ref=@Model(type=App\Document\Lists::class)
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="hits",
+     *                 type="integer"
+     *             ),
+     *         )
+     *     )
      * )
      */
     public function listFetchAction(Request $request, ManagerRegistry $dm)
@@ -1017,9 +1089,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        if (-1 !== $fields['promoted']) {
-            $fields['promoted'] = filter_var($fields['promoted'], FILTER_VALIDATE_BOOLEAN);
-        }
+        $fields['promoted'] = RestContentRequest::STATUS_ALL !== $fields['promoted'] ? filter_var($fields['promoted'], FILTER_VALIDATE_BOOLEAN) : null;
 
         $restListsRequest = new RestListsRequest($dm);
 
