@@ -62,7 +62,7 @@ class ImageController extends AbstractController
     }
 
     /**
-     * Fetch an image. To convert between formats (jpeg|png|gif|webp), change the request filename extension.
+     * Fetch and process an image. To convert between formats (jpeg|png|gif|webp), specify the extension in filename.
      *
      * @Route("/files/{agency}/{filename}", methods={"GET"})
      * @OA\Get(
@@ -91,11 +91,11 @@ class ImageController extends AbstractController
      *     @OA\Parameter(
      *         in="query",
      *         name="q",
-     *         description="Quality. Min - 2, Max - 100",
+     *         description="Quality. Min - 1, Max - 100",
      *         @OA\Schema(
      *             type="integer",
      *             default=75,
-     *             minimum=2,
+     *             minimum=1,
      *             maximum=100
      *         )
      *     ),
@@ -114,7 +114,7 @@ class ImageController extends AbstractController
      *         description="Sampling filter.",
      *         @OA\Schema(
      *             type="string",
-     *             default="undefined"
+     *             default="catrom"
      *         ),
      *         @OA\Examples(
      *              summary="Undefined",
@@ -199,12 +199,10 @@ class ImageController extends AbstractController
         }
 
         $quality = (int)$request->query->get('q', 75);
-        $quality = ($quality > 1 && $quality < 101) ? $quality : 75;
+        $quality = ($quality > 0 && $quality < 101) ? $quality : 75;
 
         $sampleFilter = $request->query->get('r');
         $sharpen = filter_var($request->query->get('s', true), FILTER_VALIDATE_BOOLEAN);
-
-        $format = $request->query->get('o');
 
         $force = filter_var($request->query->get('f'), FILTER_VALIDATE_BOOLEAN);
 
@@ -232,7 +230,6 @@ class ImageController extends AbstractController
         $resizedImageDirectory = $baseImageDirectory.'/'.implode('x', [$targetWidth, $targetHeight]);
 
         $splFile = new \SplFileInfo($baseImageDirectory.'/'.$filename);
-        // TODO: This overrides the query param format.
         $format = $splFile->getExtension();
         $baseName = $splFile->getBasename('.'.$format);
 
@@ -353,10 +350,9 @@ class ImageController extends AbstractController
     /**
      * Attempts to find similar named images.
      *
-     * This will seek images with same basenames in same directory,
-     * eventually returning first occurrence.
+     * Finds first image with similar basename.
      *
-     * @param $imageFile
+     * @param string $imageFile
      *   Sample file path.
      *
      * @return bool|string
