@@ -4,7 +4,6 @@ namespace App\Tests;
 
 use App\DataFixtures\MongoDB\AgencyFixtures;
 use App\DataFixtures\MongoDB\ContentFixtures;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class ContentSearchTest
@@ -52,7 +51,6 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
             'q' => '',
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);

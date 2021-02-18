@@ -4,7 +4,6 @@ namespace App\Tests;
 
 use App\DataFixtures\MongoDB\AgencyFixtures;
 use App\DataFixtures\MongoDB\ContentFixtures;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class TermSuggestionsTest
@@ -27,30 +26,9 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'key' => self::KEY,
             'vocabulary' => 'field_realm',
             'content_type' => 'os',
-            'query' => 'Hjemmefra',
+            'q' => 'Hjemmefra',
         ];
 
-        $uri = implode(
-            '/',
-            [
-                self::URI,
-                $parameters['vocabulary'],
-                $parameters['content_type'],
-                $parameters['query'],
-            ]
-        );
-
-        /** @var Response $response */
-        $response = $this->request($uri, $parameters, 'GET');
-
-        $result = $this->assertResponse($response);
-
-        $this->assertFalse($result['status']);
-        $this->assertEmpty($result['items']);
-
-        // Test new endpoint.
-        // TODO: Previous assertions to be removed after deprecated route is removed.
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -69,7 +47,7 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'key' => self::KEY,
             'vocabulary' => 'field_genre',
             'contentType' => 'os',
-            'query' => 'drama',
+            'q' => 'drama',
         ];
 
         $this->assertTermExistence($parameters);
@@ -85,34 +63,9 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
             'key' => self::KEY,
             'vocabulary' => 'drt',
             'contentType' => 'os',
-            'query' => 'Ronnie',
+            'q' => 'Ronnie',
         ];
 
-        $uri = implode(
-            '/',
-            [
-                self::URI,
-                $parameters['vocabulary'],
-                $parameters['contentType'],
-                $parameters['query'],
-            ]
-        );
-
-        /** @var Response $response */
-        $response = $this->request($uri, $parameters, 'GET');
-
-        $result = $this->assertResponse($response);
-
-        $terms = $result['items'];
-        $this->assertNotEmpty($terms);
-
-        foreach ($terms as $term) {
-            $this->assertStringContainsString($parameters['query'], $term, '');
-        }
-
-        // Test new endpoint.
-        // TODO: Previous assertions to be removed after deprecated route is removed.
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -121,46 +74,25 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
         $this->assertNotEmpty($terms);
 
         foreach ($terms as $term) {
-            $this->assertStringContainsString($parameters['query'], $term, '');
+            $this->assertStringContainsString($parameters['q'], $term, '');
         }
     }
 
     /**
      * Wrapper method to check suggested term existence.
      *
-     * @param array $parameters Query parameters.
+     * @param array $parameters
+     *   Query parameters.
      */
     private function assertTermExistence(array $parameters)
     {
-        $uri = implode(
-            '/',
-            [
-                self::URI,
-                $parameters['vocabulary'],
-                $parameters['contentType'],
-                $parameters['query'],
-            ]
-        );
-
-        /** @var Response $response */
-        $response = $this->request($uri, $parameters, 'GET');
-
-        $result = $this->assertResponse($response);
-
-        $terms = $result['items'];
-        $this->assertCount(1, $terms);
-        $this->assertTrue($terms[0] === $parameters['query']);
-
-        // Test new endpoint.
-        // TODO: Previous assertions to be removed after deprecated route is removed.
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
         $terms = $result['items'];
         $this->assertCount(1, $terms);
-        $this->assertTrue($terms[0] === $parameters['query']);
+        $this->assertTrue($terms[0] === $parameters['q']);
     }
 
     /**

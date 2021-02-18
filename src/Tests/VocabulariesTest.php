@@ -4,7 +4,6 @@ namespace App\Tests;
 
 use App\DataFixtures\MongoDB\AgencyFixtures;
 use App\DataFixtures\MongoDB\ContentFixtures;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class VocabulariesTest
@@ -36,7 +35,6 @@ class VocabulariesTest extends AbstractFixtureAwareTest
             ]
         );
 
-        /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -45,7 +43,6 @@ class VocabulariesTest extends AbstractFixtureAwareTest
 
         // Test new endpoint.
         // TODO: Previous assertions to be removed after deprecated route is removed.
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -89,12 +86,9 @@ class VocabulariesTest extends AbstractFixtureAwareTest
             'cre',
         ];
 
-        /** @var Response $response */
         $response = $this->request($uri, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
-
-
 
         $this->assertCount(count($vocabularies), $result['items']);
         $matches = array_intersect(array_keys($result['items']), $vocabularies);

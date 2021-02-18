@@ -12,8 +12,8 @@ use Imagine\Gd\Imagine as GdImagine;
 /**
  * Class ImageConverter.
  */
-class ImageConverter implements ImageConverterInterface {
-
+class ImageConverter implements ImageConverterInterface
+{
     const ASPECT_PRECISION = 3;
 
     protected $samplingFilter;
@@ -98,15 +98,13 @@ class ImageConverter implements ImageConverterInterface {
 
         try {
             $image = $this->imagine->open($source);
-        }
-        catch (RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             throw new ImageConverterException("Failed to open source image '{$source}' with exception(s): {$exception->getMessage()}, {$exception->getPrevious()->getMessage()}");
         }
 
         try {
             $this->resizeImage($image, $width, $height);
-        }
-        catch (RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             throw new ImageConverterException("Failed to resize image '{$source}' with exception(s): {$exception->getMessage()}, {$exception->getPrevious()->getMessage()}");
         }
 

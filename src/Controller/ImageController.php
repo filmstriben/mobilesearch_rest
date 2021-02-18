@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use OpenApi\Annotations as OA;
 
-
 /**
  * Class ImageController.
  *

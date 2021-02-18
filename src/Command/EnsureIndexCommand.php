@@ -14,7 +14,8 @@ use Symfony\Component\Finder\Finder;
  *
  * Command to create default db index.
  */
-class EnsureIndexCommand extends Command {
+class EnsureIndexCommand extends Command
+{
     /**
      * @var \Doctrine\Bundle\MongoDBBundle\ManagerRegistry
      */
@@ -61,9 +62,9 @@ class EnsureIndexCommand extends Command {
 
         foreach ($finder as $file) {
             $contents = $file->getContents();
-            $indexDefinition = json_decode($contents, TRUE);
+            $indexDefinition = json_decode($contents, true);
 
-            if (FALSE === $indexDefinition) {
+            if (false === $indexDefinition) {
                 $output->writeln('Failed to restore index.');
                 break;
             }
@@ -78,4 +79,3 @@ class EnsureIndexCommand extends Command {
         }
     }
 }
-

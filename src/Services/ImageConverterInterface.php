@@ -7,9 +7,10 @@ use Imagine\Image\ImageInterface;
 /**
  * Interface ImageConverterInterface.
  */
-interface ImageConverterInterface {
+interface ImageConverterInterface
+{
     /**
-     * Attemps to convert and save an image.
+     * Attempts to convert and save an image.
      *
      * @param string $source
      *   Original image path.

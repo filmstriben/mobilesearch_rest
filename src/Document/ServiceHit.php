@@ -7,8 +7,8 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 /**
  * @MongoDB\Document(repositoryClass="App\Repositories\ServiceHitRepository")
  */
-class ServiceHit {
-
+class ServiceHit
+{
     /**
      * @MongoDB\Id()
      */
@@ -145,10 +145,10 @@ class ServiceHit {
      * @return $this
      *   This object.
      */
-    public function setUrl($url) {
+    public function setUrl($url)
+    {
         $this->url = $url;
 
         return $this;
     }
-
 }

@@ -65,7 +65,8 @@ class Content
      *
      * @return $this
      */
-    public function setScore($score) {
+    public function setScore($score)
+    {
         $this->score = $score;
 
         return $this;
@@ -76,7 +77,8 @@ class Content
      *
      * @return float
      */
-    public function getScore() {
+    public function getScore()
+    {
         return $this->score;
     }
 
@@ -234,7 +236,15 @@ class Content
         return $this->agency;
     }
 
-    public function toArray($withScore = false) {
+    /**
+     * Creates an array representation of the entity.
+     *
+     * @param false $withScore
+     *
+     * @return array
+     */
+    public function toArray($withScore = false)
+    {
         $return = [
             'id' => $this->getId(),
             'nid' => $this->getNid(),

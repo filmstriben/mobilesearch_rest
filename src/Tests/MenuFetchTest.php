@@ -77,7 +77,6 @@ class MenuFetchTest extends AbstractFixtureAwareTest implements AssertItemStruct
         $menuIds = [];
         // Fetch items till empty result set.
         while (true) {
-            /** @var Response $response */
             $response = $this->request(self::URI, $parameters, 'GET');
 
             $result = $this->assertResponse($response);

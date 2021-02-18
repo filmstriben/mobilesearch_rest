@@ -44,8 +44,7 @@ abstract class AbstractBaseTest extends WebTestCase
     {
         if ('GET' !== $method) {
             $this->httpClient->request($method, $uri, [], [], ['Content-Type' => 'application/json'], json_encode($parameters));
-        }
-        else {
+        } else {
             $this->httpClient->request($method, $uri, $parameters);
         }
 

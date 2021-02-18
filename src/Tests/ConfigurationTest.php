@@ -4,13 +4,12 @@ namespace App\Tests;
 
 use App\DataFixtures\MongoDB\AgencyFixtures;
 use App\DataFixtures\MongoDB\ConfigurationFixtures;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class ConfigurationTest.
  */
-class ConfigurationTest extends AbstractFixtureAwareTest {
-
+class ConfigurationTest extends AbstractFixtureAwareTest
+{
     use AssertResponseStructureTrait;
 
     const URI = '/configuration';
@@ -18,13 +17,13 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
     /**
      * Default fetch of configuration items.
      */
-    public function testConfigurationFetch() {
+    public function testConfigurationFetch()
+    {
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -36,7 +35,8 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
     /**
      * Checks delete of a config item.
      */
-    public function testConfigurationDelete() {
+    public function testConfigurationDelete()
+    {
         $parameters = [
             'credentials' => [
                 'agencyId' => self::AGENCY,
@@ -47,7 +47,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             ],
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'DELETE');
 
         $result = $this->assertResponse($response);
@@ -58,7 +57,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             'key' => self::KEY,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -68,7 +66,8 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
     /**
      * Checks creation of a new config item.
      */
-    public function testConfigurationCreate() {
+    public function testConfigurationCreate()
+    {
         $parameters = [
             'credentials' => [
                 'agencyId' => self::AGENCY,
@@ -80,7 +79,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             ],
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'PUT');
 
         $result = $this->assertResponse($response);
@@ -91,7 +89,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             'key' => self::KEY,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -104,7 +101,8 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
     /**
      * Checks updates on a config item.
      */
-    public function testConfigurationUpdate() {
+    public function testConfigurationUpdate()
+    {
         $parameters = [
             'credentials' => [
                 'agencyId' => self::AGENCY,
@@ -118,7 +116,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             ],
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'POST');
 
         $result = $this->assertResponse($response);
@@ -129,7 +126,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             'key' => self::KEY,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -141,7 +137,8 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
     /**
      * Checks creation of config item on a faulty agency.
      */
-    public function testConfigurationWrongChildCreate() {
+    public function testConfigurationWrongChildCreate()
+    {
         $parameters = [
             'credentials' => [
                 'agencyId' => self::AGENCY,
@@ -153,7 +150,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             ],
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'PUT');
 
         $result = $this->assertResponse($response);
@@ -163,7 +159,8 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
     /**
      * Checks updates of config item on a faulty agency.
      */
-    public function testConfigurationWrongChildUpdate() {
+    public function testConfigurationWrongChildUpdate()
+    {
         $parameters = [
             'credentials' => [
                 'agencyId' => self::AGENCY,
@@ -177,7 +174,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             ],
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'POST');
 
         $result = $this->assertResponse($response);
@@ -187,7 +183,8 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
     /**
      * Checks deletion of config item on a faulty config item.
      */
-    public function testConfigurationWrongChildDelete() {
+    public function testConfigurationWrongChildDelete()
+    {
         $parameters = [
             'credentials' => [
                 'agencyId' => self::AGENCY,
@@ -198,7 +195,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             ],
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'POST');
 
         $result = $this->assertResponse($response);
@@ -208,7 +204,8 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
     /**
      * Check fetch of config item without a specific agency.
      */
-    public function testConfigurationEmptyAgency() {
+    public function testConfigurationEmptyAgency()
+    {
         $parameters = [
             'credentials' => [
                 'agencyId' => self::AGENCY,
@@ -222,7 +219,6 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
             ],
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'POST');
 
         $result = $this->assertResponse($response);
@@ -240,4 +236,3 @@ class ConfigurationTest extends AbstractFixtureAwareTest {
         ];
     }
 }
-

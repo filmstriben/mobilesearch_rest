@@ -8,7 +8,6 @@ use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Expr;
 use MongoDB\BSON\Regex as MongoRegex;
 
-
 /**
  * Class MongoTreeWalker.
  */

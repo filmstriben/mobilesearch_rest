@@ -245,7 +245,7 @@ class Lists
     public function getCriteria()
     {
         $criteria = json_decode($this->criteria);
-        if(null === $criteria) {
+        if (null === $criteria) {
             throw new RestException('Could not decode list criteria.');
         }
 

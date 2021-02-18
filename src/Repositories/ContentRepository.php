@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Document\Content;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 
-
 /**
  * Class ContentRepository.
  */
@@ -28,7 +27,7 @@ class ContentRepository extends DocumentRepository
      *
      * @throws \Doctrine\ODM\MongoDB\MongoDBException
      */
-    public function fetchSuggestions($query, $amount = 10, $skip = 0, $countOnly = FALSE)
+    public function fetchSuggestions($query, $amount = 10, $skip = 0, $countOnly = false)
     {
         /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
         $qb = $this
@@ -37,8 +36,7 @@ class ContentRepository extends DocumentRepository
 
         if ($countOnly) {
             $qb->count();
-        }
-        else {
+        } else {
             $qb
                 ->skip($skip)
                 ->limit($amount)

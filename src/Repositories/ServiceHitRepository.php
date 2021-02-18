@@ -17,7 +17,8 @@ class ServiceHitRepository extends DocumentRepository
      * @param string $type
      *   Hit type.
      */
-    public function trackHit($type, $url) {
+    public function trackHit($type, $url)
+    {
         $now = new UTCDateTime(gmdate('U'));
 
         $hit = new ServiceHit();

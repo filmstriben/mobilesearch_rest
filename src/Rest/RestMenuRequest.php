@@ -117,7 +117,7 @@ class RestMenuRequest extends RestBaseRequest
      *
      * @return Menu[]
      */
-    public function fetchMenus($agency, $amount = 10, $skip = 0, $countOnly = FALSE)
+    public function fetchMenus($agency, $amount = 10, $skip = 0, $countOnly = false)
     {
         $qb = $this->em
             ->getManager()
@@ -127,8 +127,7 @@ class RestMenuRequest extends RestBaseRequest
 
         if ($countOnly) {
             $qb->count();
-        }
-        else {
+        } else {
             $qb->skip($skip)->limit($amount);
         }
 

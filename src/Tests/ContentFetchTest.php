@@ -5,7 +5,6 @@ namespace App\Tests;
 use App\DataFixtures\MongoDB\AgencyFixtures;
 use App\DataFixtures\MongoDB\ContentFixtures;
 use App\Rest\RestContentRequest;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class ContentFetchTest
@@ -27,7 +26,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY.'-wrong',
         ];
-        /** @var Response $response */
+
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -48,7 +47,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => '',
             'key' => self::KEY,
         ];
-        /** @var Response $response */
+
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -72,7 +71,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'node' => $nid,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -211,7 +209,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $node_ids = [];
         // Fetch items till empty result set.
         while (true) {
-            /** @var Response $response */
             $response = $this->request(self::URI, $parameters, 'GET');
 
             $result = $this->assertResponse($response);
@@ -254,7 +251,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         ];
 
         // Ascending sort.
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -268,7 +264,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         // Descending sort.
         $parameters['order'] = 'DESC';
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -297,7 +292,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         ];
 
         // Ascending order.
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -314,7 +308,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         // Descending order;
         $parameters['order'] = 'DESC';
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -350,7 +343,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'status' => RestContentRequest::STATUS_ALL,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -386,7 +378,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'type' => 'os',
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -423,7 +414,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'skip' => 0,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -440,7 +430,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         // Fetch unpublished content.
         $parameters['status'] = RestContentRequest::STATUS_UNPUBLISHED;
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -458,7 +447,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $parameters['status'] = RestContentRequest::STATUS_ALL;
         $parameters['amount'] = 999;
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);

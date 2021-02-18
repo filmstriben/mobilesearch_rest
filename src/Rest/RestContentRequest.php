@@ -104,7 +104,7 @@ class RestContentRequest extends RestBaseRequest
         $type = null,
         $status = self::STATUS_PUBLISHED,
         $external = 0,
-        $countOnly = FALSE
+        $countOnly = false
     ) {
         if (!empty($id)) {
             $ids = explode(',', $id);
@@ -121,8 +121,7 @@ class RestContentRequest extends RestBaseRequest
 
         if ($countOnly) {
             $qb->count();
-        }
-        else {
+        } else {
             $qb->skip($skip)->limit($amount);
         }
 
@@ -173,7 +172,7 @@ class RestContentRequest extends RestBaseRequest
      *
      * @deprecated
      */
-    public function fetchSuggestions(array $query, array $field, $amount = 10, $skip = 0, $countOnly = FALSE)
+    public function fetchSuggestions(array $query, array $field, $amount = 10, $skip = 0, $countOnly = false)
     {
         if (count($query) != count($field)) {
             throw new RestException('Query and fields parameters count mismatch.');
@@ -190,8 +189,7 @@ class RestContentRequest extends RestBaseRequest
 
         if ($countOnly) {
             $qb->count();
-        }
-        else {
+        } else {
             $qb->skip($skip)->limit($amount);
         }
 
@@ -266,7 +264,7 @@ class RestContentRequest extends RestBaseRequest
      *
      * @return Content[]|int      A set of entities or their count.
      */
-    public function fetchContent(array $ids, $field = 'nid', $countOnly = FALSE)
+    public function fetchContent(array $ids, $field = 'nid', $countOnly = false)
     {
         if (empty($ids)) {
             return $countOnly ? 0 : [];
@@ -369,7 +367,8 @@ class RestContentRequest extends RestBaseRequest
             }
 
             foreach ($fieldToProcess['value'] as $k => $imageBase64Contents) {
-                if (empty($imageBase64Contents) || empty($fieldToProcess['attr'][$k]) || !preg_match('/^image\/(jpg|jpeg|gif|png)$/', $fieldToProcess['attr'][$k])) {
+                $extensionMatch = preg_match('/^image\/(jpg|jpeg|gif|png)$/', $fieldToProcess['attr'][$k]);
+                if (empty($imageBase64Contents) || empty($fieldToProcess['attr'][$k]) || !$extensionMatch) {
                     continue;
                 }
 

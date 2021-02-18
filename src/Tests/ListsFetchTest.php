@@ -77,7 +77,6 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         $list_ids = [];
         // Fetch items till empty result set.
         while (true) {
-            /** @var Response $response */
             $response = $this->request(self::URI, $parameters, 'GET');
 
             $result = $this->assertResponse($response);
