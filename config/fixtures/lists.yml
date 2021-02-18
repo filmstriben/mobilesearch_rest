@@ -1,0 +1,146 @@
+-
+  agency:
+    - '999999'
+  lid: 1
+  name: Nyeste film i samme genre
+  type: automatic
+  promoted: false
+  weight: 0
+  criteria:
+    rules:
+      "$and":
+        - type:
+            "$eq": os
+        - taxonomy.field_genre.terms:
+            "$in": [ ]
+    limit: 18
+    sort:
+      fields.publish_date.value: -1
+-
+  agency:
+    - '999999'
+  lid: 3
+  name: Filmklassikere
+  type: dynamic
+  promoted: false
+  weight: 5
+  criteria:
+    rules:
+      "$and":
+        - type:
+            "$eq": os
+        - taxonomy.field_genre.terms:
+            "$in":
+              - actionfilm
+    limit: 25
+    sort:
+      fields.publish_date.value: -1
+-
+  agency:
+    - '999999'
+  lid: 4
+  name: Oscar film
+  type: manual
+  promoted: false
+  weight: 12
+  criteria:
+    rules:
+      "$and":
+        - type:
+            "$eq": os
+        - nid:
+            "$in":
+              - 8430
+              - 8896
+    limit: 0
+    sort: [ ]
+-
+  agency:
+    - '999999'
+  lid: 5
+  name: Film om fotografi og fotografer
+  type: manual
+  promoted: false
+  weight: 6
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 6
+  name: Dansefilm
+  type: dynamic
+  promoted: false
+  weight: 7
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 7
+  name: Bryllupsfilm
+  type: manual
+  promoted: false
+  weight: 1
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 8
+  name: Den store dag
+  type: manual
+  promoted: false
+  weight: 2
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 9
+  name: Fodbold
+  type: dynamic
+  promoted: false
+  weight: 0
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 10
+  name: Julefilm
+  type: dynamic
+  promoted: false
+  weight: 17
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 11
+  name: Copenhagen Pride Week
+  type: dynamic
+  promoted: false
+  weight: 16
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 12
+  name: Information fra Redaktionen
+  type: dynamic
+  promoted: true
+  weight: -50
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 13
+  name: Top 10 mest sete børnefilm i juni 2018
+  type: manual
+  promoted: true
+  weight: 2
+  criteria:
+-
+  agency:
+    - '999999'
+  lid: 14
+  name: Some list of mixed content
+  type: manual
+  promoted: true
+  weight: 2
+  criteria:

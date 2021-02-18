@@ -35,6 +35,7 @@ services:
 
     fixture_loader:
         class: App\Services\FixtureLoader
+        arguments: ['%kernel.root_dir%/../config/fixtures']
         public: true
     image_converter:
         class: App\Services\ImageConverter
@@ -50,4 +51,5 @@ services:
 
     App\Services\SearchQueryLexer: '@query_lexer'
     App\Services\SearchQueryParser: '@query_parser'
+    App\Services\FixtureLoader: '@fixture_loader'
 

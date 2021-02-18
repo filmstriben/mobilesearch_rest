@@ -14,8 +14,8 @@
     </php>
 
     <testsuites>
-        <testsuite name="Project Test Suite">
-            <directory>tests</directory>
+        <testsuite name="Mobilesearch tests">
+            <directory>src/Tests</directory>
         </testsuite>
     </testsuites>
 

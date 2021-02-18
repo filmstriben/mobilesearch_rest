@@ -2,10 +2,9 @@
 
 namespace App\Tests;
 
-use DataFixtures\MongoDB\AgencyFixtures;
-use DataFixtures\MongoDB\ContentFixtures;
-use DataFixtures\MongoDB\ListsFixtures;
-use App\Document\Content;
+use App\DataFixtures\MongoDB\AgencyFixtures;
+use App\DataFixtures\MongoDB\ContentFixtures;
+use App\DataFixtures\MongoDB\ListsFixtures;
 
 /**
  * Class ListsFetchTest
@@ -150,7 +149,7 @@ class ListsFetchTest extends AbstractFixtureAwareTest
         }
 
         // Fetch all.
-        $parameters['promoted'] = -1;
+        $parameters['promoted'] = '-1';
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);

@@ -2,25 +2,27 @@
 
 namespace App\DataFixtures\MongoDB;
 
-use Document\Lists;
-use Services\FixtureLoader;
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\DataFixtures\FixtureInterface;
+use App\Document\Lists;
+use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * Class ListsFixtures
  *
  * Prepares list entries.
  */
-class ListsFixtures extends Fixture
+class ListsFixtures implements FixtureInterface, ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     /**
      * {@inheritdoc}
      */
     public function load(ObjectManager $entityManager)
     {
-        /** @var FixtureLoader $fixtureLoader */
         $fixtureLoader = $this->container->get('fixture_loader');
         $listsDefinitions = $fixtureLoader->load('lists.yml');
 

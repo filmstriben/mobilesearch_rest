@@ -47,7 +47,7 @@ class Lists
     protected $type;
 
     /**
-     * @MongoDB\Field(type="boolean")
+     * @MongoDB\Field(type="bool")
      * @OA\Property(type="boolean")
      */
     protected $promoted;
@@ -228,7 +228,7 @@ class Lists
     public function setCriteria(array $criteria)
     {
         $criteria = json_encode($criteria);
-        if (!$criteria) {
+        if (null === $criteria) {
             throw new RestException('Could not encode list criteria.');
         }
 
@@ -245,7 +245,7 @@ class Lists
     public function getCriteria()
     {
         $criteria = json_decode($this->criteria);
-        if(!$criteria) {
+        if(null === $criteria) {
             throw new RestException('Could not decode list criteria.');
         }
 
