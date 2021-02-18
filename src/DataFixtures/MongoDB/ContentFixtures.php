@@ -2,25 +2,27 @@
 
 namespace App\DataFixtures\MongoDB;
 
-use Document\Content;
-use Services\FixtureLoader;
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\DataFixtures\FixtureInterface;
+use App\Document\Content;
+use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * Class ContentFixtures
  *
  * Prepares content entries.
  */
-class ContentFixtures extends Fixture
+class ContentFixtures implements FixtureInterface, ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     /**
      * {@inheritdoc}
      */
     public function load(ObjectManager $manager)
     {
-        /** @var FixtureLoader $fixtureLoader */
         $fixtureLoader = $this->container->get('fixture_loader');
         $osDefinitions = $fixtureLoader->load('os.yml');
         $editorialDefinitions = $fixtureLoader->load('editorial.yml');

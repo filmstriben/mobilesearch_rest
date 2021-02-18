@@ -94,18 +94,21 @@ class VocabulariesTest extends AbstractFixtureAwareTest
 
         $result = $this->assertResponse($response);
 
+
+
         $this->assertCount(count($vocabularies), $result['items']);
-        $this->assertArraySubset($vocabularies, array_keys($result['items']));
+        $matches = array_intersect(array_keys($result['items']), $vocabularies);
+        $this->assertEquals(count($matches), count($vocabularies));
 
         // Test new endpoint.
         // TODO: Previous assertions to be removed after deprecated route is removed.
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
 
         $this->assertCount(count($vocabularies), $result['items']);
-        $this->assertArraySubset($vocabularies, array_keys($result['items']));
+        $matches = array_intersect(array_keys($result['items']), $vocabularies);
+        $this->assertEquals(count($matches), count($vocabularies));
     }
 
     /**

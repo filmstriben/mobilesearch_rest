@@ -2,19 +2,22 @@
 
 namespace App\DataFixtures\MongoDB;
 
-use Document\Menu;
-use Services\FixtureLoader;
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use App\Document\Menu;
+use Doctrine\Common\DataFixtures\FixtureInterface;
 use Faker\Factory;
+use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * Class MenuFixtures
  *
  * Prepares menu entries.
  */
-class MenuFixtures extends Fixture
+class MenuFixtures implements FixtureInterface, ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     /**
      * {@inheritdoc}
      */

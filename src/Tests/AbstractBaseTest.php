@@ -2,7 +2,6 @@
 
 namespace App\Tests;
 
-use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -13,19 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 abstract class AbstractBaseTest extends WebTestCase
 {
-    private $client;
-
-    private $container;
-
-    /**
-     * Returns the http client.
-     *
-     * @return mixed
-     */
-    public function getClient()
-    {
-        return $this->client;
-    }
+    protected $httpClient;
 
     /**
      * Returns the DI container.
@@ -34,7 +21,7 @@ abstract class AbstractBaseTest extends WebTestCase
      */
     public function getContainer()
     {
-        return $this->container;
+        return static::$container;
     }
 
     /**
@@ -55,20 +42,14 @@ abstract class AbstractBaseTest extends WebTestCase
      */
     public function request($uri, array $parameters, $method = 'GET')
     {
-        /** @var Client $client */
-        $client = $this->getClient();
-
         if ('GET' !== $method) {
-            $client->request($method, $uri, [], [], ['Content-Type' => 'application/json'], json_encode($parameters));
+            $this->httpClient->request($method, $uri, [], [], ['Content-Type' => 'application/json'], json_encode($parameters));
         }
         else {
-            $client->request($method, $uri, $parameters);
+            $this->httpClient->request($method, $uri, $parameters);
         }
 
-        /** @var Response $response */
-        $response = $client->getResponse();
-
-        return $response;
+        return $this->httpClient->getResponse();
     }
 
     /**
@@ -91,21 +72,14 @@ abstract class AbstractBaseTest extends WebTestCase
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
-        $this->client = static::createClient();
-        $this->container = $this->client->getContainer();
-    }
+        $this->httpClient = static::createClient();
 
-    /**
-     * {@inheritdoc}
-     */
-    public function tearDown()
-    {
-        parent::tearDown();
+        static::bootKernel();
     }
 }

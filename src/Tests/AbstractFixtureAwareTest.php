@@ -30,7 +30,7 @@ abstract class AbstractFixtureAwareTest extends AbstractBaseTest
         $em = $odm->getManager();
 
         $loader = new Loader();
-        /** @var Fixture $fixture */
+        /** @var \Doctrine\Common\DataFixtures\FixtureInterface $fixture */
         foreach ($this->getFixtures() as $fixture) {
             if ($fixture instanceof ContainerAwareInterface) {
                 $fixture->setContainer($this->getContainer());
@@ -41,14 +41,6 @@ abstract class AbstractFixtureAwareTest extends AbstractBaseTest
         $purger = new MongoDBPurger($em);
         $executor = new MongoDBExecutor($em, $purger);
         $executor->execute($loader->getFixtures());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function tearDown(): void
-    {
-        parent::tearDown();
     }
 
     /**

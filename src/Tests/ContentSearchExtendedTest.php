@@ -114,7 +114,7 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
         $this->assertNotEmpty($result['items']);
 
         foreach ($result['items'] as $item) {
-            $this->assertContains('adv', strtolower($item['fields']['title']['value']));
+            $this->assertStringContainsString('adv', strtolower($item['fields']['title']['value']));
         }
 
         $this->assertArrayHasKey('hits', $result);
@@ -172,8 +172,8 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
         $this->assertNotEmpty($result['items']);
 
         foreach ($result['items'] as $item) {
-            $this->assertContains('os', $item['type']);
-            $this->assertContains('fear', strtolower($item['fields']['title']['value']));
+            $this->assertEquals('os', $item['type']);
+            $this->assertStringContainsString('fear', strtolower($item['fields']['title']['value']));
         }
 
         $this->assertArrayHasKey('hits', $result);
@@ -202,7 +202,7 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
         $this->assertNotEmpty($result['items']);
 
         foreach ($result['items'] as $item) {
-            $this->assertContains('fear and desire', strtolower($item['fields']['title']['value']));
+            $this->assertStringContainsString('fear and desire', strtolower($item['fields']['title']['value']));
         }
 
         $this->assertArrayHasKey('hits', $result);
@@ -258,7 +258,7 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
         $this->assertNotEmpty($result['items']);
 
         foreach ($result['items'] as $item) {
-            $this->assertContains('fear', strtolower($item));
+            $this->assertStringContainsString('fear', strtolower($item));
         }
 
         $this->assertArrayHasKey('hits', $result);

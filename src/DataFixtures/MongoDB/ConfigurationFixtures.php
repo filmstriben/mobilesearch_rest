@@ -2,24 +2,26 @@
 
 namespace App\DataFixtures\MongoDB;
 
-use Document\Configuration;
-use Services\FixtureLoader;
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use App\Document\Configuration;
+use Doctrine\Common\DataFixtures\FixtureInterface;
+use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * Class AgencyFixtures.
  *
  * Prepares agency entries.
  */
-class ConfigurationFixtures extends Fixture
+class ConfigurationFixtures implements FixtureInterface, ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     /**
      * {@inheritdoc}
      */
     public function load(ObjectManager $manager)
     {
-        /** @var FixtureLoader $fixtureLoader */
         $fixtureLoader = $this->container->get('fixture_loader');
         $agencyDefinitions = $fixtureLoader->load('configuration.yml');
 

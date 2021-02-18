@@ -102,7 +102,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'node' => implode(',', $nids),
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -127,9 +126,9 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'type' => $type,
+            'external' => -1,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -155,7 +154,6 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'key' => self::KEY,
         ];
 
-        /** @var Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -184,7 +182,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'amount' => $amount,
             'type' => 'os',
         ];
-        /** @var Response $response */
+
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);

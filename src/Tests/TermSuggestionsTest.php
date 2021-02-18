@@ -107,7 +107,7 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
         $this->assertNotEmpty($terms);
 
         foreach ($terms as $term) {
-            $this->assertContains($parameters['query'], $term, '', true);
+            $this->assertStringContainsString($parameters['query'], $term, '');
         }
 
         // Test new endpoint.
@@ -121,7 +121,7 @@ class TermSuggestionsTest extends AbstractFixtureAwareTest
         $this->assertNotEmpty($terms);
 
         foreach ($terms as $term) {
-            $this->assertContains($parameters['query'], $term, '', true);
+            $this->assertStringContainsString($parameters['query'], $term, '');
         }
     }
 
