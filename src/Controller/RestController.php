@@ -374,7 +374,7 @@ final class RestController extends AbstractController
      *     @OA\Parameter(
      *         in="query",
      *         name="external",
-     *         description="Filter entities with a specific external status. External status is taken from 'fields.external.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         description="Filter entities with a specific external status. External status is taken from 'fields.field_external.value' field. '-1' - all, '0' - status 0, '1' - status 1",
      *         @OA\Schema(
      *             type="string",
      *             enum={"-1", "0", "1"},
