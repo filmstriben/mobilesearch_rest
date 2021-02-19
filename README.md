@@ -13,10 +13,9 @@ Documentation
 Requirements
 ------------
 1. Apache/nginx web-server;
-2. PHP 7.4;
-3. `php-mongodb` extension;
-4. composer;
-5. MongoDB 4 server.
+2. PHP 7.4 with `php-mongodb` extension;
+3. composer;
+4. MongoDB 4 server.
 
 Installation
 ------------
@@ -26,11 +25,14 @@ Installation
 3. Run ``composer dump-env prod``;
 4. Edit the `.env.local.php` for correct mongo settings;
 4. Run ``php bin/console cache:clear``.
-5. ~~Optionally, run tests. See Tests section;~~
 5. Setup a virtual host to point to repository `public` directory;
 6. Service available @ `http://SERVICE_URL/` (this URL should be used as communication endpoint).
 
-__TBC__
+Tests
+------------
+To perform bundled tests, run:
+
+`php vendor/bin/phpunit`
 
 License
 -------

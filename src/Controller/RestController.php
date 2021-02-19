@@ -41,7 +41,73 @@ final class RestController extends AbstractController
      * @Route("/content", methods={"PUT"})
      * @OA\Put(
      *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="nid",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="type",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="fields",
+     *                     type="object"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="taxonomy",
+     *                     type="object"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="list",
+     *                     type="object"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic content insert response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function contentCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -55,7 +121,73 @@ final class RestController extends AbstractController
      * @Route("/content", methods={"POST"})
      * @OA\Post(
      *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="nid",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="type",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="fields",
+     *                     type="object"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="taxonomy",
+     *                     type="object"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="list",
+     *                     type="object"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic content update response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function contentUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -69,7 +201,57 @@ final class RestController extends AbstractController
      * @Route("/content", methods={"DELETE"})
      * @OA\Delete(
      *     description="",
-     *     tags={"Content"}
+     *     tags={"Content"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="nid",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic content delete response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function contentDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -750,7 +932,77 @@ final class RestController extends AbstractController
      * @Route("/menu", methods={"PUT"})
      * @OA\Put(
      *     description="",
-     *     tags={"Menu"}
+     *     tags={"Menu"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="mlid",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="type",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="url",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="order",
+     *                     type="integer"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="enabled",
+     *                     type="boolean"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic menu insert response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function menuCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -764,7 +1016,77 @@ final class RestController extends AbstractController
      * @Route("/menu", methods={"POST"})
      * @OA\Post(
      *     description="",
-     *     tags={"Menu"}
+     *     tags={"Menu"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="mlid",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="type",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="url",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="order",
+     *                     type="integer"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="enabled",
+     *                     type="boolean"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic menu update response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function menuUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -778,7 +1100,57 @@ final class RestController extends AbstractController
      * @Route("/menu", methods={"DELETE"})
      * @OA\Delete(
      *     description="",
-     *     tags={"Menu"}
+     *     tags={"Menu"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="mlid",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic menu delete response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function menuDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -939,7 +1311,93 @@ final class RestController extends AbstractController
      * @Route("/list", methods={"PUT"})
      * @OA\Put(
      *     description="",
-     *     tags={"List"}
+     *     tags={"List"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string",
+     *                     description="123"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="lid",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="type",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="string"
+     *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="promoted",
+     *                     type="boolean"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="weight",
+     *                     type="integer"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="criteria",
+     *                     type="object",
+     *                     @OA\Property(
+     *                         property="rules",
+     *                         type="object"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="limit",
+     *                         type="integer"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="sort",
+     *                         type="object"
+     *                     )
+     *                 ),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic list insert response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function listCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -953,7 +1411,93 @@ final class RestController extends AbstractController
      * @Route("/list", methods={"POST"})
      * @OA\Post(
      *     description="",
-     *     tags={"List"}
+     *     tags={"List"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string",
+     *                     description="123"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="lid",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="type",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="string"
+     *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="promoted",
+     *                     type="boolean"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="weight",
+     *                     type="integer"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="criteria",
+     *                     type="object",
+     *                     @OA\Property(
+     *                         property="rules",
+     *                         type="object"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="limit",
+     *                         type="integer"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="sort",
+     *                         type="object"
+     *                     )
+     *                 ),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic list update response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function listUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -967,7 +1511,54 @@ final class RestController extends AbstractController
      * @Route("/list", methods={"DELETE"})
      * @OA\Delete(
      *     description="",
-     *     tags={"List"}
+     *     tags={"List"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string",
+     *                     description="123"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="lid",
+     *                     type="string"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic list delete response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function listDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -1448,7 +2039,57 @@ final class RestController extends AbstractController
      * @Route("/configuration", methods={"PUT"})
      * @OA\Put(
      *     description="",
-     *     tags={"Configuration"}
+     *     tags={"Configuration"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="settings",
+     *                     type="object"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic configuration insert response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function configurationCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -1462,7 +2103,57 @@ final class RestController extends AbstractController
      * @Route("/configuration", methods={"POST"})
      * @OA\Post(
      *     description="",
-     *     tags={"Configuration"}
+     *     tags={"Configuration"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="settings",
+     *                     type="object"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic configuration update response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function configurationUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
@@ -1476,7 +2167,53 @@ final class RestController extends AbstractController
      * @Route("/configuration", methods={"DELETE"})
      * @OA\Delete(
      *     description="",
-     *     tags={"Configuration"}
+     *     tags={"Configuration"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="credentials",
+     *                 @OA\Property(
+     *                     property="agencyId",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="key",
+     *                     type="string"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 type="object",
+     *                 property="body",
+     *                 @OA\Property(
+     *                     property="agency",
+     *                     type="string"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Generic configuration delete response.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="boolean"
+     *             ),
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 @OA\Items()
+     *             )
+     *         )
+     *     )
      * )
      */
     public function configurationDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
