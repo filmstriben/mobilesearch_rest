@@ -2,6 +2,7 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Ast\Walker\MongoTreeWalker;
 use AppBundle\Document\Configuration;
 use AppBundle\Document\Content;
 use AppBundle\Document\Lists;
@@ -291,6 +292,13 @@ final class RestController extends Controller
      *             "description"="Filters the entities by the value stored in 'fields.status.value' field. Defaults to -1.",
      *             "required"=false,
      *             "format"="-1|0|1"
+     *         },
+     *         {
+     *             "name"="external",
+     *             "dataType"="integer",
+     *             "description"="Filters the entities by the value stored in 'fields.external.value' field. Defaults to -1.",
+     *             "required"=false,
+     *             "format"="-1|0|1"
      *         }
      *     },
      *     output={
@@ -316,6 +324,7 @@ final class RestController extends Controller
             'order' => 'ASC',
             'type' => null,
             'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_UNPUBLISHED,
         ];
 
         foreach (array_keys($fields) as $field) {
@@ -784,183 +793,69 @@ final class RestController extends Controller
         } elseif (!empty($fields['q'])) {
             unset($fields['agency'], $fields['key']);
 
+            /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
+            $qb = $this
+                ->get('doctrine_mongodb')
+                ->getManager()
+                ->createQueryBuilder(Content::class);
+
+            $query = $fields['q'];
+            $parser = $this->get('query_parser');
+
             try {
-                $q = $fields['q'];
-                // Remove the repeating spaces.
-                $q = preg_replace('~\s+~', ' ', $q);
-                // Split the string into an array of characters,
-                // since iterating char by char unicode strings is pain.
-                $q = preg_split('~~u', $q, -1, PREG_SPLIT_NO_EMPTY);
+                $ast = $parser->parse($query);
+                $treeWalker = new MongoTreeWalker($qb);
+                $ast->transform($treeWalker);
+            } catch (\RuntimeException $exception) {
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error($exception->getMessage());
 
-                $ops = [];
+                $this->lastMessage = $exception->getMessage();
 
-                $error = false;
-                $start = null;
-                $end = null;
-                $start_count = 0;
-                $end_count = 0;
-                // Cut the query chunks, encapsed by round brackets.
-                for ($i = 0; $i < count($q); $i++) {
-                    if ('(' == $q[$i]) {
-                        if (null !== $start) {
-                            $error = true;
-                            break;
-                        }
-                        $start_count++;
-                        $start = $i;
-                        continue;
-                    }
+                return $this->setResponse(
+                    $this->lastStatus,
+                    $this->lastMessage,
+                    $this->lastItems,
+                    $hits
+                );
+            }
 
-                    if (')' == $q[$i]) {
-                        $end_count++;
-                        $end = $i;
-                    }
+            $qbCount = clone($qb);
+            $hits = $qbCount->count()->getQuery()->execute();
 
-                    if (null !== $start && null !== $end) {
-                        $op = '';
-                        for ($j = $start; $j <= $end; $j++) {
-                            $op .= $q[$j];
-                        }
+            $skip = $fields['skip'];
+            $amount = $fields['amount'] > 100 ? 100 : $fields['amount'];
+            $qb->skip($skip)->limit($amount);
 
-                        $start = null;
-                        $end = null;
-                        $ops[] = $op;
-                    }
-                }
+            if ($fields['sort']) {
+                $qb->sort($fields['sort'], $fields['order']);
+            }
 
-                if ($start_count != $end_count) {
-                    $error = true;
-                }
+            $query = $qb->getQuery();
+            $suggestions = $query->execute();
 
-                // Remove the leading/trailing brackets and non-printable characters, if any.
-                $ops = array_filter($ops, function ($v) {
-                    return !empty(trim(trim($v, '()')));
-                });
 
-                $tokens = [];
-                // Validate the query chunks.
-                foreach ($ops as $op) {
-                    if (!preg_match('~\("[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s\|]+"(\s(OR|AND)\s"[a-z_.]+\[[a-z]+\]:[0-9|\p{L}-_+\s\|]+")*\)~iu', $op)) {
-                        $error = true;
+            /** @var \AppBundle\Document\Content $suggestion */
+            foreach ($suggestions as $suggestion) {
+                $suggestionFields = $suggestion->getFields();
+
+                switch ($fields['format']) {
+                    case 'short':
+                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
                         break;
-                    }
-
-                    $tokens[sha1(microtime(true) . $op)] = $op;
+                    case 'full':
+                        $this->lastItems[] = $suggestion->toArray();
+                        break;
+                    default:
+                        $this->lastItems[] = [
+                            'id' => $suggestion->getId(),
+                            'nid' => $suggestion->getNid(),
+                            'agency' => $suggestion->getAgency(),
+                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
+                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                        ];
                 }
-
-                // Tokenize the query string to assemble the correct order of transformations.
-                $split_query = [];
-                $_q = str_replace(array_values($tokens), array_keys($tokens), implode('', $q));
-                foreach (explode(' ', $_q) as $tokenized_chunk) {
-                    foreach ($tokens as $token => $grouped_query) {
-                        if (false !== strpos($tokenized_chunk, $token)) {
-                            $split_query[] = $token;
-                            break;
-                        }
-                    }
-
-                    if (in_array(strtolower($tokenized_chunk), ['or', 'and'])) {
-                        $split_query[] = $tokenized_chunk;
-                    }
-                }
-
-                /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
-                $qb = $this
-                    ->get('doctrine_mongodb')
-                    ->getManager()
-                    ->createQueryBuilder(Content::class);
-
-                // If there is one query chunk directly apply it to the query builder.
-                // If not, use lately created tokenized query to know what goes where.
-                if (1 == count($tokens)) {
-                    $token = reset($tokens);
-                    $this->queryToExpression($token, $qb);
-                } else {
-                    $offset = 0;
-                    while ($split = array_slice($split_query, $offset, 3)) {
-                        $tokenCount = count(array_intersect(array_keys($tokens), $split));
-                        // X AND|OR Y case.
-                        if (2 === $tokenCount) {
-                            list($left, $operator, $right) = [
-                                $this->queryToExpression($tokens[$split[0]], null),
-                                $split[1],
-                                $this->queryToExpression($tokens[$split[2]], null),
-                            ];
-
-                            switch (strtolower($operator)) {
-                                case 'and':
-                                    $qb->addAnd($left, $right);
-                                    break;
-                                case 'or':
-                                    $qb->addOr($left, $right);
-                                default:
-                            }
-                        }
-                        // AND|OR Z case
-                        // Happens when we reached end of the split.
-                        elseif (1 === $tokenCount) {
-                            list($operator, $right) = [
-                                $split[0],
-                                $this->queryToExpression($tokens[$split[1]], null),
-                            ];
-
-                            switch (strtolower($operator)) {
-                                case 'and':
-                                    $qb->addAnd($right);
-                                    break;
-                                case 'or':
-                                    $qb->addOr($right);
-                                default:
-                            }
-                        }
-
-                        // The tokenized query array size is expected to be a multiple of 3.
-                        // Hence two tokens and the operator between them.
-                        $offset += 3;
-                    }
-                }
-
-                $qbCount = clone($qb);
-                $hits = $qbCount->count()->getQuery()->execute();
-
-                $skip = $fields['skip'];
-                $amount = $fields['amount'] > 100 ? 100 : $fields['amount'];
-                $qb->skip($skip)->limit($amount);
-
-                if ($fields['sort']) {
-                    $qb->sort($fields['sort'], $fields['order']);
-                }
-
-                $query = $qb->getQuery();
-                $suggestions = $query->execute();
-
-
-                /** @var \AppBundle\Document\Content $suggestion */
-                foreach ($suggestions as $suggestion) {
-                    $suggestionFields = $suggestion->getFields();
-
-                    switch ($fields['format']) {
-                        case 'short':
-                            $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
-                            break;
-                        case 'full':
-                            $this->lastItems[] = $suggestion->toArray();
-                            break;
-                        default:
-                            $this->lastItems[] = [
-                                'id' => $suggestion->getId(),
-                                'nid' => $suggestion->getNid(),
-                                'agency' => $suggestion->getAgency(),
-                                'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
-                                'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
-                            ];
-                    }
-                }
-
-                $this->lastStatus = !$error;
-            } catch (RestException $e) {
-                // TODO: Log this instead.
-                $this->lastMessage = $e->getMessage();
             }
         }
 
@@ -970,99 +865,6 @@ final class RestController extends Controller
             $this->lastItems,
             $hits
         );
-    }
-
-    /**
-     * Converts a string query to odm expression.
-     *
-     * In case the query lacks AND/OR operations, directly assign
-     * the criteria to query builder. Therefore the last parameter
-     * should be passed from the main query builder.
-     *
-     * In case when there is an AND/OR operation(s), return an
-     * expression instead, which is assigned to main query builder
-     * outside the scope of this method.
-     *
-     * The reasons for all this is that query builder lacks methods
-     * to provide it's expression(s) for outside changes and odm specifics
-     * for nested and/or conditions.
-     *
-     * When builder is passed, the builder instance is returned,
-     * otherwise new expression is returned instead for later use.
-     *
-     * @param string $query
-     *   Raw query.
-     * @param \Doctrine\MongoDB\Query\Builder $qb
-     *   Query builder.
-     *
-     * @return \Doctrine\MongoDB\Query\Expr|\Doctrine\MongoDB\Query\Builder
-     *   Query builder, or new expression.
-     */
-    private function queryToExpression($query, $qb = null)
-    {
-        $query = trim($query, '()');
-
-        // Find out the operator in the expression.
-        $matches = [];
-        preg_match('~"\sor|and\s"~i', $query, $matches);
-        $operator = !empty($matches[1]) ? trim(trim($matches[1], '()"')) : 'and';
-
-        // Get the left and right operands of the expression.
-        $operands = preg_split('~("\sor|and\s")~i', $query, -1, PREG_SPLIT_NO_EMPTY);
-
-        // If query builder is passed, assign the expression directly.
-        $expr = (null !== $qb) ? $qb : new Expr();
-        $operatorArgs = [];
-        foreach ($operands as $operand) {
-            $operand = trim(trim($operand, '()"'));
-            // Three parts we need from the query - the field, comparison identifier and the value to compare.
-            // Normally should never fail, unless the query format is not validated
-            // earlier to match needed format.
-            preg_match('~([a-z._]+)\[([a-z]+)\]:([0-9|\p{L}-_+\s\|]+)~iu', $operand, $matches);
-            // We don't need the whole match.
-            array_shift($matches);
-            list($field, $comparison, $value) = $matches;
-
-            $value = trim($value);
-            $exprMethod = null;
-            switch ($comparison) {
-                case 'in':
-                    $value = explode('|', $value);
-                    $exprMethod = 'in';
-                    break;
-                case 'regex':
-                    $value = new \MongoRegex('/' . $value . '/i');
-                case 'eq':
-                default:
-                    $exprMethod = 'equals';
-            }
-            $_expr = new Expr();
-
-            if ('nid' == $field && 'regex' !== $comparison) {
-                if (is_array($value)) {
-                    $value = array_map(function ($v) {
-                        return (int) $v;
-                    }, $value);
-                }
-                else {
-                    $value = (int) $value;
-                }
-            }
-
-            $operatorArgs[] = $_expr->field($field)->{$exprMethod}($value);
-        }
-
-        $operatorMethod = null;
-        switch (strtolower($operator)) {
-            case 'and':
-                $operatorMethod = 'addAnd';
-                break;
-            case 'or':
-            default:
-                $operatorMethod = 'addOr';
-        }
-
-        return call_user_func_array([$expr, $operatorMethod], $operatorArgs);
     }
 
     /**
