@@ -661,11 +661,6 @@ final class RestController extends AbstractController
 
         // Set upper amount limit to 100 items per request.
         $fields['amount'] = $fields['amount'] > 100 ? 100 : $fields['amount'];
-        $fields['external'] = filter_var($fields['external'], FILTER_VALIDATE_INT, [
-            'default' => RestContentRequest::STATUS_UNPUBLISHED,
-            'min_range' => RestContentRequest::STATUS_ALL,
-            'max_range' => RestContentRequest::STATUS_PUBLISHED,
-        ]);
 
         if (RestContentRequest::STATUS_ALL == $fields['external']) {
             $fields['external'] = null;
@@ -877,12 +872,6 @@ final class RestController extends AbstractController
         if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
             $fields['order'] = 'asc';
         }
-
-        $fields['external'] = filter_var($fields['external'], FILTER_VALIDATE_INT, [
-            'default' => RestContentRequest::STATUS_UNPUBLISHED,
-            'min_range' => RestContentRequest::STATUS_ALL,
-            'max_range' => RestContentRequest::STATUS_PUBLISHED,
-        ]);
 
         if (RestContentRequest::STATUS_ALL == $fields['external']) {
             $fields['external'] = null;
