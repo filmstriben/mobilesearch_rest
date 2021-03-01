@@ -30,7 +30,7 @@ class SearchQueryLexer extends AbstractLexer
     {
         return [
             '\[[a-z]+\]',
-            '[\^\$a-z._0-9 |]+',
+            '[\^\$a-z._0-9 |\p{L}]+',
         ];
     }
 
@@ -40,6 +40,14 @@ class SearchQueryLexer extends AbstractLexer
     protected function getNonCatchablePatterns()
     {
         return [];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getModifiers()
+    {
+        return 'iu';
     }
 
     /**
