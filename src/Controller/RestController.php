@@ -623,6 +623,16 @@ final class RestController extends AbstractController
      *             enum={"short","full"}
      *         )
      *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="external",
+     *         description="Filter entities with a specific external status. External status is taken from 'fields.field_external.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="0"
+     *         )
+     *     ),
      *     @OA\Response(
      *         response="200",
      *         description="Search result response."
@@ -642,6 +652,7 @@ final class RestController extends AbstractController
             'amount' => 10,
             'skip' => 0,
             'format' => null,
+            'external' => RestContentRequest::STATUS_UNPUBLISHED,
         ];
 
         foreach (array_keys($fields) as $field) {
@@ -650,6 +661,10 @@ final class RestController extends AbstractController
 
         // Set upper amount limit to 100 items per request.
         $fields['amount'] = $fields['amount'] > 100 ? 100 : $fields['amount'];
+
+        if (RestContentRequest::STATUS_ALL == $fields['external']) {
+            $fields['external'] = null;
+        }
 
         $restContentRequest = new RestContentRequest($dm);
 
@@ -663,7 +678,8 @@ final class RestController extends AbstractController
             $suggestions = $contentRepository->fetchSuggestions(
                 $fields['q'],
                 $fields['amount'],
-                $fields['skip']
+                $fields['skip'],
+                $fields['external']
             );
 
             /** @var \App\Document\Content $suggestion */
@@ -689,11 +705,11 @@ final class RestController extends AbstractController
                 }
             }
 
-            $fields['countOnly'] = true;
             $hits = $contentRepository->fetchSuggestions(
                 $fields['q'],
                 $fields['amount'],
                 $fields['skip'],
+                $fields['external'],
                 true
             );
 
@@ -815,6 +831,16 @@ final class RestController extends AbstractController
      *             default="asc"
      *         )
      *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="external",
+     *         description="Filter entities with a specific external status. External status is taken from 'fields.field_external.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="0"
+     *         )
+     *     ),
      *     @OA\Response(
      *         response="200",
      *         description="Search result response.",
@@ -836,6 +862,7 @@ final class RestController extends AbstractController
             'format' => null,
             'sort' => null,
             'order' => 'asc',
+            'external' => RestContentRequest::STATUS_UNPUBLISHED,
         ];
 
         foreach (array_keys($fields) as $field) {
@@ -844,6 +871,10 @@ final class RestController extends AbstractController
 
         if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
             $fields['order'] = 'asc';
+        }
+
+        if (RestContentRequest::STATUS_ALL == $fields['external']) {
+            $fields['external'] = null;
         }
 
         $restContentRequest = new RestContentRequest($dm);
@@ -877,6 +908,10 @@ final class RestController extends AbstractController
                     $this->lastItems,
                     $hits
                 );
+            }
+
+            if (null !== $fields['external']) {
+                $qb->addAnd($qb->expr()->field('fields.field_external.value')->equals((string) $fields['external']));
             }
 
             $qbCount = clone($qb);
