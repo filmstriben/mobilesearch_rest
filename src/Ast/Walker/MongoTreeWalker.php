@@ -57,18 +57,25 @@ class MongoTreeWalker implements TreeWalkerInterface
                 $expression->field($childNode->getField());
                 $value = $childNode->getValue();
 
-                // TODO: 'nid' is hardcoded, find a way to read this dynamically from entity class metadata.
-                if ('nid' == $expression->getCurrentField()) {
-                    $value = ('in' == $childNode->getOperator()) ? array_map(function ($v) {
-                        return (int) $v;
-                    }, explode('|', $value)) : (int) $value;
-                }
-
                 switch ($childNode->getOperator()) {
                     case 'in':
+                        $value = explode('|', $value);
+
+                        // TODO: 'nid' is hardcoded, find a way to read this dynamically from entity class metadata.
+                        if ('nid' == $expression->getCurrentField()) {
+                            $value = array_map(function ($v) {
+                                return (int) $v;
+                            }, $value);
+                        }
+
                         $expression->in($value);
                         break;
                     case 'eq':
+                        // TODO: 'nid' is hardcoded, find a way to read this dynamically from entity class metadata.
+                        if ('nid' == $expression->getCurrentField()) {
+                            $value = (int) $value;
+                        }
+
                         $expression->equals($value);
                         break;
                     case 'regex':
