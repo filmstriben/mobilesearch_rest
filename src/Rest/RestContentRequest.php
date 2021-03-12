@@ -5,9 +5,8 @@ namespace App\Rest;
 use App\Document\Content;
 use App\Exception\RestException;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\Query\Expr\Comparison;
 use Symfony\Component\Filesystem\Filesystem as FSys;
+use MongoDB\BSON\Regex as MongoRegex;
 
 /**
  * Class RestContentRequest
@@ -203,7 +202,7 @@ class RestContentRequest extends RestBaseRequest
             } else {
                 $qb
                     ->field($currentField)
-                    ->equals(new \MongoRegex('/'.$currentQuery.'/i'));
+                    ->equals(new MongoRegex($currentQuery, 'iu'));
             }
 
             next($query);
