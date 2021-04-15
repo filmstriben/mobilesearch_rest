@@ -346,9 +346,10 @@ final class RestController extends AbstractController
      *     @OA\Parameter(
      *         in="query",
      *         name="order",
-     *         description="Sorting order. asc - ascending order, desc - descending order, match(foo,bar,baz) - exact order",
+     *         description="Sorting order. asc - ascending order, desc - descending order.",
      *         @OA\Schema(
      *             type="string",
+     *             enum={"asc", "desc"},
      *             default="asc"
      *         )
      *     ),
@@ -420,7 +421,7 @@ final class RestController extends AbstractController
             'amount' => 10,
             'skip' => 0,
             'sort' => 'fields.title.value',
-            'order' => 'asc',
+            'order' => 'ASC',
             'type' => null,
             'status' => RestContentRequest::STATUS_ALL,
             'external' => RestContentRequest::STATUS_UNPUBLISHED,
@@ -428,6 +429,10 @@ final class RestController extends AbstractController
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
+        }
+
+        if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
+            $fields['order'] = 'asc';
         }
 
         $restContentRequest = new RestContentRequest($dm);
@@ -439,16 +444,19 @@ final class RestController extends AbstractController
         } else {
             unset($fields['agency'], $fields['key']);
             try {
-                $results = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
-                foreach ($results as $result) {
-                    $this->lastItems[] = $result->toArray();
+                $items = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
+
+                if (!empty($items)) {
+                    /** @var Content $item */
+                    foreach ($items as $item) {
+                        $this->lastItems[] = $item->toArray();
+                    }
+
+                    $this->lastStatus = true;
                 }
 
-                $this->lastStatus = true;
-
-                // TODO: Figure out how to get count with the results.
                 $fields['countOnly'] = true;
-                $hits = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields)->toArray()[0]['hits'] ?? 0;
+                $hits = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
             } catch (RestException $e) {
                 // TODO: Log this instead.
                 $this->lastMessage = $e->getMessage();
@@ -2397,7 +2405,7 @@ final class RestController extends AbstractController
         ];
 
         if (null !== $hits) {
-            $responseContent['hits'] = $hits;
+            $responseContent['hits'] = (int) $hits;
         }
 
         $response = new Response(json_encode($responseContent));

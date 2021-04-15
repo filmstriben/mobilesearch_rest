@@ -79,7 +79,7 @@ class RestContentRequest extends RestBaseRequest
      *   Skip this amount of entries.
      * @param string $sort
      *   Sort field.
-     * @param string $order
+     * @param string $dir
      *   Sort direction. Either ASC or DESC.
      * @param string $type
      *   Entry type (type field).
@@ -99,46 +99,37 @@ class RestContentRequest extends RestBaseRequest
         $amount = 10,
         $skip = 0,
         $sort = '',
-        $order = '',
+        $dir = '',
         $type = null,
         $status = self::STATUS_PUBLISHED,
         $external = 0,
         $countOnly = false
     ) {
-        /** @var \Doctrine\Persistence\ManagerRegistry $qb */
-        $manager = $this->em->getManager();
-
-        /** @var \Doctrine\ODM\MongoDB\Aggregation\Builder $qb */
-        $qb = $manager->createAggregationBuilder(Content::class);
-        $match = $qb->match();
-
-        if ($ids = array_filter(explode(',', $id))) {
-            $match->field('_id')->in($ids);
-        } elseif ($nodeIds = array_filter(explode(',', $node))) {
-            $match->field('nid')->in($nodeIds);
+        if (!empty($id)) {
+            $ids = explode(',', $id);
+            return $this->fetchContent($ids, '_id', $countOnly);
+        } elseif (!empty($node)) {
+            $nids = explode(',', $node);
+            return $this->fetchContent($nids, 'nid', $countOnly);
         }
 
-        $order = strtolower($order);
+        /** @var \Doctrine\ODM\MongoDB\Query\Builder $qb */
+        $qb = $this->em
+            ->getManager()
+            ->createQueryBuilder(Content::class);
+
+        if ($countOnly) {
+            $qb->count();
+        } else {
+            $qb->skip($skip)->limit($amount);
+        }
 
         if ($type) {
-            $match->field('type')->equals($type);
+            $qb->field('type')->equals($type);
         }
 
-        if ($sort) {
-            $orderMatches = [];
-            if (preg_match('~match\(([0-9,]+)\)~', $order, $orderMatches)) {
-                $customOrder = array_filter(
-                    array_filter(explode(',', $orderMatches[1])),
-                    'is_numeric'
-                );
-
-                if ($customOrder) {
-
-                }
-            }
-            elseif (in_array($order, ['asc', 'desc'])) {
-                $qb->sort($sort, $order);
-            }
+        if ($sort && $dir) {
+            $qb->sort($sort, $dir);
         }
 
         $possibleStatuses = [
@@ -148,22 +139,14 @@ class RestContentRequest extends RestBaseRequest
         ];
         // Set a status filter only if it differs from the default one.
         if ($status != '' && self::STATUS_ALL != $status && in_array($status, $possibleStatuses)) {
-            $match->field('fields.status.value')->equals($status);
+            $qb->field('fields.status.value')->equals($status);
         }
 
         if ($external != '' && self::STATUS_ALL != $external && in_array($external, $possibleStatuses)) {
-            $match->field('fields.field_external.value')->equals($external);
+            $qb->field('fields.field_external.value')->equals($external);
         }
 
-        if ($countOnly) {
-            $qb->count('hits')->project()->includeFields(['hits']);
-        }
-        else {
-            $qb->hydrate(Content::class);
-            $qb->skip($skip)->limit($amount);
-        }
-
-        return $qb->getAggregation()->getIterator();
+        return $qb->getQuery()->execute();
     }
 
     /**
@@ -269,6 +252,50 @@ class RestContentRequest extends RestBaseRequest
         $dm->flush();
 
         return $entity;
+    }
+
+    /**
+     * Fetches content by id.
+     *
+     * @param array $ids      Content id's.
+     * @param string $field   Field where to seek the id's.
+     * @param bool $countOnly Fetch only number of entries.
+     *
+     * @return Content[]|int      A set of entities or their count.
+     */
+    public function fetchContent(array $ids, $field = 'nid', $countOnly = false)
+    {
+        if (empty($ids)) {
+            return $countOnly ? 0 : [];
+        }
+
+        // Mongo has strict type check, and since 'nid' is stored as int
+        // convert the value to int as well.
+        array_walk(
+            $ids,
+            function (&$v) use ($field) {
+                switch ($field) {
+                    case 'nid':
+                        $v = (int)$v;
+                        break;
+                    case 'id':
+                        $v = new \MongoId($v);
+                        break;
+                }
+            }
+        );
+
+        $qb = $this->em
+            ->getManager()
+            ->createQueryBuilder(Content::class);
+
+        if ($countOnly) {
+            $qb->count();
+        }
+
+        $qb->field($field)->in($ids);
+
+        return $qb->getQuery()->execute();
     }
 
     /**
