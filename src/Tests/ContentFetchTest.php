@@ -204,6 +204,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'amount' => $amount,
             'skip' => $skip,
             'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         $node_ids = [];
@@ -247,7 +248,9 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'sort' => $sort,
-            'order' => 'ASC',
+            'order' => 'asc',
+            'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         // Ascending sort.
@@ -262,7 +265,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         }
 
         // Descending sort.
-        $parameters['order'] = 'DESC';
+        $parameters['order'] = 'desc';
 
         $response = $this->request(self::URI, $parameters, 'GET');
 
@@ -287,8 +290,10 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'sort' => 'fields.title.value',
-            'order' => 'ASC',
+            'order' => 'asc',
             'type' => 'os',
+            'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         // Ascending order.
@@ -306,7 +311,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         }
 
         // Descending order;
-        $parameters['order'] = 'DESC';
+        $parameters['order'] = 'desc';
 
         $response = $this->request(self::URI, $parameters, 'GET');
 
@@ -339,8 +344,9 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'amount' => $amount,
             'skip' => 1,
             'sort' => 'fields.title.value',
-            'order' => 'DESC',
+            'order' => 'desc',
             'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         $response = $this->request(self::URI, $parameters, 'GET');

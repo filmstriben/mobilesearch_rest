@@ -118,18 +118,12 @@ class RestContentRequest extends RestBaseRequest
             ->getManager()
             ->createQueryBuilder(Content::class);
 
-        if ($countOnly) {
-            $qb->count();
-        } else {
-            $qb->skip($skip)->limit($amount);
-        }
-
         if ($type) {
             $qb->field('type')->equals($type);
         }
 
-        if (!in_array($sort, ['asc', 'desc'])) {
-            $sort = 'asc';
+        if (!in_array(strtolower($order), ['asc', 'desc'])) {
+            $order = 'asc';
         }
 
         if ($sort && $order) {
@@ -148,6 +142,12 @@ class RestContentRequest extends RestBaseRequest
 
         if ($external != '' && self::STATUS_ALL != $external && in_array($external, $possibleStatuses)) {
             $qb->field('fields.field_external.value')->equals($external);
+        }
+
+        if ($countOnly) {
+            $qb->count();
+        } else {
+            $qb->skip($skip)->limit($amount);
         }
 
         return $qb->getQuery()->execute();

@@ -421,7 +421,7 @@ final class RestController extends AbstractController
             'amount' => 10,
             'skip' => 0,
             'sort' => 'fields.title.value',
-            'order' => 'ASC',
+            'order' => 'asc',
             'type' => null,
             'status' => RestContentRequest::STATUS_ALL,
             'external' => RestContentRequest::STATUS_UNPUBLISHED,
