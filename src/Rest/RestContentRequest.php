@@ -79,7 +79,7 @@ class RestContentRequest extends RestBaseRequest
      *   Skip this amount of entries.
      * @param string $sort
      *   Sort field.
-     * @param string $dir
+     * @param string $order
      *   Sort direction. Either ASC or DESC.
      * @param string $type
      *   Entry type (type field).
@@ -99,7 +99,7 @@ class RestContentRequest extends RestBaseRequest
         $amount = 10,
         $skip = 0,
         $sort = '',
-        $dir = '',
+        $order = '',
         $type = null,
         $status = self::STATUS_PUBLISHED,
         $external = 0,
@@ -128,8 +128,12 @@ class RestContentRequest extends RestBaseRequest
             $qb->field('type')->equals($type);
         }
 
-        if ($sort && $dir) {
-            $qb->sort($sort, $dir);
+        if (!in_array($sort, ['asc', 'desc'])) {
+            $sort = 'asc';
+        }
+
+        if ($sort && $order) {
+            $qb->sort($sort, $order);
         }
 
         $possibleStatuses = [
