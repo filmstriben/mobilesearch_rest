@@ -79,7 +79,7 @@ class RestContentRequest extends RestBaseRequest
      *   Skip this amount of entries.
      * @param string $sort
      *   Sort field.
-     * @param string $dir
+     * @param string $order
      *   Sort direction. Either ASC or DESC.
      * @param string $type
      *   Entry type (type field).
@@ -99,7 +99,7 @@ class RestContentRequest extends RestBaseRequest
         $amount = 10,
         $skip = 0,
         $sort = '',
-        $dir = '',
+        $order = '',
         $type = null,
         $status = self::STATUS_PUBLISHED,
         $external = 0,
@@ -118,18 +118,16 @@ class RestContentRequest extends RestBaseRequest
             ->getManager()
             ->createQueryBuilder(Content::class);
 
-        if ($countOnly) {
-            $qb->count();
-        } else {
-            $qb->skip($skip)->limit($amount);
-        }
-
         if ($type) {
             $qb->field('type')->equals($type);
         }
 
-        if ($sort && $dir) {
-            $qb->sort($sort, $dir);
+        if (!in_array(strtolower($order), ['asc', 'desc'])) {
+            $order = 'asc';
+        }
+
+        if ($sort && $order) {
+            $qb->sort($sort, $order);
         }
 
         $possibleStatuses = [
@@ -144,6 +142,12 @@ class RestContentRequest extends RestBaseRequest
 
         if ($external != '' && self::STATUS_ALL != $external && in_array($external, $possibleStatuses)) {
             $qb->field('fields.field_external.value')->equals($external);
+        }
+
+        if ($countOnly) {
+            $qb->count();
+        } else {
+            $qb->skip($skip)->limit($amount);
         }
 
         return $qb->getQuery()->execute();

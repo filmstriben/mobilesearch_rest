@@ -150,6 +150,8 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $parameters = [
             'agency' => self::AGENCY,
             'key' => self::KEY,
+            'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         $response = $this->request(self::URI, $parameters, 'GET');
@@ -179,6 +181,8 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'key' => self::KEY,
             'amount' => $amount,
             'type' => 'os',
+            'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         $response = $this->request(self::URI, $parameters, 'GET');
@@ -204,6 +208,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'amount' => $amount,
             'skip' => $skip,
             'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         $node_ids = [];
@@ -247,7 +252,9 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'sort' => $sort,
-            'order' => 'ASC',
+            'order' => 'asc',
+            'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         // Ascending sort.
@@ -262,7 +269,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         }
 
         // Descending sort.
-        $parameters['order'] = 'DESC';
+        $parameters['order'] = 'desc';
 
         $response = $this->request(self::URI, $parameters, 'GET');
 
@@ -287,8 +294,10 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'sort' => 'fields.title.value',
-            'order' => 'ASC',
+            'order' => 'asc',
             'type' => 'os',
+            'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         // Ascending order.
@@ -306,7 +315,7 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         }
 
         // Descending order;
-        $parameters['order'] = 'DESC';
+        $parameters['order'] = 'desc';
 
         $response = $this->request(self::URI, $parameters, 'GET');
 
@@ -339,8 +348,9 @@ class ContentFetchTest extends AbstractFixtureAwareTest
             'amount' => $amount,
             'skip' => 1,
             'sort' => 'fields.title.value',
-            'order' => 'DESC',
+            'order' => 'desc',
             'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
         $response = $this->request(self::URI, $parameters, 'GET');
@@ -455,6 +465,83 @@ class ContentFetchTest extends AbstractFixtureAwareTest
         $this->assertCount($publishedCount + $unpublishedCount, $result['items']);
         $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
+    }
+
+    /**
+     * Fetches content filtered by external status.
+     */
+    public function testFetchByExternal()
+    {
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'status' => RestContentRequest::STATUS_ALL,
+            'external' => RestContentRequest::STATUS_PUBLISHED,
+            'type' => 'os',
+            'amount' => 999,
+            'skip' => 0,
+        ];
+
+        // Fetch external movies.
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $externalCount = count($result['items']);
+        $this->assertEquals($result['hits'], $externalCount);
+
+        // Fetch non-external movies.
+        $parameters['external'] = RestContentRequest::STATUS_UNPUBLISHED;
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $nonExternalCount = count($result['items']);
+        $this->assertEquals($result['hits'], $externalCount);
+
+        // Fetch all movies.
+        $parameters['external'] = RestContentRequest::STATUS_ALL;
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $allCount = count($result['items']);
+        $this->assertEquals($result['hits'], $allCount);
+
+        $this->assertEquals($allCount, $externalCount + $nonExternalCount);
+    }
+
+    /**
+     * Fetches items and sorts in an exact manner.
+     */
+    public function testExactOrder()
+    {
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'node' => implode(',', [1000,1001,2000,2001]),
+            'amount' => 999,
+            'skip' => 0,
+            'sort' => 'nid',
+            'order' => 'match(2001,1001)',
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertNotEmpty($result['items']);
+        $allCount = count($result['items']);
+        $this->assertEquals($result['hits'], $allCount);
+
+        // Expect same order as in order=match() query parameter.
+        $this->assertEquals(2001, $result['items'][0]['nid']);
+        $this->assertEquals(1001, $result['items'][1]['nid']);
     }
 
     /**

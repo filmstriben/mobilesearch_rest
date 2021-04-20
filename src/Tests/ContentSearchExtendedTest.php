@@ -4,6 +4,7 @@ namespace App\Tests;
 
 use App\DataFixtures\MongoDB\AgencyFixtures;
 use App\DataFixtures\MongoDB\ContentFixtures;
+use App\Rest\RestContentRequest;
 
 /**
  * Class ContentSearchTest
@@ -132,7 +133,6 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
             'amount' => 100,
         ];
 
-        /** @var \Symfony\Component\HttpFoundation\Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -159,9 +159,9 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
             'q' => '("type[eq]:os") AND ("fields.title.value[regex]:fear")',
             'format' => 'full',
             'amount' => 100,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
-        /** @var \Symfony\Component\HttpFoundation\Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -189,9 +189,9 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
             'q' => '("fields.title.value[regex]:fear and desire")',
             'format' => 'full',
             'amount' => 100,
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
-        /** @var \Symfony\Component\HttpFoundation\Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -219,7 +219,6 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
             'amount' => 100,
         ];
 
-        /** @var \Symfony\Component\HttpFoundation\Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -244,10 +243,10 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'q' => '("agency[eq]:999999") AND ("fields.title.value[regex]:fear")',
-            'format' => 'short'
+            'format' => 'short',
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
-        /** @var \Symfony\Component\HttpFoundation\Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -272,10 +271,10 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
             'agency' => self::AGENCY,
             'key' => self::KEY,
             'q' => '("agency[eq]:999999") AND ("fields.title.value[regex]:fear")',
-            'format' => 'full'
+            'format' => 'full',
+            'external' => RestContentRequest::STATUS_ALL,
         ];
 
-        /** @var \Symfony\Component\HttpFoundation\Response $response */
         $response = $this->request(self::URI, $parameters, 'GET');
 
         $result = $this->assertResponse($response);
@@ -294,6 +293,34 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
 
         $this->assertArrayHasKey('hits', $result);
         $this->assertGreaterThan(0, $result['hits']);
+    }
+
+    /**
+     * Searches items by nid and sorts in an exact manner.
+     */
+    public function testExactOrder()
+    {
+        $order = [2000,1000,2005,1003];
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'q' => '("nid[eq]:1000") OR ("nid[eq]:2000") OR ("nid[eq]:1003") OR ("nid[eq]:2005") OR ("nid[eq]:2008")',
+            'sort' => 'nid',
+            'order' => 'match(' . implode(',', $order) . ')',
+            'external' => RestContentRequest::STATUS_ALL,
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertTrue($result['status']);
+        $this->assertNotEmpty($result['items']);
+        $this->assertEquals($result['hits'], count($result['items']));
+
+        foreach ($order as $k => $nid) {
+            $this->assertEquals($nid, $result['items'][$k]['nid']);
+        }
     }
 
     /**

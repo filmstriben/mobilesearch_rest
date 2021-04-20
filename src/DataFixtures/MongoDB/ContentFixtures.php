@@ -34,9 +34,9 @@ class ContentFixtures implements FixtureInterface, ContainerAwareInterface
             $content = new Content();
 
             // Set some random values for fields which are required and defined as null.
-            $content->setNid(isset($fixture['nid']) ? $fixture['nid'] : mt_rand());
-            $content->setAgency(isset($fixture['agency']) ? $fixture['agency'] : mt_rand(100000, 999999));
-            $content->setType(isset($fixture['type']) ? $fixture['type'] : $faker->word);
+            $content->setNid($fixture['nid'] ?? mt_rand());
+            $content->setAgency($fixture['agency'] ?? mt_rand(100000, 999999));
+            $content->setType($fixture['type'] ?? $faker->word);
 
             foreach ($fixture['fields'] as $field => &$values) {
                 if (is_null($values['value'])) {
@@ -56,9 +56,9 @@ class ContentFixtures implements FixtureInterface, ContainerAwareInterface
                 }
             }
 
-            $content->setFields(isset($fixture['fields']) ? $fixture['fields'] : []);
-            $content->setTaxonomy(isset($fixture['taxonomy']) ? $fixture['taxonomy'] : []);
-            $content->setList(isset($fixture['list']) ? $fixture['list'] : []);
+            $content->setFields($fixture['fields'] ?? []);
+            $content->setTaxonomy($fixture['taxonomy'] ?? []);
+            $content->setList($fixture['list'] ?? []);
 
             $manager->persist($content);
         }
