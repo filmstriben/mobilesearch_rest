@@ -347,7 +347,7 @@ final class RestController extends AbstractController
      *     @OA\Parameter(
      *         in="query",
      *         name="order",
-     *         description="Sorting order. asc - ascending order, desc - descending order, match() - exact order.",
+     *         description="Sorting order. asc - ascending order, desc - descending order, match(a,b,c) - exact order.",
      *         @OA\Schema(
      *             type="string",
      *             default="asc"
@@ -823,7 +823,7 @@ final class RestController extends AbstractController
      *     @OA\Parameter(
      *         in="query",
      *         name="order",
-     *         description="Sorting order. asc - ascending order, desc - descending order, match() - exact order",
+     *         description="Sorting order. asc - ascending order, desc - descending order, match(a,b,c) - exact order",
      *         @OA\Schema(
      *             type="string",
      *             default="asc"
@@ -864,7 +864,7 @@ final class RestController extends AbstractController
             'amount' => 10,
             'skip' => 0,
             'format' => null,
-            'sort' => '',
+            'sort' => 'fields.title.value',
             'order' => 'asc',
             'external' => RestContentRequest::STATUS_UNPUBLISHED,
         ];
