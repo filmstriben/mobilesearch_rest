@@ -18,7 +18,8 @@ class MatchOrderer
      * @return array
      *   Field values in target order.
      */
-    private function isMatchSorting(string $order): array {
+    private function isMatchSorting(string $order): array
+    {
         $orderMatches = [];
         if (preg_match('~match\(([0-9,]+)\)~', strtolower($order), $orderMatches)) {
             return array_filter(
@@ -29,6 +30,7 @@ class MatchOrderer
 
         return [];
     }
+
     /**
      * Rearranges the data result in concordance with input order.
      *
@@ -42,7 +44,8 @@ class MatchOrderer
      * @return array
      *   Exact ordered results.
      */
-    public function order(array $data, string $field = '', string $order = ''): array {
+    public function order(array $data, string $field = '', string $order = ''): array
+    {
         $orderedItems = [];
 
         foreach ($this->isMatchSorting($order) as $match) {
@@ -71,7 +74,8 @@ class MatchOrderer
      * @return string
      *   Nested value.
      */
-    private function getNestedValue(array $input, string $path):string {
+    private function getNestedValue(array $input, string $path):string
+    {
         $path = array_filter(explode('.', $path));
 
         while ($key = current($path)) {

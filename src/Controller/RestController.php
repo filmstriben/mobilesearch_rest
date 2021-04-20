@@ -845,7 +845,6 @@ final class RestController extends AbstractController
      *         @OA\JsonContent()
      *     )
      * )
-     * TODO: Test coverage.
      */
     public function searchExtendedAction(
         Request $request,
