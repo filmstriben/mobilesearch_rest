@@ -14,6 +14,7 @@ use App\Rest\RestContentRequest;
 use App\Rest\RestListsRequest;
 use App\Rest\RestMenuRequest;
 use App\Rest\RestTaxonomyRequest;
+use App\Services\MatchOrderer;
 use App\Services\SearchQueryParser;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -346,10 +347,9 @@ final class RestController extends AbstractController
      *     @OA\Parameter(
      *         in="query",
      *         name="order",
-     *         description="Sorting order. asc - ascending order, desc - descending order.",
+     *         description="Sorting order. asc - ascending order, desc - descending order, match(a,b,c) - exact order.",
      *         @OA\Schema(
      *             type="string",
-     *             enum={"asc", "desc"},
      *             default="asc"
      *         )
      *     ),
@@ -409,7 +409,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
-    public function contentFetchAction(Request $request, ManagerRegistry $dm)
+    public function contentFetchAction(Request $request, ManagerRegistry $dm, MatchOrderer $orderer)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -421,7 +421,7 @@ final class RestController extends AbstractController
             'amount' => 10,
             'skip' => 0,
             'sort' => 'fields.title.value',
-            'order' => 'ASC',
+            'order' => 'asc',
             'type' => null,
             'status' => RestContentRequest::STATUS_ALL,
             'external' => RestContentRequest::STATUS_UNPUBLISHED,
@@ -429,10 +429,6 @@ final class RestController extends AbstractController
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
-        }
-
-        if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
-            $fields['order'] = 'asc';
         }
 
         $restContentRequest = new RestContentRequest($dm);
@@ -444,13 +440,16 @@ final class RestController extends AbstractController
         } else {
             unset($fields['agency'], $fields['key']);
             try {
-                $items = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields);
+                $items = call_user_func_array([$restContentRequest, 'fetchFiltered'], $fields)
+                    ->toArray();
 
                 if (!empty($items)) {
-                    /** @var Content $item */
-                    foreach ($items as $item) {
-                        $this->lastItems[] = $item->toArray();
+                    $this->lastItems = $orderer->order($items, $fields['sort'], $fields['order']);
+                    foreach ($this->lastItems as &$item) {
+                        $item = $item->toArray();
                     }
+
+                    $this->lastItems = array_values($this->lastItems);
 
                     $this->lastStatus = true;
                 }
@@ -623,6 +622,16 @@ final class RestController extends AbstractController
      *             enum={"short","full"}
      *         )
      *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="external",
+     *         description="Filter entities with a specific external status. External status is taken from 'fields.field_external.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="0"
+     *         )
+     *     ),
      *     @OA\Response(
      *         response="200",
      *         description="Search result response."
@@ -642,6 +651,7 @@ final class RestController extends AbstractController
             'amount' => 10,
             'skip' => 0,
             'format' => null,
+            'external' => RestContentRequest::STATUS_UNPUBLISHED,
         ];
 
         foreach (array_keys($fields) as $field) {
@@ -650,6 +660,10 @@ final class RestController extends AbstractController
 
         // Set upper amount limit to 100 items per request.
         $fields['amount'] = $fields['amount'] > 100 ? 100 : $fields['amount'];
+
+        if (RestContentRequest::STATUS_ALL == $fields['external']) {
+            $fields['external'] = null;
+        }
 
         $restContentRequest = new RestContentRequest($dm);
 
@@ -663,7 +677,8 @@ final class RestController extends AbstractController
             $suggestions = $contentRepository->fetchSuggestions(
                 $fields['q'],
                 $fields['amount'],
-                $fields['skip']
+                $fields['skip'],
+                $fields['external']
             );
 
             /** @var \App\Document\Content $suggestion */
@@ -689,11 +704,11 @@ final class RestController extends AbstractController
                 }
             }
 
-            $fields['countOnly'] = true;
             $hits = $contentRepository->fetchSuggestions(
                 $fields['q'],
                 $fields['amount'],
                 $fields['skip'],
+                $fields['external'],
                 true
             );
 
@@ -808,11 +823,20 @@ final class RestController extends AbstractController
      *     @OA\Parameter(
      *         in="query",
      *         name="order",
-     *         description="Sorting order. asc - ascending order, desc - descending order.",
+     *         description="Sorting order. asc - ascending order, desc - descending order, match(a,b,c) - exact order",
      *         @OA\Schema(
      *             type="string",
-     *             enum={"asc", "desc"},
      *             default="asc"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         in="query",
+     *         name="external",
+     *         description="Filter entities with a specific external status. External status is taken from 'fields.field_external.value' field. '-1' - all, '0' - status 0, '1' - status 1",
+     *         @OA\Schema(
+     *             type="string",
+     *             enum={"-1", "0", "1"},
+     *             default="0"
      *         )
      *     ),
      *     @OA\Response(
@@ -821,9 +845,14 @@ final class RestController extends AbstractController
      *         @OA\JsonContent()
      *     )
      * )
-     * TODO: Test coverage.
      */
-    public function searchExtendedAction(Request $request, ManagerRegistry $dm, SearchQueryParser $queryParser, LoggerInterface $logger)
+    public function searchExtendedAction(
+        Request $request,
+        ManagerRegistry $dm,
+        SearchQueryParser $queryParser,
+        LoggerInterface $logger,
+        MatchOrderer $orderer
+    )
     {
         $this->lastMethod = $request->getMethod();
 
@@ -834,16 +863,17 @@ final class RestController extends AbstractController
             'amount' => 10,
             'skip' => 0,
             'format' => null,
-            'sort' => null,
+            'sort' => 'fields.title.value',
             'order' => 'asc',
+            'external' => RestContentRequest::STATUS_UNPUBLISHED,
         ];
 
         foreach (array_keys($fields) as $field) {
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        if (!in_array(strtolower($fields['order']), ['asc', 'desc'])) {
-            $fields['order'] = 'asc';
+        if (RestContentRequest::STATUS_ALL == $fields['external']) {
+            $fields['external'] = null;
         }
 
         $restContentRequest = new RestContentRequest($dm);
@@ -879,6 +909,10 @@ final class RestController extends AbstractController
                 );
             }
 
+            if (null !== $fields['external']) {
+                $qb->addAnd($qb->expr()->field('fields.field_external.value')->equals((string) $fields['external']));
+            }
+
             $qbCount = clone($qb);
             $hits = $qbCount->count()->getQuery()->execute();
 
@@ -891,29 +925,32 @@ final class RestController extends AbstractController
             }
 
             $query = $qb->getQuery();
-            $suggestions = $query->execute();
+            $suggestions = $query->execute()->toArray();
 
-            /** @var \App\Document\Content $suggestion */
+            $suggestions = $orderer->order($suggestions, $fields['sort'], $fields['order']);
+
             foreach ($suggestions as $suggestion) {
-                $suggestionFields = $suggestion->getFields();
+                $suggestion = $suggestion->toArray();
 
                 switch ($fields['format']) {
                     case 'short':
-                        $this->lastItems[] = isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '';
+                        $this->lastItems[] = $suggestion['fields']['title']['value'] ?? '';
                         break;
                     case 'full':
-                        $this->lastItems[] = $suggestion->toArray();
+                        $this->lastItems[] = $suggestion;
                         break;
                     default:
                         $this->lastItems[] = [
-                            'id' => $suggestion->getId(),
-                            'nid' => $suggestion->getNid(),
-                            'agency' => $suggestion->getAgency(),
-                            'title' => isset($suggestionFields['title']['value']) ? $suggestionFields['title']['value'] : '',
-                            'changed' => isset($suggestionFields['changed']['value']) ? $suggestionFields['changed']['value'] : '',
+                            'id' => $suggestion['id'],
+                            'nid' => $suggestion['nid'],
+                            'agency' => $suggestion['agency'],
+                            'title' => $suggestion['fields']['title']['value'] ?? '',
+                            'changed' => $suggestion['fields']['changed']['value'] ?? '',
                         ];
                 }
             }
+
+            $this->lastItems = array_values($this->lastItems);
 
             $this->lastStatus = true;
         }
