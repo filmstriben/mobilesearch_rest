@@ -232,7 +232,7 @@
       attr: []
     field_external:
       name: Movie is external
-      value: '0'
+      value: '1'
       attr: [ ]
     field_external_url:
       name: URL
@@ -523,7 +523,7 @@
       attr: []
     field_external:
       name: Movie is external
-      value: '0'
+      value: '1'
       attr: [ ]
     field_external_url:
       name: URL
@@ -814,7 +814,7 @@
       attr: []
     field_external:
       name: Movie is external
-      value: '0'
+      value: '1'
       attr: [ ]
     field_external_url:
       name: URL
@@ -1124,7 +1124,7 @@
       attr: []
     field_external:
       name: Movie is external
-      value: '0'
+      value: '1'
       attr: [ ]
     field_external_url:
       name: URL
@@ -1436,7 +1436,7 @@
       attr: []
     field_external:
       name: Movie is external
-      value: '0'
+      value: '1'
       attr: [ ]
     field_external_url:
       name: URL
@@ -1763,7 +1763,7 @@
       attr: [ ]
     field_external:
       name: Movie is external
-      value: '0'
+      value: '1'
       attr: [ ]
     field_external_url:
       name: URL
