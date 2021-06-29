@@ -30,7 +30,7 @@ class SearchQueryLexer extends AbstractLexer
     {
         return [
             '\[[a-z]+\]',
-            '[\^\$a-z._0-9 |\p{L}]+',
+            '[\^\$a-z._0-9- |\p{L}]+',
         ];
     }
 
