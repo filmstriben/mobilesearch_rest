@@ -3,7 +3,7 @@ nelmio_api_doc:
         info:
             title: Filmstriben
             description: Filmstriben REST service.
-            version: 3.x-dev
+            version: 3.1.1
     areas: # to filter documented areas
         path_patterns:
             - ^/content|files|list|menu|taxonomy|configuration
