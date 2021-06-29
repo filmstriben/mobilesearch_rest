@@ -316,10 +316,36 @@ class ContentSearchExtendedTest extends AbstractFixtureAwareTest implements Asse
 
         $this->assertTrue($result['status']);
         $this->assertNotEmpty($result['items']);
-        $this->assertEquals($result['hits'], count($result['items']));
+        $this->assertCount($result['hits'], $result['items']);
 
         foreach ($order as $k => $nid) {
             $this->assertEquals($nid, $result['items'][$k]['nid']);
+        }
+    }
+
+    /**
+     * Test dashes are allowed in search query.
+     */
+    public function testDashes()
+    {
+        $parameters = [
+            'agency' => self::AGENCY,
+            'key' => self::KEY,
+            'q' => '("taxonomy.field_subject.terms[eq]:1970-1979")',
+            'external' => RestContentRequest::STATUS_ALL,
+            'format' => 'full',
+        ];
+
+        $response = $this->request(self::URI, $parameters, 'GET');
+
+        $result = $this->assertResponse($response);
+
+        $this->assertTrue($result['status']);
+        $this->assertNotEmpty($result['items']);
+        $this->assertCount($result['hits'], $result['items']);
+
+        foreach ($result['items'] as $item) {
+            $this->assertContains('1970-1979', $item['taxonomy']['field_subject']['terms']);
         }
     }
 
