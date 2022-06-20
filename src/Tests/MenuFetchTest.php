@@ -89,7 +89,7 @@ class MenuFetchTest extends AbstractFixtureAwareTest implements AssertItemStruct
             $this->assertGreaterThan(0, $result['hits']);
 
             foreach ($result['items'] as $item) {
-                // Node id's normally should not repeat for same agency.
+                // Menu id's normally should not repeat for same agency.
                 $this->assertNotContains($item['mlid'], $menuIds);
                 $this->assertEquals(self::AGENCY, $item['agency']);
                 $menuIds[] = $item['mlid'];
@@ -123,6 +123,11 @@ class MenuFetchTest extends AbstractFixtureAwareTest implements AssertItemStruct
         $this->assertArrayHasKey('url', $item);
         $this->assertArrayHasKey('weight', $item);
         $this->assertArrayHasKey('enabled', $item);
+        $this->assertArrayHasKey('plid', $item);
+        $this->assertArrayHasKey('items', $item);
+        $this->assertIsArray($item['items']);
+        $this->assertArrayHasKey('with_image', $item);
+        $this->assertIsBool($item['with_image']);
     }
 
     /**

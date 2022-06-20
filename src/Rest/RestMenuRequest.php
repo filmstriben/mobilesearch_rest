@@ -104,6 +104,15 @@ class RestMenuRequest extends RestBaseRequest
         $enabled = !empty($body['enabled']) ? (bool)$body['enabled'] : false;
         $menu->setEnabled($enabled);
 
+        $items = !empty($body['items']) && is_array($body['items']) ? $body['items'] : [];
+        $menu->setItems($items);
+
+        $plid = !empty($body['plid']) ? $body['plid'] : 0;
+        $menu->setPlid($plid);
+
+        $withImage = !empty($body['with_image']) ? (bool) $body['with_image'] : false;
+        $menu->setWithImage($withImage);
+
         return $menu;
     }
 

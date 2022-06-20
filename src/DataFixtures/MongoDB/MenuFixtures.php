@@ -3,6 +3,7 @@
 namespace App\DataFixtures\MongoDB;
 
 use App\Document\Menu;
+use App\Services\FixtureLoader;
 use Doctrine\Common\DataFixtures\FixtureInterface;
 use Faker\Factory;
 use Doctrine\Persistence\ObjectManager;
@@ -39,9 +40,16 @@ class MenuFixtures implements FixtureInterface, ContainerAwareInterface
                 $menu->setEnabled(isset($fixture['enabled']) ? (bool)$fixture['enabled'] : $faker->boolean);
                 $menu->setType(!empty($fixture['type']) ? $fixture['type'] : $faker->slug);
                 $menu->setName(!empty($fixture['name']) ? $fixture['name'] : $faker->sentence);
-                $menu->setMlid(!empty($fixture['mlid']) ? $fixture['mlid'] : mt_rand(1000, 5000));
+                $menu->setMlid(!empty($fixture['mlid']) ? $fixture['mlid'] : mt_rand(1000, 9000));
                 $menu->setOrder(isset($fixture['order']) ? (int)$fixture['order'] : mt_rand(-50, 50));
                 $menu->setUrl(!empty($fixture['url']) ? $fixture['url'] : $faker->url);
+                $menu->setPlid(mt_rand(0, 11));
+                $menu->setItems(array_fill(
+                    0,
+                    mt_rand(1, 10),
+                    mt_rand(1000, 9999),
+                ));
+                $menu->setWithImage((bool)mt_rand(0, 1));
 
                 $entityManager->persist($menu);
             }
@@ -51,7 +59,7 @@ class MenuFixtures implements FixtureInterface, ContainerAwareInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getDependencies()
     {
