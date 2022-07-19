@@ -80,6 +80,12 @@ class Menu
     protected $with_image;
 
     /**
+     * @MongoDB\Field(type="hash")
+     * @OA\Property(type="string")
+     */
+    protected $image;
+
+    /**
      * Get id
      *
      * @return \Doctrine\ODM\MongoDB\Mapping\Annotations\Id
@@ -318,11 +324,37 @@ class Menu
     /**
      * Set with image parameter.
      *
-     * @param boolean $with_image
+     * @param bool $with_image
+     *
+     * @return Menu
      */
     public function setWithImage(bool $with_image): self
     {
         $this->with_image = $with_image;
+
+        return $this;
+    }
+
+    /**
+     * Get background image url.
+     *
+     * @return array
+     */
+    public function getImage(): ?array
+    {
+        return $this->image;
+    }
+
+    /**
+     * Set background image url.
+     *
+     * @param array $image
+     *
+     * @return Menu
+     */
+    public function setImage(array $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }
