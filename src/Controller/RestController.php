@@ -1028,6 +1028,18 @@ final class RestController extends AbstractController
      *                 @OA\Property(
      *                     property="with_image",
      *                     type="boolean"
+     *                 ),
+     *                @OA\Property(
+     *                     type="object",
+     *                     property="image",
+     *                     @OA\Property(
+     *                         property="value",
+     *                         type="string"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="attr",
+     *                         type="string"
+     *                     )
      *                 )
      *             )
      *         )
@@ -1125,6 +1137,18 @@ final class RestController extends AbstractController
      *                 @OA\Property(
      *                     property="with_image",
      *                     type="boolean"
+     *                 ),
+     *                 @OA\Property(
+     *                     type="object",
+     *                     property="image",
+     *                     @OA\Property(
+     *                         property="value",
+     *                         type="string"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="attr",
+     *                         type="string"
+     *                     )
      *                 )
      *             )
      *         )
@@ -1349,6 +1373,7 @@ final class RestController extends AbstractController
                         'items' => $menuEntity->getItems() ?? [],
                         'plid' => $menuEntity->getPlid() ?? 0,
                         'with_image' => $menuEntity->getWithImage() ?? false,
+                        'image' => $menuEntity->getImage()['value'] ?? '',
                     ];
                 }
 
