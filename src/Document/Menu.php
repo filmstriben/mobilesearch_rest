@@ -62,7 +62,7 @@ class Menu
     protected $enabled;
 
     /**
-     * @MongoDB\Field(type="hash")
+     * @MongoDB\Field(type="collection")
      * @OA\Property(type="array", @OA\Items(type="integer"))
      */
     protected $items;
@@ -282,7 +282,7 @@ class Menu
      */
     public function setItems(array $items): self
     {
-        $this->items = $items;
+        $this->items = array_values($items);
 
         return $this;
     }
