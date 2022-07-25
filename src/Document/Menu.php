@@ -56,7 +56,7 @@ class Menu
     protected $order;
 
     /**
-     * @MongoDB\Field(type="int")
+     * @MongoDB\Field(type="boolean")
      * @OA\Property(type="boolean")
      */
     protected $enabled;
