@@ -56,10 +56,34 @@ class Menu
     protected $order;
 
     /**
-     * @MongoDB\Field(type="int")
+     * @MongoDB\Field(type="boolean")
      * @OA\Property(type="boolean")
      */
     protected $enabled;
+
+    /**
+     * @MongoDB\Field(type="collection")
+     * @OA\Property(type="array", @OA\Items(type="integer"))
+     */
+    protected $items;
+
+    /**
+     * @MongoDB\Field(type="int")
+     * @OA\Property(type="integer")
+     */
+    protected $plid;
+
+    /**
+     * @MongoDB\Field(type="boolean")
+     * @OA\Property(type="boolean")
+     */
+    protected $with_image;
+
+    /**
+     * @MongoDB\Field(type="hash")
+     * @OA\Property(type="string")
+     */
+    protected $image;
 
     /**
      * Get id
@@ -237,5 +261,101 @@ class Menu
     public function getEnabled()
     {
         return $this->enabled;
+    }
+
+    /**
+     * Get items.
+     *
+     * @return array
+     */
+    public function getItems(): ?array
+    {
+        return $this->items;
+    }
+
+    /**
+     * Set items.
+     *
+     * @param array $items
+     *
+     * @return Menu
+     */
+    public function setItems(array $items): self
+    {
+        $this->items = array_values($items);
+
+        return $this;
+    }
+
+    /**
+     *  Get parent id.
+     *
+     * @return integer
+     */
+    public function getPlid(): ?int
+    {
+        return $this->plid;
+    }
+
+    /**
+     * Set parent id.
+     *
+     * @param integer $plid
+     *
+     * @return Menu
+     */
+    public function setPlid(int $plid): self
+    {
+        $this->plid = $plid;
+
+        return $this;
+    }
+
+    /**
+     * Get with image parameter.
+     *
+     * @return boolean
+     */
+    public function getWithImage(): ?bool
+    {
+        return $this->with_image;
+    }
+
+    /**
+     * Set with image parameter.
+     *
+     * @param bool $with_image
+     *
+     * @return Menu
+     */
+    public function setWithImage(bool $with_image): self
+    {
+        $this->with_image = $with_image;
+
+        return $this;
+    }
+
+    /**
+     * Get background image url.
+     *
+     * @return array
+     */
+    public function getImage(): ?array
+    {
+        return $this->image;
+    }
+
+    /**
+     * Set background image url.
+     *
+     * @param array $image
+     *
+     * @return Menu
+     */
+    public function setImage(array $image): self
+    {
+        $this->image = $image;
+
+        return $this;
     }
 }
