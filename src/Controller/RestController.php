@@ -852,8 +852,7 @@ final class RestController extends AbstractController
         SearchQueryParser $queryParser,
         LoggerInterface $logger,
         MatchOrderer $orderer
-    )
-    {
+    ) {
         $this->lastMethod = $request->getMethod();
 
         $fields = [
@@ -1016,6 +1015,31 @@ final class RestController extends AbstractController
      *                 @OA\Property(
      *                     property="enabled",
      *                     type="boolean"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="items",
+     *                     type="array",
+     *                     @OA\Items(type="integer")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="plid",
+     *                     type="integer"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="with_image",
+     *                     type="boolean"
+     *                 ),
+     *                @OA\Property(
+     *                     type="object",
+     *                     property="image",
+     *                     @OA\Property(
+     *                         property="value",
+     *                         type="string"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="attr",
+     *                         type="string"
+     *                     )
      *                 )
      *             )
      *         )
@@ -1100,6 +1124,31 @@ final class RestController extends AbstractController
      *                 @OA\Property(
      *                     property="enabled",
      *                     type="boolean"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="items",
+     *                     type="array",
+     *                     @OA\Items(type="integer")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="plid",
+     *                     type="integer"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="with_image",
+     *                     type="boolean"
+     *                 ),
+     *                 @OA\Property(
+     *                     type="object",
+     *                     property="image",
+     *                     @OA\Property(
+     *                         property="value",
+     *                         type="string"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="attr",
+     *                         type="string"
+     *                     )
      *                 )
      *             )
      *         )
@@ -1196,7 +1245,7 @@ final class RestController extends AbstractController
     }
 
     /**
-     * Dispatcher menu related requests.
+     * Dispatcher for menu related requests.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
@@ -1321,6 +1370,10 @@ final class RestController extends AbstractController
                         'url' => $menuEntity->getUrl(),
                         'weight' => $menuEntity->getOrder(),
                         'enabled' => $menuEntity->getEnabled(),
+                        'items' => $menuEntity->getItems() ?? [],
+                        'plid' => $menuEntity->getPlid() ?? 0,
+                        'with_image' => $menuEntity->getWithImage() ?? false,
+                        'image' => $menuEntity->getImage()['value'] ?? '',
                     ];
                 }
 
