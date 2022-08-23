@@ -1,5 +1,11 @@
 ## Change Log
 
+### v3.2.0 (23/08-2022)
+- [#67](https://github.com/filmstriben/mobilesearch_rest/pull/67) FIL-1443 - Fix: Enforce menu items data type. (@OIOIOOOI)
+- [#66](https://github.com/filmstriben/mobilesearch_rest/pull/66) FIL-1443 - Fix: Enforce data type. (@OIOIOOOI)
+- [#65](https://github.com/filmstriben/mobilesearch_rest/pull/65) FIL-1443 - Feature: Support for menu background image. (@OIOIOOOI)
+- [#64](https://github.com/filmstriben/mobilesearch_rest/pull/64) FIL-1443 - Feature: CRUD operations for top menu links and render as image option. (@OIOIOOOI)
+
 ### v3.1.1 (29/06-2021)
 - [#63](https://github.com/filmstriben/mobilesearch_rest/pull/63) FIL-1353 - Allow dashes in extended search query. (@OIOIOOOI)
 
@@ -37,7 +43,7 @@
 
 ### v2.3 (30/04-2020)
 - [#34](https://github.com/filmstriben/mobilesearch_rest/pull/34) FIL-NO_TASK - Restore search functionality. (@OIOIOOOI)
-- [#36](https://github.com/filmstriben/mobilesearch_rest/pull/36) FIL-1114 - Change to ImageController. (@guddo)
+- [#36](https://github.com/filmstriben/mobilesearch_rest/pull/36) FIL-1114 - Change to ImageController. (@filmstriben)
 - [#35](https://github.com/filmstriben/mobilesearch_rest/pull/35) FIL-1114 - Serve jpeg's by default. (@OIOIOOOI)
 - [#33](https://github.com/filmstriben/mobilesearch_rest/pull/33) FIL-1125 - Accept named lists. (@OIOIOOOI)
 
