@@ -48,7 +48,7 @@ class ImageController extends AbstractController
      * @OA\Get(
      *     description="",
      *     tags={"Image"},
-     *     deprecated=true
+     *     hidden=true
      * )
      */
     public function imageAction(Request $request, $agency, $resize, $filename)
