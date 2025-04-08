@@ -472,7 +472,7 @@ final class RestController extends AbstractController
      * @OA\Get(
      *     description="",
      *     tags={"Content"},
-     *     deprecated=true
+     *     hidden=true
      * )
      */
     public function contentSearchAction(Request $request, ManagerRegistry $dm)
@@ -1823,7 +1823,7 @@ final class RestController extends AbstractController
      * @OA\Get(
      *     description="",
      *     tags={"Taxonomy"},
-     *     deprecated=true
+     *     hidden=true
      * )
      */
     public function taxonomyAction(Request $request, $contentType, ManagerRegistry $dm)
