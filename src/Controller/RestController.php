@@ -916,7 +916,7 @@ final class RestController extends AbstractController
             $hits = $qbCount->count()->getQuery()->execute();
 
             $skip = $fields['skip'];
-            $amount = $fields['amount'] > 100 ? 100 : $fields['amount'];
+            $amount = ($fields['amount'] > 100 || $fields['amount'] < 1) ? 100 : $fields['amount'];
             $qb->skip($skip)->limit($amount);
 
             if ($fields['sort']) {
