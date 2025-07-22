@@ -1,5 +1,6 @@
 {
     "type": "project",
+    "description": "REST Services",
     "license": "proprietary",
     "require": {
         "php": ">=7.4",
