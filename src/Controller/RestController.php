@@ -272,7 +272,7 @@ final class RestController extends AbstractController
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         return $this->relay($restContentRequest, $logger);
     }
@@ -409,7 +409,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
-    public function contentFetchAction(Request $request, ManagerRegistry $dm, MatchOrderer $orderer)
+    public function contentFetchAction(Request $request, ManagerRegistry $dm, MatchOrderer $orderer, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -431,7 +431,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         $hits = 0;
 
@@ -475,7 +475,7 @@ final class RestController extends AbstractController
      *     deprecated=true
      * )
      */
-    public function contentSearchAction(Request $request, ManagerRegistry $dm)
+    public function contentSearchAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -497,7 +497,7 @@ final class RestController extends AbstractController
             }
         }
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         $hits = 0;
 
@@ -640,7 +640,7 @@ final class RestController extends AbstractController
      *
      * TODO: Test coverage.
      */
-    public function contentSearchRankedAction(Request $request, ManagerRegistry $dm)
+    public function contentSearchRankedAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -665,7 +665,7 @@ final class RestController extends AbstractController
             $fields['external'] = null;
         }
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         $hits = 0;
 
@@ -875,7 +875,7 @@ final class RestController extends AbstractController
             $fields['external'] = null;
         }
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         $hits = 0;
 
