@@ -86,6 +86,12 @@ class Menu
     protected $image;
 
     /**
+     * @MongoDB\Field(type="string")
+     * @OA\Property(type="string")
+     */
+    protected $icon;
+
+    /**
      * Get id
      *
      * @return \Doctrine\ODM\MongoDB\Mapping\Annotations\Id
@@ -355,6 +361,30 @@ class Menu
     public function setImage(array $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    /**
+     * Get icon.
+     *
+     * @return string
+     */
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    /**
+     * Set icon.
+     *
+     * @param string|null $icon
+     *
+     * @return Menu
+     */
+    public function setIcon(?string $icon): self
+    {
+        $this->icon = $icon;
 
         return $this;
     }

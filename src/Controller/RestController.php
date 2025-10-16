@@ -1040,6 +1040,10 @@ final class RestController extends AbstractController
      *                         property="attr",
      *                         type="string"
      *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="icon",
+     *                     type="string"
      *                 )
      *             )
      *         )
@@ -1149,6 +1153,10 @@ final class RestController extends AbstractController
      *                         property="attr",
      *                         type="string"
      *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="icon",
+     *                     type="string"
      *                 )
      *             )
      *         )
@@ -1374,6 +1382,7 @@ final class RestController extends AbstractController
                         'plid' => $menuEntity->getPlid() ?? 0,
                         'with_image' => $menuEntity->getWithImage() ?? false,
                         'image' => $menuEntity->getImage()['value'] ?? '',
+                        'icon' => $menuEntity->getIcon() ?? '',
                     ];
                 }
 
