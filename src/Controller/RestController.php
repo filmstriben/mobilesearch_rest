@@ -272,7 +272,7 @@ final class RestController extends AbstractController
         $this->lastMethod = $request->getMethod();
         $this->rawContent = $request->getContent();
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         return $this->relay($restContentRequest, $logger);
     }
@@ -409,7 +409,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
-    public function contentFetchAction(Request $request, ManagerRegistry $dm, MatchOrderer $orderer)
+    public function contentFetchAction(Request $request, ManagerRegistry $dm, MatchOrderer $orderer, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -431,7 +431,7 @@ final class RestController extends AbstractController
             $fields[$field] = null !== $request->query->get($field) ? $request->query->get($field) : $fields[$field];
         }
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         $hits = 0;
 
@@ -475,7 +475,7 @@ final class RestController extends AbstractController
      *     deprecated=true
      * )
      */
-    public function contentSearchAction(Request $request, ManagerRegistry $dm)
+    public function contentSearchAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -497,7 +497,7 @@ final class RestController extends AbstractController
             }
         }
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         $hits = 0;
 
@@ -640,7 +640,7 @@ final class RestController extends AbstractController
      *
      * TODO: Test coverage.
      */
-    public function contentSearchRankedAction(Request $request, ManagerRegistry $dm)
+    public function contentSearchRankedAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
 
@@ -665,7 +665,7 @@ final class RestController extends AbstractController
             $fields['external'] = null;
         }
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         $hits = 0;
 
@@ -875,7 +875,7 @@ final class RestController extends AbstractController
             $fields['external'] = null;
         }
 
-        $restContentRequest = new RestContentRequest($dm);
+        $restContentRequest = new RestContentRequest($dm, $logger);
 
         $hits = 0;
 
@@ -916,7 +916,7 @@ final class RestController extends AbstractController
             $hits = $qbCount->count()->getQuery()->execute();
 
             $skip = $fields['skip'];
-            $amount = $fields['amount'] > 100 ? 100 : $fields['amount'];
+            $amount = ($fields['amount'] > 100 || $fields['amount'] < 1) ? 100 : $fields['amount'];
             $qb->skip($skip)->limit($amount);
 
             if ($fields['sort']) {
@@ -1040,6 +1040,10 @@ final class RestController extends AbstractController
      *                         property="attr",
      *                         type="string"
      *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="icon",
+     *                     type="string"
      *                 )
      *             )
      *         )
@@ -1149,6 +1153,10 @@ final class RestController extends AbstractController
      *                         property="attr",
      *                         type="string"
      *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="icon",
+     *                     type="string"
      *                 )
      *             )
      *         )
@@ -1374,6 +1382,7 @@ final class RestController extends AbstractController
                         'plid' => $menuEntity->getPlid() ?? 0,
                         'with_image' => $menuEntity->getWithImage() ?? false,
                         'image' => $menuEntity->getImage()['value'] ?? '',
+                        'icon' => $menuEntity->getIcon() ?? '',
                     ];
                 }
 

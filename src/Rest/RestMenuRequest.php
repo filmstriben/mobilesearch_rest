@@ -119,6 +119,9 @@ class RestMenuRequest extends RestBaseRequest
             $this->parseImageField(!empty($body['image']) ? $body['image'] : '')
         );
 
+        $icon = isset($body['icon']) ? $body['icon'] : null;
+        $menu->setIcon($icon);
+
         return $menu;
     }
 

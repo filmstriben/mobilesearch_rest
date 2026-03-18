@@ -43,6 +43,7 @@ class ContentRepository extends DocumentRepository
         if ($countOnly) {
             $qb->count();
         } else {
+            $amount = ($amount > 100 || $amount < 1) ? 100 : $amount;
             $qb
                 ->skip($skip)
                 ->limit($amount)

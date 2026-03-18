@@ -147,6 +147,7 @@ class RestContentRequest extends RestBaseRequest
         if ($countOnly) {
             $qb->count();
         } else {
+            $amount = ($amount > 1000 || $amount < 1) ? 1000 : $amount;
             $qb->skip($skip)->limit($amount);
         }
 
@@ -348,6 +349,7 @@ class RestContentRequest extends RestBaseRequest
     {
         $imageFields = [
             'field_images',
+            'field_posters',
             'field_background_image',
             'field_ding_event_title_image',
             'field_ding_event_list_image',

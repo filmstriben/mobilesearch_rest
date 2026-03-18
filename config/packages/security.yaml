@@ -1,0 +1,31 @@
+security:
+    encoders:
+        Symfony\Component\Security\Core\User\User: bcrypt
+
+    providers:
+        in_memory:
+            memory:
+                users:
+                    '%env(BASIC_AUTH_USER)%':
+                        password: '%env(BASIC_AUTH_PASSWORD)%'
+                        roles: ['ROLE_USER']
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        homepage:
+            pattern: ^/$               # <-- only homepage
+            anonymous: false
+            provider: in_memory
+            http_basic: ~
+
+        main:
+            pattern: ^/                # <-- everything else
+            anonymous: true
+            security: true
+
+    access_control:
+        - { path: ^/$, roles: ROLE_USER }                         # homepage requires login
+        - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }       # rest is public
