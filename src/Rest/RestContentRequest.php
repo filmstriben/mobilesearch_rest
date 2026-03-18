@@ -147,7 +147,7 @@ class RestContentRequest extends RestBaseRequest
         if ($countOnly) {
             $qb->count();
         } else {
-            $amount = ($amount > 100 || $amount < 1) ? 100 : $amount;
+            $amount = ($amount > 1000 || $amount < 1) ? 1000 : $amount;
             $qb->skip($skip)->limit($amount);
         }
 
