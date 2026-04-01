@@ -77,6 +77,10 @@ class RestTaxonomyRequest extends RestBaseRequest
      */
     public function fetchVocabularies($agency, $contentType)
     {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $contentType)) {
+            return [];
+        }
+
         $collection = $this->em->getManager()->getDocumentCollection(Content::class);
 
         $pipeline = [
@@ -115,24 +119,42 @@ class RestTaxonomyRequest extends RestBaseRequest
      */
     public function fetchTermSuggestions($agency, $vocabulary, $contentType, $query)
     {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $vocabulary)) {
+            return [];
+        }
+
         $field = 'taxonomy.' . $vocabulary . '.terms';
         $collection = $this->em->getManager()->getDocumentCollection(Content::class);
 
-        $pipeline = [
-            // Narrow the document set using the existing agency+type index.
-            ['$match' => [
-                'agency' => $agency,
-                'type'   => $contentType,
-                $field   => ['$elemMatch' => ['$regex' => $query, '$options' => 'i']],
-            ]],
-            // Explode the terms array so each term becomes its own document.
-            ['$unwind' => '$' . $field],
-            // Keep only terms that match the query regex.
-            ['$match' => [$field => new MongoRegex($query, 'i')]],
-            // Deduplicate.
-            ['$group' => ['_id' => '$' . $field]],
-            ['$sort'  => ['_id' => 1]],
+        // Empty query or the "match-all" wildcard '.*' — skip regex filtering entirely
+        // and return all terms for the vocabulary. This is the documented client use-case.
+        $matchAll = ($query === '' || $query === '.*');
+
+        // For specific queries treat input as a literal substring, not a raw regex pattern,
+        // to prevent ReDoS and unexpected metacharacter semantics.
+        $safePattern = $matchAll ? null : preg_quote($query, '/');
+
+        $firstMatch = [
+            'agency' => $agency,
+            'type'   => $contentType,
+            $field   => ['$exists' => true],
         ];
+
+        if (!$matchAll) {
+            $firstMatch[$field]['$elemMatch'] = ['$regex' => $safePattern, '$options' => 'i'];
+        }
+
+        $pipeline = [
+            ['$match' => $firstMatch],
+            ['$unwind' => '$' . $field],
+        ];
+
+        if (!$matchAll) {
+            $pipeline[] = ['$match' => [$field => new MongoRegex($safePattern, 'i')]];
+        }
+
+        $pipeline[] = ['$group' => ['_id' => '$' . $field]];
+        $pipeline[] = ['$sort'  => ['_id' => 1]];
 
         $terms = [];
         foreach ($collection->aggregate($pipeline) as $doc) {
