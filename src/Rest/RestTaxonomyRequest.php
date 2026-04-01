@@ -77,22 +77,27 @@ class RestTaxonomyRequest extends RestBaseRequest
      */
     public function fetchVocabularies($agency, $contentType)
     {
-        $content = $this->em
-            ->getRepository(Content::class)
-            ->findBy(
-                [
-                    'agency' => $agency,
-                    'type' => $contentType,
-                ]
-            );
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $contentType)) {
+            return [];
+        }
+
+        $collection = $this->em->getManager()->getDocumentCollection(Content::class);
+
+        $pipeline = [
+            ['$match' => ['agency' => $agency, 'type' => $contentType]],
+            ['$project' => ['taxonomy' => ['$objectToArray' => '$taxonomy']]],
+            ['$unwind' => '$taxonomy'],
+            ['$match' => [
+                'taxonomy.v.terms' => ['$exists' => true],
+                'taxonomy.v.terms.0' => ['$exists' => true],
+            ]],
+            ['$group' => ['_id' => '$taxonomy.k', 'name' => ['$first' => '$taxonomy.v.name']]],
+            ['$sort' => ['_id' => 1]],
+        ];
 
         $vocabularies = [];
-        foreach ($content as $node) {
-            foreach ($node->getTaxonomy() as $vocabularyName => $vocabulary) {
-                if (!empty($vocabulary['terms']) && is_array($vocabulary['terms'])) {
-                    $vocabularies[$vocabularyName] = $vocabulary['name'];
-                }
-            }
+        foreach ($collection->aggregate($pipeline) as $doc) {
+            $vocabularies[$doc['_id']] = $doc['name'];
         }
 
         return $vocabularies;
@@ -114,30 +119,47 @@ class RestTaxonomyRequest extends RestBaseRequest
      */
     public function fetchTermSuggestions($agency, $vocabulary, $contentType, $query)
     {
-        $field = 'taxonomy.'.$vocabulary.'.terms';
-
-        $result = $this->em->getRepository(Content::class)->findBy(
-            [
-                'agency' => $agency,
-                'type' => $contentType,
-                $field => ['$in' => [new MongoRegex($query, 'i')]],
-            ]
-        );
-
-        $terms = [];
-        foreach ($result as $content) {
-            $taxonomy = $content->getTaxonomy();
-            if (isset($taxonomy[$vocabulary]) && is_array($taxonomy[$vocabulary]['terms'])) {
-                foreach ($taxonomy[$vocabulary]['terms'] as $term) {
-                    $pattern = '/'.$query.'/i';
-                    if (preg_match($pattern, $term)) {
-                        $terms[] = $term;
-                    }
-                }
-            }
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $vocabulary)) {
+            return [];
         }
 
-        $terms = array_values(array_unique($terms));
+        $field = 'taxonomy.' . $vocabulary . '.terms';
+        $collection = $this->em->getManager()->getDocumentCollection(Content::class);
+
+        // Empty query or the "match-all" wildcard '.*' — skip regex filtering entirely
+        // and return all terms for the vocabulary. This is the documented client use-case.
+        $matchAll = ($query === '' || $query === '.*');
+
+        // For specific queries treat input as a literal substring, not a raw regex pattern,
+        // to prevent ReDoS and unexpected metacharacter semantics.
+        $safePattern = $matchAll ? null : preg_quote($query, '/');
+
+        $firstMatch = [
+            'agency' => $agency,
+            'type'   => $contentType,
+            $field   => ['$exists' => true],
+        ];
+
+        if (!$matchAll) {
+            $firstMatch[$field]['$elemMatch'] = ['$regex' => $safePattern, '$options' => 'i'];
+        }
+
+        $pipeline = [
+            ['$match' => $firstMatch],
+            ['$unwind' => '$' . $field],
+        ];
+
+        if (!$matchAll) {
+            $pipeline[] = ['$match' => [$field => new MongoRegex($safePattern, 'i')]];
+        }
+
+        $pipeline[] = ['$group' => ['_id' => '$' . $field]];
+        $pipeline[] = ['$sort'  => ['_id' => 1]];
+
+        $terms = [];
+        foreach ($collection->aggregate($pipeline) as $doc) {
+            $terms[] = (string) $doc['_id'];
+        }
 
         return $terms;
     }
