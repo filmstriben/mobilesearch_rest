@@ -77,22 +77,23 @@ class RestTaxonomyRequest extends RestBaseRequest
      */
     public function fetchVocabularies($agency, $contentType)
     {
-        $content = $this->em
-            ->getRepository(Content::class)
-            ->findBy(
-                [
-                    'agency' => $agency,
-                    'type' => $contentType,
-                ]
-            );
+        $collection = $this->em->getManager()->getDocumentCollection(Content::class);
+
+        $pipeline = [
+            ['$match' => ['agency' => $agency, 'type' => $contentType]],
+            ['$project' => ['taxonomy' => ['$objectToArray' => '$taxonomy']]],
+            ['$unwind' => '$taxonomy'],
+            ['$match' => [
+                'taxonomy.v.terms' => ['$exists' => true],
+                'taxonomy.v.terms.0' => ['$exists' => true],
+            ]],
+            ['$group' => ['_id' => '$taxonomy.k', 'name' => ['$first' => '$taxonomy.v.name']]],
+            ['$sort' => ['_id' => 1]],
+        ];
 
         $vocabularies = [];
-        foreach ($content as $node) {
-            foreach ($node->getTaxonomy() as $vocabularyName => $vocabulary) {
-                if (!empty($vocabulary['terms']) && is_array($vocabulary['terms'])) {
-                    $vocabularies[$vocabularyName] = $vocabulary['name'];
-                }
-            }
+        foreach ($collection->aggregate($pipeline) as $doc) {
+            $vocabularies[$doc['_id']] = $doc['name'];
         }
 
         return $vocabularies;
@@ -114,30 +115,29 @@ class RestTaxonomyRequest extends RestBaseRequest
      */
     public function fetchTermSuggestions($agency, $vocabulary, $contentType, $query)
     {
-        $field = 'taxonomy.'.$vocabulary.'.terms';
+        $field = 'taxonomy.' . $vocabulary . '.terms';
+        $collection = $this->em->getManager()->getDocumentCollection(Content::class);
 
-        $result = $this->em->getRepository(Content::class)->findBy(
-            [
+        $pipeline = [
+            // Narrow the document set using the existing agency+type index.
+            ['$match' => [
                 'agency' => $agency,
-                'type' => $contentType,
-                $field => ['$in' => [new MongoRegex($query, 'i')]],
-            ]
-        );
+                'type'   => $contentType,
+                $field   => ['$elemMatch' => ['$regex' => $query, '$options' => 'i']],
+            ]],
+            // Explode the terms array so each term becomes its own document.
+            ['$unwind' => '$' . $field],
+            // Keep only terms that match the query regex.
+            ['$match' => [$field => new MongoRegex($query, 'i')]],
+            // Deduplicate.
+            ['$group' => ['_id' => '$' . $field]],
+            ['$sort'  => ['_id' => 1]],
+        ];
 
         $terms = [];
-        foreach ($result as $content) {
-            $taxonomy = $content->getTaxonomy();
-            if (isset($taxonomy[$vocabulary]) && is_array($taxonomy[$vocabulary]['terms'])) {
-                foreach ($taxonomy[$vocabulary]['terms'] as $term) {
-                    $pattern = '/'.$query.'/i';
-                    if (preg_match($pattern, $term)) {
-                        $terms[] = $term;
-                    }
-                }
-            }
+        foreach ($collection->aggregate($pipeline) as $doc) {
+            $terms[] = (string) $doc['_id'];
         }
-
-        $terms = array_values(array_unique($terms));
 
         return $terms;
     }
