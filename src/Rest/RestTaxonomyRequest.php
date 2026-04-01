@@ -134,6 +134,9 @@ class RestTaxonomyRequest extends RestBaseRequest
         // to prevent ReDoS and unexpected metacharacter semantics.
         $safePattern = $matchAll ? null : preg_quote($query, '/');
 
+        // Use case-insensitive matching only for pure-ASCII queries.
+        $regexOptions = (!$matchAll && preg_match('/^[[:ascii:]]+$/', $query)) ? 'i' : '';
+
         $firstMatch = [
             'agency' => $agency,
             'type'   => $contentType,
@@ -141,7 +144,7 @@ class RestTaxonomyRequest extends RestBaseRequest
         ];
 
         if (!$matchAll) {
-            $firstMatch[$field]['$elemMatch'] = ['$regex' => $safePattern, '$options' => 'i'];
+            $firstMatch[$field]['$elemMatch'] = ['$regex' => $safePattern, '$options' => $regexOptions];
         }
 
         $pipeline = [
@@ -150,7 +153,7 @@ class RestTaxonomyRequest extends RestBaseRequest
         ];
 
         if (!$matchAll) {
-            $pipeline[] = ['$match' => [$field => new MongoRegex($safePattern, 'i')]];
+            $pipeline[] = ['$match' => [$field => new MongoRegex($safePattern, $regexOptions)]];
         }
 
         $pipeline[] = ['$group' => ['_id' => '$' . $field]];
