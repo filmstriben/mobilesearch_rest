@@ -19,7 +19,7 @@ use App\Services\SearchQueryParser;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,7 +39,6 @@ final class RestController extends AbstractController
     /**
      * Insert new content entry.
      *
-     * @Route("/content", methods={"PUT"})
      * @OA\Put(
      *     description="",
      *     tags={"Content"},
@@ -111,6 +110,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/content', methods: ['PUT'])]
     public function contentCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->contentDispatcher($request, $dm, $logger);
@@ -119,7 +119,6 @@ final class RestController extends AbstractController
     /**
      * Update a content entry.
      *
-     * @Route("/content", methods={"POST"})
      * @OA\Post(
      *     description="",
      *     tags={"Content"},
@@ -191,6 +190,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/content', methods: ['POST'])]
     public function contentUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->contentDispatcher($request, $dm, $logger);
@@ -199,7 +199,6 @@ final class RestController extends AbstractController
     /**
      * Deletes a content entry.
      *
-     * @Route("/content", methods={"DELETE"})
      * @OA\Delete(
      *     description="",
      *     tags={"Content"},
@@ -255,6 +254,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/content', methods: ['DELETE'])]
     public function contentDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->contentDispatcher($request, $dm, $logger);
@@ -280,7 +280,6 @@ final class RestController extends AbstractController
     /**
      * Fetches a specific set of content.
      *
-     * @Route("/content/fetch", methods={"GET"})
      * @OA\Get(
      *     tags={"Content"},
      *     @OA\Parameter(
@@ -409,6 +408,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/content/fetch', methods: ['GET'])]
     public function contentFetchAction(Request $request, ManagerRegistry $dm, MatchOrderer $orderer, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
@@ -468,13 +468,13 @@ final class RestController extends AbstractController
     /**
      * Searches content by matching values for specific fields.
      *
-     * @Route("/content/search", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Content"},
      *     deprecated=true
      * )
      */
+    #[Route(path: '/content/search', methods: ['GET'])]
     public function contentSearchAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
@@ -549,7 +549,6 @@ final class RestController extends AbstractController
     /**
      * Searches content by specific phrase and ranks the results.
      *
-     * @Route("/content/search-ranked", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Content"},
@@ -640,6 +639,7 @@ final class RestController extends AbstractController
      *
      * TODO: Test coverage.
      */
+    #[Route(path: '/content/search-ranked', methods: ['GET'])]
     public function contentSearchRankedAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         $this->lastMethod = $request->getMethod();
@@ -726,7 +726,6 @@ final class RestController extends AbstractController
     /**
      * Searches content using compound and/or rules.
      *
-     * @Route("/content/search-extended", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Content"},
@@ -846,6 +845,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/content/search-extended', methods: ['GET'])]
     public function searchExtendedAction(
         Request $request,
         ManagerRegistry $dm,
@@ -965,7 +965,6 @@ final class RestController extends AbstractController
     /**
      * Insert a new menu entry.
      *
-     * @Route("/menu", methods={"PUT"})
      * @OA\Put(
      *     description="",
      *     tags={"Menu"},
@@ -1070,6 +1069,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/menu', methods: ['PUT'])]
     public function menuCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->menuDispatcher($request, $dm, $logger);
@@ -1078,7 +1078,6 @@ final class RestController extends AbstractController
     /**
      * Update a menu entry.
      *
-     * @Route("/menu", methods={"POST"})
      * @OA\Post(
      *     description="",
      *     tags={"Menu"},
@@ -1183,6 +1182,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/menu', methods: ['POST'])]
     public function menuUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->menuDispatcher($request, $dm, $logger);
@@ -1191,7 +1191,6 @@ final class RestController extends AbstractController
     /**
      * Delete a menu entry.
      *
-     * @Route("/menu", methods={"DELETE"})
      * @OA\Delete(
      *     description="",
      *     tags={"Menu"},
@@ -1247,6 +1246,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/menu', methods: ['DELETE'])]
     public function menuDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->menuDispatcher($request, $dm, $logger);
@@ -1272,7 +1272,6 @@ final class RestController extends AbstractController
     /**
      * Fetch menu items.
      *
-     * @Route("/menu/fetch", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Menu"},
@@ -1340,6 +1339,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/menu/fetch', methods: ['GET'])]
     public function menuFetchAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
@@ -1407,7 +1407,6 @@ final class RestController extends AbstractController
     /**
      * Create a new list entry.
      *
-     * @Route("/list", methods={"PUT"})
      * @OA\Put(
      *     description="",
      *     tags={"List"},
@@ -1499,6 +1498,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/list', methods: ['PUT'])]
     public function listCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->listDispatcher($request, $dm, $logger);
@@ -1507,7 +1507,6 @@ final class RestController extends AbstractController
     /**
      * Update a list entry,
      *
-     * @Route("/list", methods={"POST"})
      * @OA\Post(
      *     description="",
      *     tags={"List"},
@@ -1599,6 +1598,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/list', methods: ['POST'])]
     public function listUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->listDispatcher($request, $dm, $logger);
@@ -1607,7 +1607,6 @@ final class RestController extends AbstractController
     /**
      * Delete a list entry.
      *
-     * @Route("/list", methods={"DELETE"})
      * @OA\Delete(
      *     description="",
      *     tags={"List"},
@@ -1660,6 +1659,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/list', methods: ['DELETE'])]
     public function listDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->listDispatcher($request, $dm, $logger);
@@ -1685,7 +1685,6 @@ final class RestController extends AbstractController
     /**
      * Fetch list entries.
      *
-     * @Route("/list/fetch", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"List"},
@@ -1763,6 +1762,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/list/fetch', methods: ['GET'])]
     public function listFetchAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
@@ -1828,13 +1828,13 @@ final class RestController extends AbstractController
     /**
      * Fetch vocabularies for a certain content type.
      *
-     * @Route("/taxonomy/vocabularies/{contentType}", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Taxonomy"},
      *     deprecated=true
      * )
      */
+    #[Route(path: '/taxonomy/vocabularies/{contentType}', methods: ['GET'])]
     public function taxonomyAction(Request $request, $contentType, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
@@ -1869,7 +1869,6 @@ final class RestController extends AbstractController
     /**
      * Fetch vocabularies for a certain content type.
      *
-     * @Route("/taxonomy/vocabularies", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Taxonomy"},
@@ -1929,10 +1928,11 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/taxonomy/vocabularies', methods: ['GET'])]
     public function taxonomyNewAction(Request $request)
     {
         $response = $this->forward(
-            'App\Controller\RestController:taxonomyAction',
+            self::class.'::taxonomyAction',
             [
                 'request' => $request,
                 'contentType' => $request->query->get('contentType'),
@@ -1945,13 +1945,13 @@ final class RestController extends AbstractController
     /**
      * Fetch terms for a certain vocabulary and content type.
      *
-     * @Route("/taxonomy/terms/{vocabulary}/{contentType}/{query}", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Taxonomy"},
      *     deprecated=true
      * )
      */
+    #[Route(path: '/taxonomy/terms/{vocabulary}/{contentType}/{query}', methods: ['GET'])]
     public function taxonomySearchAction(Request $request, $vocabulary, $contentType, $query, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();
@@ -1986,7 +1986,6 @@ final class RestController extends AbstractController
     /**
      * Fetch terms for a certain vocabulary and content type.
      *
-     * @Route("/taxonomy/terms", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Taxonomy"},
@@ -2117,10 +2116,11 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/taxonomy/terms', methods: ['GET'])]
     public function taxonomySearchNewAction(Request $request)
     {
         $response = $this->forward(
-            'App\Controller\RestController:taxonomySearchAction',
+            self::class.'::taxonomySearchAction',
             [
                 'request' => $request,
                 'vocabulary' => $request->query->get('vocabulary'),
@@ -2135,7 +2135,6 @@ final class RestController extends AbstractController
     /**
      * Insert a new configuration entry.
      *
-     * @Route("/configuration", methods={"PUT"})
      * @OA\Put(
      *     description="",
      *     tags={"Configuration"},
@@ -2191,6 +2190,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/configuration', methods: ['PUT'])]
     public function configurationCreateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->configurationDispatcher($request, $dm, $logger);
@@ -2199,7 +2199,6 @@ final class RestController extends AbstractController
     /**
      * Update a configuration entry.
      *
-     * @Route("/configuration", methods={"POST"})
      * @OA\Post(
      *     description="",
      *     tags={"Configuration"},
@@ -2255,6 +2254,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/configuration', methods: ['POST'])]
     public function configurationUpdateAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->configurationDispatcher($request, $dm, $logger);
@@ -2263,7 +2263,6 @@ final class RestController extends AbstractController
     /**
      * Delete a configuration entry.
      *
-     * @Route("/configuration", methods={"DELETE"})
      * @OA\Delete(
      *     description="",
      *     tags={"Configuration"},
@@ -2315,6 +2314,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/configuration', methods: ['DELETE'])]
     public function configurationDeleteAction(Request $request, ManagerRegistry $dm, LoggerInterface $logger)
     {
         return $this->configurationDispatcher($request, $dm, $logger);
@@ -2340,7 +2340,6 @@ final class RestController extends AbstractController
     /**
      * Fetch a configuration entry.
      *
-     * @Route("/configuration", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Configuration"},
@@ -2383,6 +2382,7 @@ final class RestController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/configuration', methods: ['GET'])]
     public function configurationFetchAction(Request $request, ManagerRegistry $dm)
     {
         $this->lastMethod = $request->getMethod();

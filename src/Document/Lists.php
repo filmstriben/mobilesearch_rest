@@ -3,65 +3,43 @@
 namespace App\Document;
 
 use App\Exception\RestException;
-use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use App\Repositories\ListsRepository;
+use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
 use OpenApi\Annotations as OA;
 
-/**
- * @MongoDB\Document(repositoryClass="App\Repositories\ListsRepository")
- */
+#[ODM\Document(repositoryClass: ListsRepository::class)]
 class Lists
 {
-    /**
-     * @MongoDB\id
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Id]
     protected $id;
 
-    /**
-     * @MongoDB\Field(type="int")
-     * @OA\Property(type="integer")
-     */
+    /** @OA\Property(type="integer") */
+    #[ODM\Field(type: 'int')]
     protected $lid;
 
-    /**
-     * @MongoDB\Field(type="collection")
-     * @OA\Property(
-     *     type="array",
-     *     @OA\Items(
-     *         type="string"
-     *     )
-     * )
-     */
+    /** @OA\Property(type="array", @OA\Items(type="string")) */
+    #[ODM\Field(type: 'collection')]
     protected $agency;
 
-    /**
-     * @MongoDB\Field(type="string")
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Field(type: 'string')]
     protected $name;
 
-    /**
-     * @MongoDB\Field(type="string")
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Field(type: 'string')]
     protected $type;
 
-    /**
-     * @MongoDB\Field(type="bool")
-     * @OA\Property(type="boolean")
-     */
+    /** @OA\Property(type="boolean") */
+    #[ODM\Field(type: 'bool')]
     protected $promoted;
 
-    /**
-     * @MongoDB\Field(type="int")
-     * @OA\Property(type="integer")
-     */
+    /** @OA\Property(type="integer") */
+    #[ODM\Field(type: 'int')]
     protected $weight;
 
-    /**
-     * @MongoDB\Field(type="string")
-     * @OA\Property(type="object")
-     */
+    /** @OA\Property(type="object") */
+    #[ODM\Field(type: 'string')]
     protected $criteria;
 
     /**

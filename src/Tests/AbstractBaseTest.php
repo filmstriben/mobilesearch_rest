@@ -19,11 +19,6 @@ abstract class AbstractBaseTest extends WebTestCase
      *
      * @return mixed
      */
-    public function getContainer()
-    {
-        return static::$container;
-    }
-
     /**
      * Asserts service response structure.
      *
@@ -78,7 +73,5 @@ abstract class AbstractBaseTest extends WebTestCase
         parent::setUp();
 
         $this->httpClient = static::createClient();
-
-        static::bootKernel();
     }
 }

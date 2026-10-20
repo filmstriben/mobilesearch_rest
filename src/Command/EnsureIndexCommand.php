@@ -53,7 +53,7 @@ class EnsureIndexCommand extends Command
     /**
      * {@inheritDoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $finder = new Finder();
         $finder
@@ -66,7 +66,8 @@ class EnsureIndexCommand extends Command
 
             if (false === $indexDefinition) {
                 $output->writeln('Failed to restore index.');
-                break;
+
+                return Command::FAILURE;
             }
 
             /** @var \MongoDB\Client $connection */
@@ -77,5 +78,7 @@ class EnsureIndexCommand extends Command
 
             $collection->createIndex($indexDefinition[0], $indexDefinition[1]);
         }
+
+        return Command::SUCCESS;
     }
 }

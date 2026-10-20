@@ -60,7 +60,7 @@ class RestContentRequest extends RestBaseRequest
         ];
 
         $content = $this->em
-            ->getRepository('App:Content')
+            ->getRepository(Content::class)
             ->findOneBy($criteria);
 
         return $content;

@@ -47,7 +47,7 @@ class RestListsRequest extends RestBaseRequest
         ];
 
         $entity = $this->em
-            ->getRepository('App:Lists')
+            ->getRepository(Lists::class)
             ->findOneBy($criteria);
 
         return $entity;

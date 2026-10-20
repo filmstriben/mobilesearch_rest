@@ -2,28 +2,24 @@
 
 namespace App\DataFixtures\MongoDB;
 
-use Doctrine\Common\DataFixtures\FixtureInterface;
 use App\Document\Content;
+use App\Services\FixtureLoader;
+use Doctrine\Common\DataFixtures\FixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
-/**
- * Class ContentFixtures
- *
- * Prepares content entries.
- */
-class ContentFixtures implements FixtureInterface, ContainerAwareInterface
+class ContentFixtures implements FixtureInterface
 {
-    use ContainerAwareTrait;
+    private ?FixtureLoader $fixtureLoader = null;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load(ObjectManager $manager)
+    public function setFixtureLoader(FixtureLoader $fixtureLoader): void
     {
-        $fixtureLoader = $this->container->get('fixture_loader');
+        $this->fixtureLoader = $fixtureLoader;
+    }
+
+    public function load(ObjectManager $manager): void
+    {
+        $fixtureLoader = $this->fixtureLoader ?? throw new \RuntimeException('FixtureLoader not set.');
         $osDefinitions = $fixtureLoader->load('os.yml');
         $editorialDefinitions = $fixtureLoader->load('editorial.yml');
 
@@ -33,7 +29,6 @@ class ContentFixtures implements FixtureInterface, ContainerAwareInterface
         foreach (array_merge($osDefinitions, $editorialDefinitions) as $fixture) {
             $content = new Content();
 
-            // Set some random values for fields which are required and defined as null.
             $content->setNid($fixture['nid'] ?? mt_rand());
             $content->setAgency($fixture['agency'] ?? mt_rand(100000, 999999));
             $content->setType($fixture['type'] ?? $faker->word);
@@ -45,7 +40,6 @@ class ContentFixtures implements FixtureInterface, ContainerAwareInterface
                             $value = $faker->sentence;
                             break;
                         case 'publish_date':
-                            // Assume creation time couple of hours ago.
                             $value = gmdate('c', $now - mt_rand(1, 5) * 86400);
                             break;
                         default:
@@ -66,10 +60,7 @@ class ContentFixtures implements FixtureInterface, ContainerAwareInterface
         $manager->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDependencies()
+    public function getDependencies(): array
     {
         return [
             AgencyFixtures::class,

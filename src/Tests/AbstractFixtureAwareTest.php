@@ -2,38 +2,31 @@
 
 namespace App\Tests;
 
-use Doctrine\Bundle\FixturesBundle\Fixture;
+use App\Services\FixtureLoader;
 use Doctrine\Common\DataFixtures\Executor\MongoDBExecutor;
 use Doctrine\Common\DataFixtures\Loader;
 use Doctrine\Common\DataFixtures\Purger\MongoDBPurger;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
-/**
- * Class AbstractFixtureAwareTest
- *
- * Base class for functional tests that rely on fixtures.
- */
 abstract class AbstractFixtureAwareTest extends AbstractBaseTest
 {
     const AGENCY = '999999';
 
     const KEY = 'd952bdbc614ae7ef7fbcee661e55f1a462657f53';
 
-    /**
-     * {@inheritdoc}
-     */
     public function setUp(): void
     {
         parent::setUp();
 
-        $odm = $this->getContainer()->get('doctrine_mongodb');
+        $odm = static::getContainer()->get('doctrine_mongodb');
         $em = $odm->getManager();
 
+        /** @var FixtureLoader $fixtureLoader */
+        $fixtureLoader = static::getContainer()->get(FixtureLoader::class);
+
         $loader = new Loader();
-        /** @var \Doctrine\Common\DataFixtures\FixtureInterface $fixture */
         foreach ($this->getFixtures() as $fixture) {
-            if ($fixture instanceof ContainerAwareInterface) {
-                $fixture->setContainer($this->getContainer());
+            if (method_exists($fixture, 'setFixtureLoader')) {
+                $fixture->setFixtureLoader($fixtureLoader);
             }
             $loader->addFixture($fixture);
         }
@@ -43,10 +36,5 @@ abstract class AbstractFixtureAwareTest extends AbstractBaseTest
         $executor->execute($loader->getFixtures());
     }
 
-    /**
-     * Provides a list of functions to be loaded prior to test execution.
-     *
-     * @return array
-     */
     abstract public function getFixtures();
 }

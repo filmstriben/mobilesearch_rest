@@ -257,7 +257,7 @@ abstract class RestBaseRequest
     public function getAgencyById($agencyId)
     {
         $agency = $this->em
-            ->getRepository('App:Agency')
+            ->getRepository(Agency::class)
             ->findOneBy(['agencyId' => $agencyId]);
 
         return $agency;

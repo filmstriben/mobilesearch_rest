@@ -7,7 +7,7 @@ use App\Services\ImageConverterException;
 use App\Services\ImageConverterInterface;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -42,15 +42,13 @@ class ImageController extends AbstractController
     /**
      * Fetch an image.
      *
-     * @Route("/files/{agency}/{resize}/{filename}", defaults={"resize":"0x0"}, requirements={
-     *      "resize":"\d{1,4}x\d{1,4}"
-     * }, methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Image"},
      *     deprecated=true
      * )
      */
+    #[Route(path: '/files/{agency}/{resize}/{filename}', methods: ['GET'], defaults: ['resize' => '0x0'], requirements: ['resize' => '\d{1,4}x\d{1,4}'])]
     public function imageAction(Request $request, $agency, $resize, $filename)
     {
         return $this->forward('App\Controller\ImageController:imageNewAction', [
@@ -63,7 +61,6 @@ class ImageController extends AbstractController
     /**
      * Fetch and process an image. To convert between formats (jpeg|png|gif|webp), specify the extension in filename.
      *
-     * @Route("/files/{agency}/{filename}", methods={"GET"})
      * @OA\Get(
      *     description="",
      *     tags={"Image"},
@@ -183,6 +180,7 @@ class ImageController extends AbstractController
      *     )
      * )
      */
+    #[Route(path: '/files/{agency}/{filename}', methods: ['GET'])]
     public function imageNewAction(
         Request $request,
         $agency,

@@ -5,7 +5,7 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     mongodb_database: "%env(MONGODB_DB)%"
-    web_dir: "%kernel.root_dir%/../web"
+    web_dir: "%kernel.project_dir%/public"
     track_hits: false
 
 services:
@@ -19,6 +19,7 @@ services:
     App\:
         resource: '../src/'
         exclude:
+            - '../src/DataFixtures/'
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
@@ -35,7 +36,7 @@ services:
 
     fixture_loader:
         class: App\Services\FixtureLoader
-        arguments: ['%kernel.root_dir%/../config/fixtures']
+        arguments: ['%kernel.project_dir%/config/fixtures']
         public: true
     image_converter:
         class: App\Services\ImageConverter
