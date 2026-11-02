@@ -2,93 +2,62 @@
 
 namespace App\Document;
 
-use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
 use OpenApi\Annotations as OA;
 
-/**
- * @MongoDB\Document
- */
+#[ODM\Document]
 class Menu
 {
-    /**
-     * @MongoDB\id
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Id]
     protected $id;
 
-    /**
-     * @MongoDB\Field(type="int")
-     * @OA\Property(type="integer")
-     */
+    /** @OA\Property(type="integer") */
+    #[ODM\Field(type: 'int')]
     protected $mlid;
 
-    /**
-     * @MongoDB\Field(type="string")
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Field(type: 'string')]
     protected $agency;
 
-    /**
-     * @MongoDB\Field(type="string")
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Field(type: 'string')]
     protected $type;
 
-    /**
-     * @MongoDB\Field(type="string")
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Field(type: 'string')]
     protected $name;
 
-    /**
-     * @MongoDB\Field(type="string")
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Field(type: 'string')]
     protected $url;
 
-    /**
-     * @MongoDB\Field(type="int")
-     * @OA\Property(
-     *     type="integer",
-     *     property="weight"
-     * )
-     */
+    /** @OA\Property(type="integer", property="weight") */
+    #[ODM\Field(type: 'int')]
     protected $order;
 
-    /**
-     * @MongoDB\Field(type="boolean")
-     * @OA\Property(type="boolean")
-     */
+    /** @OA\Property(type="boolean") */
+    #[ODM\Field(type: 'bool')]
     protected $enabled;
 
-    /**
-     * @MongoDB\Field(type="collection")
-     * @OA\Property(type="array", @OA\Items(type="integer"))
-     */
+    /** @OA\Property(type="array", @OA\Items(type="integer")) */
+    #[ODM\Field(type: 'collection')]
     protected $items;
 
-    /**
-     * @MongoDB\Field(type="int")
-     * @OA\Property(type="integer")
-     */
+    /** @OA\Property(type="integer") */
+    #[ODM\Field(type: 'int')]
     protected $plid;
 
-    /**
-     * @MongoDB\Field(type="boolean")
-     * @OA\Property(type="boolean")
-     */
+    /** @OA\Property(type="boolean") */
+    #[ODM\Field(type: 'bool')]
     protected $with_image;
 
-    /**
-     * @MongoDB\Field(type="hash")
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Field(type: 'hash')]
     protected $image;
 
-    /**
-     * @MongoDB\Field(type="string")
-     * @OA\Property(type="string")
-     */
+    /** @OA\Property(type="string") */
+    #[ODM\Field(type: 'string')]
     protected $icon;
 
     /**

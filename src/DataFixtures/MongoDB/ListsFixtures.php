@@ -2,28 +2,24 @@
 
 namespace App\DataFixtures\MongoDB;
 
-use Doctrine\Common\DataFixtures\FixtureInterface;
 use App\Document\Lists;
+use App\Services\FixtureLoader;
+use Doctrine\Common\DataFixtures\FixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
-/**
- * Class ListsFixtures
- *
- * Prepares list entries.
- */
-class ListsFixtures implements FixtureInterface, ContainerAwareInterface
+class ListsFixtures implements FixtureInterface
 {
-    use ContainerAwareTrait;
+    private ?FixtureLoader $fixtureLoader = null;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load(ObjectManager $entityManager)
+    public function setFixtureLoader(FixtureLoader $fixtureLoader): void
     {
-        $fixtureLoader = $this->container->get('fixture_loader');
+        $this->fixtureLoader = $fixtureLoader;
+    }
+
+    public function load(ObjectManager $entityManager): void
+    {
+        $fixtureLoader = $this->fixtureLoader ?? throw new \RuntimeException('FixtureLoader not set.');
         $listsDefinitions = $fixtureLoader->load('lists.yml');
 
         $faker = Factory::create();
@@ -35,7 +31,7 @@ class ListsFixtures implements FixtureInterface, ContainerAwareInterface
             $list->setLid(!empty($fixture['lid']) ? $fixture['lid'] : mt_rand());
             $list->setName(!empty($fixture['name']) ? $fixture['name'] : $faker->title);
             $list->setType(!empty($fixture['type']) ? $fixture['type'] : $faker->word);
-            $list->setPromoted(isset($fixture['promoted']) ? (bool)$fixture['promoted'] : $faker->boolean);
+            $list->setPromoted(isset($fixture['promoted']) ? (bool) $fixture['promoted'] : $faker->boolean);
             $list->setWeight(isset($fixture['weight']) ? $fixture['weight'] : mt_rand(-50, 50));
             $list->setCriteria(isset($fixture['criteria']) ? $fixture['criteria'] : []);
 
@@ -45,10 +41,7 @@ class ListsFixtures implements FixtureInterface, ContainerAwareInterface
         $entityManager->flush();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getDependencies()
+    public function getDependencies(): array
     {
         return [
             AgencyFixtures::class,

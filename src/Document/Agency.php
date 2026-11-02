@@ -2,55 +2,31 @@
 
 namespace App\Document;
 
-use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
 
-/**
- * @MongoDB\Document
- */
+#[ODM\Document]
 class Agency
 {
-    /**
-     * @MongoDB\Id
-     */
+    #[ODM\Id]
     protected $id;
 
-    /**
-     * @MongoDB\Field(type="string")
-     */
+    #[ODM\Field(type: 'string')]
     protected $agencyId;
 
-    /**
-     * @MongoDB\Field(type="string")
-     */
+    #[ODM\Field(type: 'string')]
     protected $key;
 
-    /**
-     * @MongoDB\Field(type="string")
-     */
+    #[ODM\Field(type: 'string')]
     protected $name;
 
-    /**
-     * @MongoDB\Field(type="collection")
-     */
+    #[ODM\Field(type: 'collection')]
     protected $children;
 
-    /**
-     * Get id
-     *
-     * @return \Doctrine\ODM\MongoDB\Mapping\Annotations\Id
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * Set agencyId
-     *
-     * @param string $agencyId
-     *
-     * @return self
-     */
     public function setAgencyId($agencyId)
     {
         $this->agencyId = $agencyId;
@@ -58,23 +34,11 @@ class Agency
         return $this;
     }
 
-    /**
-     * Get agencyId
-     *
-     * @return string $agencyId
-     */
     public function getAgencyId()
     {
         return $this->agencyId;
     }
 
-    /**
-     * Set key
-     *
-     * @param string $key
-     *
-     * @return self
-     */
     public function setKey($key)
     {
         $this->key = $key;
@@ -82,23 +46,11 @@ class Agency
         return $this;
     }
 
-    /**
-     * Get key
-     *
-     * @return string $key
-     */
     public function getKey()
     {
         return $this->key;
     }
 
-    /**
-     * Set name
-     *
-     * @param string $name
-     *
-     * @return self
-     */
     public function setName($name)
     {
         $this->name = $name;
@@ -106,23 +58,11 @@ class Agency
         return $this;
     }
 
-    /**
-     * Get name
-     *
-     * @return string $name
-     */
     public function getName()
     {
         return $this->name;
     }
 
-    /**
-     * Set children
-     *
-     * @param collection $children
-     *
-     * @return self
-     */
     public function setChildren($children)
     {
         $this->children = $children;
@@ -130,11 +70,6 @@ class Agency
         return $this;
     }
 
-    /**
-     * Get children
-     *
-     * @return collection $children
-     */
     public function getChildren()
     {
         if (empty($this->children)) {

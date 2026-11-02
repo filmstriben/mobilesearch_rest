@@ -2,69 +2,61 @@
 
 namespace App\Document;
 
-use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use App\Repositories\ContentRepository;
+use Doctrine\ODM\MongoDB\Mapping\Attribute as ODM;
 use OpenApi\Annotations as OA;
 
-/**
- * @MongoDB\Document(repositoryClass="App\Repositories\ContentRepository")
- */
+#[ODM\Document(repositoryClass: ContentRepository::class)]
 class Content
 {
     /**
-     * @MongoDB\Id()
      * @OA\Property(type="string")
      */
+    #[ODM\Id]
     protected $id;
 
     /**
-     * @MongoDB\Field(type="int")
      * @OA\Property(type="integer")
      */
+    #[ODM\Field(type: 'int')]
     protected $nid;
 
     /**
-     * @MongoDB\Field(type="string")
      * @OA\Property(type="string")
      */
+    #[ODM\Field(type: 'string')]
     protected $agency;
 
     /**
-     * @MongoDB\Field(type="string")
      * @OA\Property(type="string")
      */
+    #[ODM\Field(type: 'string')]
     protected $type;
 
     /**
-     * @MongoDB\Field(type="hash")
      * @OA\Property(type="array", @OA\Items(type="object"))
      */
+    #[ODM\Field(type: 'hash')]
     protected $fields;
 
     /**
-     * @MongoDB\Field(type="hash")
      * @OA\Property(type="array", @OA\Items(type="object"))
      */
+    #[ODM\Field(type: 'hash')]
     protected $taxonomy;
 
     /**
-     * @MongoDB\Field(type="hash")
      * @OA\Property(type="array", @OA\Items(type="object"))
      */
+    #[ODM\Field(type: 'hash')]
     protected $list;
 
     /**
-     * @MongoDB\Field(type="float", notSaved=true)
      * @OA\Property(type="number")
      */
+    #[ODM\Field(type: 'float', notSaved: true)]
     public $score;
 
-    /**
-     * Sets score.
-     *
-     * @param float $score
-     *
-     * @return $this
-     */
     public function setScore($score)
     {
         $this->score = $score;
@@ -72,33 +64,16 @@ class Content
         return $this;
     }
 
-    /**
-     * Gets score.
-     *
-     * @return float
-     */
     public function getScore()
     {
         return $this->score;
     }
 
-    /**
-     * Get id
-     *
-     * @return \Doctrine\ODM\MongoDB\Mapping\Annotations\Id
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * Set nid
-     *
-     * @param int $nid
-     *
-     * @return self
-     */
     public function setNid($nid)
     {
         $this->nid = $nid;
@@ -106,23 +81,11 @@ class Content
         return $this;
     }
 
-    /**
-     * Get nid
-     *
-     * @return int $nid
-     */
     public function getNid()
     {
         return $this->nid;
     }
 
-    /**
-     * Set type
-     *
-     * @param string $type
-     *
-     * @return self
-     */
     public function setType($type)
     {
         $this->type = $type;
@@ -130,23 +93,11 @@ class Content
         return $this;
     }
 
-    /**
-     * Get type
-     *
-     * @return string $type
-     */
     public function getType()
     {
         return $this->type;
     }
 
-    /**
-     * Set fields
-     *
-     * @param array $fields
-     *
-     * @return self
-     */
     public function setFields($fields)
     {
         $this->fields = $fields;
@@ -154,23 +105,11 @@ class Content
         return $this;
     }
 
-    /**
-     * Get fields
-     *
-     * @return array $fields
-     */
     public function getFields()
     {
         return $this->fields;
     }
 
-    /**
-     * Set taxonomy
-     *
-     * @param array $taxonomy
-     *
-     * @return self
-     */
     public function setTaxonomy($taxonomy)
     {
         $this->taxonomy = $taxonomy;
@@ -178,23 +117,11 @@ class Content
         return $this;
     }
 
-    /**
-     * Get taxonomy
-     *
-     * @return array $taxonomy
-     */
     public function getTaxonomy()
     {
         return $this->taxonomy;
     }
 
-    /**
-     * Set list
-     *
-     * @param array $list
-     *
-     * @return self
-     */
     public function setList($list)
     {
         $this->list = $list;
@@ -202,23 +129,11 @@ class Content
         return $this;
     }
 
-    /**
-     * Get list
-     *
-     * @return array $list
-     */
     public function getList()
     {
         return $this->list;
     }
 
-    /**
-     * Set agency
-     *
-     * @param string $agency
-     *
-     * @return self
-     */
     public function setAgency($agency)
     {
         $this->agency = $agency;
@@ -226,23 +141,11 @@ class Content
         return $this;
     }
 
-    /**
-     * Get agency
-     *
-     * @return string $agency
-     */
     public function getAgency()
     {
         return $this->agency;
     }
 
-    /**
-     * Creates an array representation of the entity.
-     *
-     * @param false $withScore
-     *
-     * @return array
-     */
     public function toArray($withScore = false)
     {
         $return = [

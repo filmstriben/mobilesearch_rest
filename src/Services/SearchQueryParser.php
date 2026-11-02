@@ -117,15 +117,15 @@ class SearchQueryParser
         $this->tokenMatches(SearchQueryLexer::QUOTE);
 
         $this->tokenMatches(SearchQueryLexer::IDENTIFIER);
-        $field = $this->lexer->token['value'];
+        $field = $this->lexer->token->value;
 
         $this->tokenMatches(SearchQueryLexer::COMPARE);
-        $operator = trim($this->lexer->token['value'], '[]');
+        $operator = trim((string) $this->lexer->token->value, '[]');
 
         $this->tokenMatches(SearchQueryLexer::EQUALS);
 
         $this->tokenMatches(SearchQueryLexer::IDENTIFIER);
-        $value = $this->lexer->token['value'];
+        $value = $this->lexer->token->value;
 
         $this->tokenMatches(SearchQueryLexer::QUOTE);
 
@@ -143,9 +143,9 @@ class SearchQueryParser
         $this->tokenMatches(SearchQueryLexer::IDENTIFIER);
 
         $token = $this->lexer->token;
-        $operatorValue = trim(strtolower($token['value']));
+        $operatorValue = trim(strtolower((string) $token->value));
         if (!in_array($operatorValue, [AbstractNode::OPERATOR_OR, AbstractNode::OPERATOR_AND])) {
-            $position = isset($token['position']) ? $token['position'] : -1;
+            $position = $token->position;
             $error = 'Expected a valid operator, found "' . $operatorValue . '"';
             $error .= ' at position "' . $position . '".';
 
@@ -166,11 +166,11 @@ class SearchQueryParser
     private function tokenMatches($tokenType)
     {
         $aheadToken = $this->lexer->lookahead;
-        $position = isset($aheadToken['position']) ? $aheadToken['position'] : -1;
+        $position = $aheadToken?->position ?? -1;
 
-        if (!$aheadToken || $aheadToken['type'] !== $tokenType) {
+        if (!$aheadToken || $aheadToken->type !== $tokenType) {
             $error = 'Expected a valid token of type "' . $this->lexer->getLiteral($tokenType) . '"';
-            $error .= !$aheadToken ? ', none found' : ', found "' . $aheadToken['value'] . '"';
+            $error .= !$aheadToken ? ', none found' : ', found "' . $aheadToken->value . '"';
             $error .= ' at position "' . $position . '".';
 
             throw new \RuntimeException($error);
