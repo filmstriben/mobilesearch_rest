@@ -51,7 +51,7 @@ class ImageController extends AbstractController
     #[Route(path: '/files/{agency}/{resize}/{filename}', methods: ['GET'], defaults: ['resize' => '0x0'], requirements: ['resize' => '\d{1,4}x\d{1,4}'])]
     public function imageAction(Request $request, $agency, $resize, $filename)
     {
-        return $this->forward('App\Controller\ImageController:imageNewAction', [
+        return $this->forward('App\Controller\ImageController::imageNewAction', [
             'request' => $request,
             'agency' => $agency,
             'filename' => $filename,
